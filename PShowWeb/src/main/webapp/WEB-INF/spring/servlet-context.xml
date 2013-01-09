@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing 
+		infrastructure -->
+
+	<!-- Scans within the base package of the application for @Components to 
+		configure as beans -->
+	<!-- @Controller, @Service, @Configuration, etc. -->
+	<context:component-scan base-package="org.pshow" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<mvc:annotation-driven />
+	
+	<!-- 定义无Controller的path<->view直接映射 -->
+	<mvc:view-controller path="/" view-name="login"/>
+	<mvc:view-controller path="/main" view-name="main"/>
+
+	<!-- 静态资源访问(二选一方式配置) -->
+	<!-- <mvc:default-servlet-handler/> -->
+
+	<mvc:resources mapping="/javascript/**" location="/resources/javascript/" />
+	<mvc:resources mapping="/styles/**" location="/resources/css/" />
+	<mvc:resources mapping="/images/**" location="/resources/images/" />
+	<mvc:resources mapping="/views/**" location="/views/" />
+
+	<!-- 支持 Shiro对Controller的方法级AOP安全控制 begin -->
+	<bean
+		class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+		depends-on="lifecycleBeanPostProcessor">
+		<property name="proxyTargetClass" value="true" />
+	</bean>
+
+	<bean
+		class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager" />
+	</bean>
+
+	<bean
+		class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<prop key="org.springframework.validation.BindException">error/400</prop>
+				<prop key="org.apache.shiro.authz.UnauthorizedException">error/403</prop>
+			</props>
+		</property>
+	</bean>
+	<!-- end -->
+
+</beans>
