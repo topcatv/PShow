@@ -430,10 +430,10 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>3.0.3</version>
+									<version>3.0.4</version>
 								</requireMavenVersion>
 								<requireJavaVersion>
-									<version>1.6</version>
+									<version>1.7</version>
 								</requireJavaVersion>
 								<bannedDependencies>
 									<searchTransitive>true</searchTransitive>
@@ -463,5 +463,8 @@
 		</plugins>
 	</build>
 
-	<modules></modules>
+	<modules>
+		<module>pshow-repository</module>
+		<module>pshow_repository</module>
+	</modules>
 </project>
