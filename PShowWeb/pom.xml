@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>pshow-content</artifactId>
+		<artifactId>pshow_content</artifactId>
 		<groupId>org.pshow</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
-	<artifactId>PShowWeb</artifactId>
+	<artifactId>pshow_web</artifactId>
 	<packaging>war</packaging>
 	<dependencies>
 		<!-- TEST begin -->
@@ -284,11 +284,6 @@
 			</dependency>
 
 			<!-- jcr -->
-			<dependency>
-				<groupId>org.apache.jackrabbit</groupId>
-				<artifactId>jackrabbit-core</artifactId>
-			</dependency>
-
 			<dependency>
 				<groupId>javax.jcr</groupId>
 				<artifactId>jcr</artifactId>
