@@ -2165,7 +2165,7 @@
 </XPD:OBJ>
 </XPD:OBJ>
 </XPD:OBJ>
-<XPD:ATTR name="#OwnedElements" type="integer">48</XPD:ATTR>
+<XPD:ATTR name="#OwnedElements" type="integer">49</XPD:ATTR>
 <XPD:OBJ name="OwnedElements[0]" type="UMLPackage" guid="0oujRBH1xkeGx5aMT31APgAA">
 <XPD:ATTR name="Name" type="string">ÄÚÈÝ¹ÜÀíÏµÍ³</XPD:ATTR>
 <XPD:REF name="Namespace">FrLaVGxqnkSLl9Mrr3KKWwAA</XPD:REF>
@@ -2940,6 +2940,10 @@
 <XPD:REF name="Views[1]">6Xg6J22SXk6nbvAA8jxlKAAA</XPD:REF>
 <XPD:REF name="Views[2]">oq+EVYLjW0CHlU7mfpkX9QAA</XPD:REF>
 <XPD:REF name="Views[3]">2zbKZfd+fE2pz7FzoX9mEAAA</XPD:REF>
+</XPD:OBJ>
+<XPD:OBJ name="OwnedElements[48]" type="UMLInterface" guid="pj324808DE+JwlyX4zjj/wAA">
+<XPD:ATTR name="Name" type="string">Kim, Keehyun</XPD:ATTR>
+<XPD:REF name="Namespace">FrLaVGxqnkSLl9Mrr3KKWwAA</XPD:REF>
 </XPD:OBJ>
 </XPD:OBJ>
 <XPD:OBJ name="OwnedElements[2]" type="UMLModel" guid="/+vUcjaR1E2BRymWkJOczwAA">

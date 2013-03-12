@@ -29,6 +29,7 @@ public class Association {
 	private String	targetClassName	  = null;
 	private Boolean	isTargetMandatory	= null;
 	private Boolean	isTargetMany	  = null;
+	private Boolean isChild =null;
 
 	public String getName() {
 		return name;
@@ -93,4 +94,12 @@ public class Association {
 	public void setIsTargetMany(Boolean isTargetMany) {
 		this.isTargetMany = isTargetMany;
 	}
+
+	public Boolean isChild() {
+    	return isChild;
+    }
+
+	public void setIsChild(Boolean isChild) {
+    	this.isChild = isChild;
+    }
 }
