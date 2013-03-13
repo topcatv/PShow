@@ -21,19 +21,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.constraints.NotNull;
+
+import org.pshow.repo.audit.Auditable;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.datamodel.namespace.QNamePattern;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * @author roy
  * 
  */
+@Auditable
+@Validated
 public interface ContentService {
 
 	ContentRef getRoot();
 
-	ContentRef getContent(Long id);
+	@Auditable(parameters = { "id" }, recordable = { true })
+	ContentRef getContent(@NotNull Long id);
 
 	ContentRef createContent(ContentRef parentRef, String name, QName typeQName);
 
@@ -72,7 +79,7 @@ public interface ContentService {
 	List<ContentRef> getChildByName(ContentRef contentRef, String name);
 
 	void addFacet(ContentRef contentRef, QName facetTypeQName, Map<QName, Serializable> facetProperties);
-	
+
 	void removeAspect(ContentRef contentRef, QName facetTypeQName);
 
 }

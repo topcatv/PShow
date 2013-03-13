@@ -22,7 +22,7 @@
 		<shiro.version>1.2.1</shiro.version>
 		<cxf.version>2.6.2</cxf.version>
 		<ehcache.version>2.6.0</ehcache.version>
-		<hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
+		<hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
 		<jackson.version>2.0.6</jackson.version>
 		<codehaus.jackson.version>1.9.9</codehaus.jackson.version>
 		<freemarker.version>2.3.19</freemarker.version>
@@ -46,6 +46,12 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${spring.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<!-- mockito -->

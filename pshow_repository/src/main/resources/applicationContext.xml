@@ -36,11 +36,17 @@
 	<!-- hibernate validator -->
 	<bean id="validator"
 		class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
-	<bean
-		class="org.springframework.validation.beanvalidation.MethodValidationPostProcessor" />
 		
+	<bean class="org.pshow.repo.validation.NewOrderMethodValidationPostProcessor"
+		depends-on="auditPostProcessor">
+		<property name="validator" ref="validator" />
+	</bean>
+
+	<bean id="auditPostProcessor" class="org.pshow.repo.audit.MethodAuditPostProcessor" />
+
+	<import resource="applicationContext-core.xml" />
 	<import resource="applicationContext-ehcache.xml" />
-	<import resource="applicationContext-shiro.xml" />
+	<!-- <import resource="applicationContext-shiro.xml" /> -->
 
 	<!-- production环境 -->
 	<beans profile="production">
@@ -86,9 +92,9 @@
 
 		<!-- 嵌入式内存中数据库 -->
 		<jdbc:embedded-database id="dataSource" type="H2">
-			<jdbc:script location="classpath:sql/h2/schema.sql" />
+			<!-- <jdbc:script location="classpath:sql/h2/schema.sql" />
 			<jdbc:script location="classpath:sql/h2/cleanup-data.sql" />
-			<jdbc:script location="classpath:sql/h2/import-data.sql" />
+			<jdbc:script location="classpath:sql/h2/import-data.sql" /> -->
 		</jdbc:embedded-database>
 	</beans>
 
