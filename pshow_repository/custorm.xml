@@ -1,0 +1,20 @@
+<custom namespace-style="none" namespace="http://pshow.org/content/definition">
+  <package name="org.pshow.repo.datamodel.content.definition">
+    <class name="PSModel" requireds="name" element-name="model" type-name="model">
+      <value property-name="name" attribute="name"/>
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="namespaces"/>
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="imports"/>
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="dataTypes"/>
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="types"/>
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="aspects"/>
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="constraints"/>
+    </class>
+    <class name="ContentClass" requireds="name">
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="properties"/>
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="associations"/>
+    </class>
+    <class name="Property" requireds="name">
+      <value factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" property-name="constraintModels"/>
+    </class>
+  </package>
+</custom>

@@ -14,17 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content.definition;
+package org.pshow.repo;
 
 /**
  * @author roy
  * 
  */
-public class ContentType extends ContentClass {
+public class ServerStauts {
+	private static boolean locked = false;
 
-    ContentType() {
-        super();
-    }
+	public static synchronized void lockServer() {
+		if (!locked) {
+	        locked = true;
+        }
+	}
 
-    private int forbindGen;
+	public static synchronized void unlockServer() {
+		if (locked) {
+	        locked = false;
+        }
+	}
+
+	public static synchronized boolean isLocked() {
+		return locked;
+	}
+
 }

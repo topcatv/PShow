@@ -1,0 +1,167 @@
+<binding name="default">
+
+   <namespace uri="http://www.alfresco.org/model/dictionary/1.0" default="elements"/>
+   
+   <format type="java.util.Date" serializer="org.alfresco.repo.dictionary.M2XML.serialiseDate" deserializer="org.alfresco.repo.dictionary.M2XML.deserialiseDate"/>
+   <format type="java.lang.Boolean" serializer="org.alfresco.repo.dictionary.M2XML.serialiseBoolean" deserializer="org.alfresco.repo.dictionary.M2XML.deserialiseBoolean"/>
+         
+   <mapping name="model" class="org.pshow.repo.datamodel.content.definition.PSModel">
+      <value style="attribute" name="name" field="name"/>
+      <value name="description" field="description" usage="optional"/>
+      <value name="author" field="author" usage="optional"/>
+      <value name="published" field="published" usage="optional"/>
+      <value name="version" field="version" usage="optional"/>
+      
+      <structure name="imports" usage="optional">
+         <collection field="imports" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList">
+            <structure name="import" type="org.pshow.repo.datamodel.namespace.Namespace" usage="optional">
+               <value style="attribute" name="uri" field="uri"/>
+               <value style="attribute" name="prefix" field="prefix"/>
+            </structure>
+         </collection>
+      </structure>
+
+      <structure name="namespaces" usage="optional">
+         <collection field="namespaces" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList">
+            <structure name="namespace" type="org.pshow.repo.datamodel.namespace.Namespace" usage="optional">
+               <value style="attribute" name="uri" field="uri"/>
+               <value style="attribute" name="prefix" field="prefix"/>
+            </structure>
+         </collection>
+      </structure>
+      
+      <structure name="data-types" usage="optional">
+         <collection field="dataTypes" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList">
+            <structure name="data-type" type="org.pshow.repo.datamodel.content.definition.DataType" usage="optional">
+               <value style="attribute" name="name" field="name"/>
+               <value name="title" field="title" usage="optional"/>
+               <value name="description" field="description" usage="optional"/>
+               <value name="default-analyser-class" field="defaultAnalyserClassName"/>
+               <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
+               <value name="java-class" field="javaClassName"/>
+            </structure>
+         </collection>
+      </structure>
+
+      <structure name="constraints" usage="optional">
+         <collection field="constraints" item-type="org.pshow.repo.datamodel.content.definition.ConstraintModel" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList"/>
+      </structure>
+      
+      <structure name="types" usage="optional">
+         <collection field="types" item-type="org.pshow.repo.datamodel.content.definition.ContentType" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList"/>
+      </structure>
+      
+      <structure name="facets" usage="optional">
+         <collection field="facets" item-type="org.pshow.repo.datamodel.content.definition.ContentFacet" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList"/>
+      </structure>
+   </mapping>
+
+
+   <mapping class="org.pshow.repo.datamodel.content.definition.ContentClass" abstract="true">
+      <value style="attribute" name="name" field="name"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <value name="parent" field="parentName" usage="optional"/>
+      <value name="archive" field="archive" usage="optional"/>
+      <value name="includedInSuperTypeQuery" field="includedInSuperTypeQuery" usage="optional"/>
+      <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
+   	  <structure name="properties" usage="optional">
+         <collection field="properties" item-type="org.pshow.repo.datamodel.content.definition.Property" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList"/>
+      </structure>
+      <structure name="associations" usage="optional">
+         <collection field="associations" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList"/>
+      </structure>
+      <structure name="overrides" usage="optional">
+         <collection field="propertyOverrides" item-type="org.pshow.repo.datamodel.content.definition.PropertyOverride" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList">
+            <structure name="property" type="org.pshow.repo.datamodel.content.definition.PropertyOverride" usage="optional">
+               <value style="attribute" name="name" field="name"/>
+               <structure name="mandatory" usage="optional">
+                  <value style="attribute" name="enforced" field="isMandatoryEnforced" usage="optional" />
+                  <value style="text" field="isMandatory" usage="optional"/>
+               </structure>
+               <value name="default" field="defaultValue" usage="optional"/>
+               <structure name="constraints" usage="optional">
+                  <collection field="constraints" item-type="org.pshow.repo.datamodel.content.definition.ConstraintModel" usage="optional" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList"/>
+               </structure>
+            </structure>
+         </collection>
+      </structure>
+      <structure name="mandatory-aspects" usage="optional">
+         <collection field="mandatoryAspects" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList">
+            <value name="aspect" type="java.lang.String"/>
+         </collection>
+      </structure>
+   </mapping>
+
+   <mapping name="type" class="org.pshow.repo.datamodel.content.definition.ContentType" extends="org.pshow.repo.datamodel.content.definition.ContentClass">
+      <structure map-as="org.pshow.repo.datamodel.content.definition.ContentClass"/>      
+   </mapping>
+      
+   <mapping name="facet" class="org.pshow.repo.datamodel.content.definition.ContentFacet" extends="org.pshow.repo.datamodel.content.definition.ContentClass">
+      <structure map-as="org.pshow.repo.datamodel.content.definition.ContentClass"/>
+   </mapping>
+
+   <mapping name="property" class="org.pshow.repo.datamodel.content.definition.Property">
+      <value style="attribute" name="name" field="name"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <value name="type" field="propertyType"/>
+      <value name="protected" field="isProtected" usage="optional"/>
+      <structure name="mandatory" usage="optional">
+         <value style="attribute" name="enforced" field="isMandatoryEnforced" usage="optional"/>
+         <value style="text" field="isMandatory" />
+      </structure>
+      <value name="multiple" field="isMultiValued" usage="optional"/>
+      <value name="default" field="defaultValue" usage="optional"/>
+      <structure name="index" usage="optional">
+         <value style="attribute" name="enabled" field="isIndexed"/>
+         <value name="atomic" field="isIndexedAtomically" usage="optional"/>
+         <value name="stored" field="isStoredInIndex" usage="optional"/>
+      </structure>
+      <structure name="constraints" test-method="hasConstraints" usage="optional">
+         <collection field="constraints" item-type="org.pshow.repo.datamodel.content.definition.ConstraintModel" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" usage="optional"/>
+      </structure>
+   </mapping>
+
+   <mapping abstract="true" class="org.alfresco.repo.dictionary.M2NamedValue">
+      <value style="attribute" name="name" field="name" />
+      <value name="value" field="simpleValue" test-method="hasSimpleValue" usage="optional"/>
+      <structure name="list" test-method="hasListValue" usage="optional">
+          <collection field="listValue" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" usage="optional">
+             <value name="value" style="element" usage="optional" type="java.lang.String"/>
+          </collection>
+      </structure>
+   </mapping>
+
+   <mapping name="constraint" class="org.pshow.repo.datamodel.content.definition.ConstraintModel">
+      <value style="attribute" name="name" field="name" usage="optional"/>
+      <value style="attribute" name="type" field="type" usage="optional"/>
+      <value style="attribute" name="ref" field="ref" usage="optional"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <collection field="parameters" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList" usage="optional">
+         <structure name="parameter" type="org.alfresco.repo.dictionary.M2NamedValue" />
+      </collection>
+   </mapping>
+
+   <mapping class="org.pshow.repo.datamodel.content.definition.Association" abstract="true">
+      <value style="attribute" name="name" field="name"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <structure name="source" usage="optional">
+         <value name="role" field="sourceRoleName" usage="optional"/>
+         <value name="mandatory" field="isSourceMandatory" usage="optional"/>
+         <value name="many" field="isSourceMany" usage="optional"/>
+      </structure>         
+      <structure name="target">
+         <value name="class" field="targetClassName"/>
+         <value name="role" field="targetRoleName" usage="optional"/>
+         <structure name="mandatory" usage="optional">
+           <value style="attribute" name="enforced" field="isTargetMandatoryEnforced" get-method="getTargetMandatoryEnforced" usage="optional"/>
+           <value style="text" field="isTargetMandatory" get-method="getTargetMandatory"/>
+         </structure>
+         <value name="many" field="isTargetMany" usage="optional"/>
+      </structure>         
+   </mapping>
+   
+</binding>

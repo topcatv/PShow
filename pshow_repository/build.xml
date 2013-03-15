@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<project basedir="." default="bindgen" xmlns:artifact="urn:maven-artifact-ant">
+
+	<!-- antlib路径 -->
+	<path id="maven-ant-tasks.classpath" path="maven-ant-tasks-2.1.3.jar" />
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="urn:maven-artifact-ant" classpathref="maven-ant-tasks.classpath" />
+
+	<!--定义Maven2变量-->
+	<artifact:pom id="maven.project" file="pom.xml" />
+	<artifact:dependencies pathId="maven.classpath" filesetid="maven.fileset">
+		<pom refid="maven.project" />
+	</artifact:dependencies>
+
+	<path id="project.classpath">
+		<dirset dir="target/classes" />
+		<fileset refid="maven.fileset" />
+	</path>
+
+	<target name="bindgen">
+
+		<echo message="Running BindGen tool" />
+		<java classpathref="project.classpath" fork="true" failonerror="true" classname="org.jibx.binding.generator.BindGen">
+			<arg value="-s" />
+			<arg value="src" />
+			<arg value="-c" />
+			<arg value="custorm.xml" />
+			<arg value="-t" />
+			<arg value="src/main/java/org/pshow/repo/datamodel/content/definition" />
+			<arg value="org.pshow.repo.datamodel.content.definition.PSModel" />
+		</java>
+
+	</target>
+</project>

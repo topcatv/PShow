@@ -22,129 +22,106 @@ import java.util.List;
 
 /**
  * @author roy
- *
+ * 
  */
 public abstract class ContentClass {
-	private String name = null;
-    private String title = null;
-    private String description = null;
-    private String parentName = null;
-    
-    private List<Property> properties = new ArrayList<Property>();
+
+    private String            name         = null;
+    private String            title        = null;
+    private String            description  = null;
+    private String            parentName   = null;
+
+    private List<Property>    properties   = new ArrayList<Property>();
     private List<Association> associations = new ArrayList<Association>();
 
-    ContentClass(){
-    	
+    ContentClass() {
+
     }
 
-	public String getName() {
-    	return name;
+    public String getName() {
+        return name;
     }
 
-	public void setName(String name) {
-    	this.name = name;
+    public void setName(String name) {
+        this.name = name;
     }
 
-	public String getTitle() {
-    	return title;
+    public String getTitle() {
+        return title;
     }
 
-	public void setTitle(String title) {
-    	this.title = title;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-	public String getDescription() {
-    	return description;
+    public String getDescription() {
+        return description;
     }
 
-	public void setDescription(String description) {
-    	this.description = description;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-	public String getParentName() {
-    	return parentName;
+    public String getParentName() {
+        return parentName;
     }
 
-	public void setParentName(String parentName) {
-    	this.parentName = parentName;
+    public void setParentName(String parentName) {
+        this.parentName = parentName;
     }
-	
-	public boolean isFacet(){
-		return this instanceof ContentFacet;
-	}
-	
-	public Property createProperty(String name)
-    {
+
+    public boolean isFacet() {
+        return this instanceof ContentFacet;
+    }
+
+    public Property createProperty(String name) {
         Property property = new Property();
         property.setName(name);
         properties.add(property);
         return property;
     }
-    
-    
-    public void removeProperty(String name)
-    {
+
+    public void removeProperty(String name) {
         Property property = getProperty(name);
-        if (property != null)
-        {
+        if (property != null) {
             properties.remove(property);
         }
     }
 
-
-    public List<Property> getProperties()
-    {
+    public List<Property> getProperties() {
         return Collections.unmodifiableList(properties);
     }
 
-    
-    public Property getProperty(String name)
-    {
-        for (Property candidate : properties)
-        {
-            if (candidate.getName().equals(name))
-            {
-                return candidate;
-            }
+    public Property getProperty(String name) {
+        for (Property candidate : properties) {
+            if (candidate.getName().equals(name)) { return candidate; }
         }
         return null;
     }
 
-    
-    public Association createAssociation(String name)
-    {
+    public Association createAssociation(String name) {
         Association association = new Association();
         association.setName(name);
         associations.add(association);
         return association;
     }
 
-    
-    public void removeAssociation(String name)
-    {
+    public void removeAssociation(String name) {
         Association association = getAssociation(name);
-        if (association != null)
-        {
+        if (association != null) {
             associations.remove(association);
         }
     }
 
-    
-    public List<Association> getAssociations()
-    {
+    public List<Association> getAssociations() {
         return Collections.unmodifiableList(associations);
     }
 
-    
-    public Association getAssociation(String name)
-    {
-        for (Association candidate : associations)
-        {
-            if (candidate.getName().equals(name))
-            {
-                return candidate;
-            }
+    public Association getAssociation(String name) {
+        for (Association candidate : associations) {
+            if (candidate.getName().equals(name)) { return candidate; }
         }
         return null;
     }
+
 }

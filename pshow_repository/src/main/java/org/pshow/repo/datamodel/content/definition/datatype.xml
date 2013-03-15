@@ -1,0 +1,61 @@
+<model name="d:datatype">
+
+   <description>PShow property data type</description>
+   <author>ps_admin</author>
+   <published>2013-03-14</published>
+   <version>0.1</version>
+   
+   <namespaces>
+      <!-- Default Namespace -->
+      <namespace uri="" prefix=""/>
+      <!-- Default PShow Namespace -->
+      <namespace uri="http://www.pshow.org" prefix="ps"/>
+      <!-- Datatype Namespace -->
+      <namespace uri="http://www.pshow.org/model/datatype/0.1" prefix="d"/>
+   </namespaces>
+
+   <data-types>
+
+      <data-type name="d:any">
+         <java-class>java.lang.Serializable</java-class>
+      </data-type>
+
+      <data-type name="d:text">
+         <java-class>java.lang.String</java-class>
+      </data-type>
+
+      <data-type name="d:content">
+         <java-class>org.alfresco.service.cmr.repository.ContentData</java-class>
+      </data-type>
+
+      <data-type name="d:int">
+         <java-class>java.lang.Integer</java-class>
+      </data-type>
+
+      <data-type name="d:long">
+         <java-class>java.lang.Long</java-class>
+      </data-type>
+
+      <data-type name="d:float">
+         <java-class>java.lang.Float</java-class>
+      </data-type>
+
+      <data-type name="d:double">
+         <java-class>java.lang.Double</java-class>
+      </data-type>
+
+      <data-type name="d:date">
+         <java-class>java.util.Date</java-class>
+      </data-type>
+
+      <data-type name="d:datetime">
+         <java-class>java.util.Date</java-class>
+      </data-type>
+
+      <data-type name="d:boolean">
+         <java-class>java.lang.Boolean</java-class>
+      </data-type>
+
+   </data-types>
+   
+</model>

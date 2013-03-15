@@ -281,5 +281,42 @@
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
+		
+		<!-- jibx -->
+		<dependency>
+			<groupId>org.jibx</groupId>
+			<artifactId>jibx-run</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jibx</groupId>
+			<artifactId>jibx-extras</artifactId>
+		</dependency>
+		<dependency>
+				<groupId>org.jibx</groupId>
+				<artifactId>jibx-tools</artifactId>
+			</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jibx</groupId>
+				<artifactId>jibx-maven-plugin</artifactId>
+				<version>1.2.5</version>
+				<configuration>
+					<schemaBindingDirectory>src/main/java/org/pshow/repo/datamodel/content/definition</schemaBindingDirectory>
+					<includeSchemaBindings>
+						<includeSchemaBindings>binding.xml</includeSchemaBindings>
+					</includeSchemaBindings>
+					<verbose>true</verbose>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>bind</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

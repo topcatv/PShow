@@ -14,17 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content.definition;
+package org.pshow.repo.datamodel.namespace;
 
 /**
  * @author roy
  * 
  */
-public class ContentType extends ContentClass {
+public class PSNamespace {
 
-    ContentType() {
-        super();
+    private String uri;
+    private String prefix;
+
+    public String getUri() {
+        return uri;
     }
 
-    private int forbindGen;
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
 }

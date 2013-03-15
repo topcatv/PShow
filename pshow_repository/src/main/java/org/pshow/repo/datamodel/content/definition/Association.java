@@ -21,85 +21,86 @@ package org.pshow.repo.datamodel.content.definition;
  * 
  */
 public class Association {
-	private String	name	          = null;
-	private String	title	          = null;
-	private String	description	      = null;
-	private Boolean	isSourceMandatory	= null;
-	private Boolean	isSourceMany	  = null;
-	private String	targetClassName	  = null;
-	private Boolean	isTargetMandatory	= null;
-	private Boolean	isTargetMany	  = null;
-	private Boolean isChild =null;
 
-	public String getName() {
-		return name;
-	}
+    private String  name;
+    private String  title;
+    private String  description;
+    private Boolean isSourceMandatory;
+    private Boolean isSourceMany;
+    private String  targetClassName;
+    private Boolean isTargetMandatory;
+    private Boolean isTargetMany;
+    private Boolean isChild;
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public boolean isSourceMandatory() {
-		return isSourceMandatory;
-	}
-
-	public void setIsSourceMandatory(Boolean isSourceMandatory) {
-		this.isSourceMandatory = isSourceMandatory;
-	}
-
-	public boolean isSourceMany() {
-		return isSourceMany;
-	}
-
-	public void setIsSourceMany(Boolean isSourceMany) {
-		this.isSourceMany = isSourceMany;
-	}
-
-	public String getTargetClassName() {
-		return targetClassName;
-	}
-
-	public void setTargetClassName(String targetClassName) {
-		this.targetClassName = targetClassName;
-	}
-
-	public boolean isTargetMandatory() {
-		return isTargetMandatory;
-	}
-
-	public void setIsTargetMandatory(Boolean isTargetMandatory) {
-		this.isTargetMandatory = isTargetMandatory;
-	}
-
-	public boolean isTargetMany() {
-		return isTargetMany;
-	}
-
-	public void setIsTargetMany(Boolean isTargetMany) {
-		this.isTargetMany = isTargetMany;
-	}
-
-	public Boolean isChild() {
-    	return isChild;
+    public String getName() {
+        return name;
     }
 
-	public void setIsChild(Boolean isChild) {
-    	this.isChild = isChild;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public boolean isSourceMandatory() {
+        return isSourceMandatory;
+    }
+
+    public void setIsSourceMandatory(Boolean isSourceMandatory) {
+        this.isSourceMandatory = isSourceMandatory;
+    }
+
+    public boolean isSourceMany() {
+        return isSourceMany;
+    }
+
+    public void setIsSourceMany(Boolean isSourceMany) {
+        this.isSourceMany = isSourceMany;
+    }
+
+    public String getTargetClassName() {
+        return targetClassName;
+    }
+
+    public void setTargetClassName(String targetClassName) {
+        this.targetClassName = targetClassName;
+    }
+
+    public boolean isTargetMandatory() {
+        return isTargetMandatory;
+    }
+
+    public void setIsTargetMandatory(Boolean isTargetMandatory) {
+        this.isTargetMandatory = isTargetMandatory;
+    }
+
+    public boolean isTargetMany() {
+        return isTargetMany;
+    }
+
+    public void setIsTargetMany(Boolean isTargetMany) {
+        this.isTargetMany = isTargetMany;
+    }
+
+    public Boolean isChild() {
+        return isChild;
+    }
+
+    public void setIsChild(Boolean isChild) {
+        this.isChild = isChild;
     }
 }
