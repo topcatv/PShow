@@ -1,4 +1,4 @@
-<custom namespace-style="none" namespace="http://pshow.org/content/definition">
+<custom namespace-style="fixed" namespace="http://pshow.org/content/definition/1.0">
   <package name="org.pshow.repo.datamodel.content.definition">
     <class name="PSModel" requireds="name" element-name="model" type-name="model">
       <value property-name="name" attribute="name"/>

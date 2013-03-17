@@ -1,4 +1,5 @@
-<model name="d:datatype">
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://pshow.org/content/definition/1.0" name="d:datatype">
 
    <description>PShow property data type</description>
    <author>ps_admin</author>
@@ -25,7 +26,7 @@
       </data-type>
 
       <data-type name="d:content">
-         <java-class>org.alfresco.service.cmr.repository.ContentData</java-class>
+         <java-class>org.pshow.repo.datamodel.content.ContentData</java-class>
       </data-type>
 
       <data-type name="d:int">

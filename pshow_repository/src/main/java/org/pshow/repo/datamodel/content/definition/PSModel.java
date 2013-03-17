@@ -39,7 +39,7 @@ public class PSModel {
     private List<PSNamespace>     imports     = new ArrayList<PSNamespace>();
     private List<DataType>        dataTypes   = new ArrayList<DataType>();
     private List<ContentType>     types       = new ArrayList<ContentType>();
-    private List<ContentFacet>    aspects     = new ArrayList<ContentFacet>();
+    private List<ContentFacet>    facets     = new ArrayList<ContentFacet>();
     private List<ConstraintModel> constraints = new ArrayList<ConstraintModel>();
 
     private PSModel() {
@@ -219,26 +219,26 @@ public class PSModel {
         return null;
     }
 
-    public ContentFacet createAspect(String name) {
-        ContentFacet aspect = new ContentFacet();
-        aspect.setName(name);
-        aspects.add(aspect);
-        return aspect;
+    public ContentFacet createFacet(String name) {
+        ContentFacet facet = new ContentFacet();
+        facet.setName(name);
+        facets.add(facet);
+        return facet;
     }
 
-    public void removeAspect(String name) {
-        ContentFacet aspect = getAspect(name);
-        if (aspect != null) {
-            aspects.remove(aspect);
+    public void removeFacet(String name) {
+        ContentFacet facet = getFacet(name);
+        if (facet != null) {
+            facets.remove(facet);
         }
     }
 
-    public List<ContentFacet> getAspects() {
-        return Collections.unmodifiableList(aspects);
+    public List<ContentFacet> getFacets() {
+        return Collections.unmodifiableList(facets);
     }
 
-    public ContentFacet getAspect(String name) {
-        for (ContentFacet candidate : aspects) {
+    public ContentFacet getFacet(String name) {
+        for (ContentFacet candidate : facets) {
             if (candidate.getName().equals(name)) { return candidate; }
         }
         return null;

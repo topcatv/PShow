@@ -12,6 +12,7 @@
 		<property name="definitions">
 			<list>
 				<value>org/pshow/repo/datamodel/content/definition/datatype.xml</value>
+				<value>org/pshow/repo/datamodel/content/definition/system.xml</value>
 				<value>file:${schema.definition.location}/*.xml</value>
 			</list>
 		</property>

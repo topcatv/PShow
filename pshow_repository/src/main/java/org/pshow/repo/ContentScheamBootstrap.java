@@ -63,6 +63,7 @@ public class ContentScheamBootstrap {
             // unmarshal customer information from file
             IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
             PSModel model = (PSModel)uctx.unmarshalDocument(def.getInputStream(), null);
+            System.out.println(model.getPublished().toLocaleString());
         }
 
     }

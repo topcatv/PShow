@@ -41,7 +41,7 @@ public class IntercepterTest extends BaseIntegrationTest {
 		try {
 	        cs.getContent(null);
         } catch (MethodConstraintViolationException e) {
-			assertEquals("may not be null", e.getConstraintViolations().iterator().next().getMessage());
+			assertEquals("{javax.validation.constraints.NotNull.message}", e.getConstraintViolations().iterator().next().getMessageTemplate());
 			return;
 		}
 		
