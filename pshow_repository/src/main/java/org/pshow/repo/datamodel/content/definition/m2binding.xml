@@ -14,7 +14,7 @@
 
     <structure name="imports" usage="optional">
       <collection field="imports" factory="org.pshow.repo.datamodel.content.definition.PSModel.createList">
-        <structure name="import" type="org.pshow.repo.datamodel.namespace.PSNamespace" usage="optional">
+        <structure name="namespace" type="org.pshow.repo.datamodel.namespace.PSNamespace" usage="optional">
           <value style="attribute" name="uri" field="uri" />
           <value style="attribute" name="prefix" field="prefix" />
         </structure>
