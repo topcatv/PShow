@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pshow.repo.datamodel.namespace.PSNamespace">
+	<resultMap id="NamespaceResultMap" type="org.pshow.repo.datamodel.namespace.PSNamespace">
+		<result property="uri" column="uri" />
+		<result property="prefix" column="n_prefix" />
+	</resultMap>
+	<insert id="insert" parameterType="org.pshow.repo.datamodel.namespace.PSNamespace">
+		insert into
+		ps_namespace (id, versions, uri, n_prefix) values
+		(nextval('seq_namespace'), 1, #{uri}, #{prefix})
+	</insert>
+	<select id="getAll" resultMap="NamespaceResultMap">
+		select id, versions,
+		uri, n_prefix from ps_namespace
+	</select>
+</mapper>

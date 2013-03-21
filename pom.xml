@@ -16,7 +16,6 @@
 		<logback.version>1.0.6</logback.version>
 		<slf4j.version>1.6.5</slf4j.version>
 		<hibernate.version>4.1.7.Final</hibernate.version>
-		<mybatis.version>3.1.1</mybatis.version>
 		<spring-data-jpa.version>1.1.2.RELEASE</spring-data-jpa.version>
 		<commons-dbcp.version>1.4</commons-dbcp.version>
 		<shiro.version>1.2.1</shiro.version>
@@ -427,6 +426,13 @@
 				<groupId>org.jibx</groupId>
 				<artifactId>jibx-tools</artifactId>
 				<version>1.2.5</version>
+			</dependency>
+
+			<!-- postgresql jdbc driver -->
+			<dependency>
+				<groupId>postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>9.1-901.jdbc4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

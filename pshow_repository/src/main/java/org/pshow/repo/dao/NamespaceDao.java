@@ -14,16 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content.definition;
+package org.pshow.repo.dao;
+
+import java.util.List;
+
+import org.pshow.repo.datamodel.namespace.PSNamespace;
+
 
 /**
  * @author roy
- * 
+ *
  */
-public class ContentType extends ContentClass {
-
-    ContentType() {
-        super();
-    }
+public interface NamespaceDao {
+    
+    void insertNamespace(PSNamespace namespace);
+    
+    List<PSNamespace> findAllNamespaces();
 
 }

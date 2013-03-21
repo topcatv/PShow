@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd"
-	default-lazy-init="true">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd" default-lazy-init="true">
 
 	<description>核心服务配置</description>
 
 	<!-- 启动时加载内容定义 -->
-	<bean class="org.pshow.repo.ContentScheamBootstrap" init-method="onBootstrap"
-		lazy-init="false">
+	<bean class="org.pshow.repo.ContentScheamBootstrap" init-method="onBootstrap" lazy-init="false">
 		<property name="definitions">
 			<list>
 				<value>org/pshow/repo/datamodel/content/definition/datatype.xml</value>
@@ -16,6 +13,11 @@
 				<value>file:${schema.definition.location}/*.xml</value>
 			</list>
 		</property>
+		<property name="csh" ref="contentSchemaHolder" />
+	</bean>
+
+	<bean id="contentSchemaHolder" class="org.pshow.repo.schema.ContentSchemaHolderImpl">
+		<property name="namespaceDao" ref="namespaceDao" />
 	</bean>
 
 	<bean id="contentService" class="org.pshow.repo.service.ContentServiceImpl">

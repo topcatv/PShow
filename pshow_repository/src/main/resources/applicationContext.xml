@@ -46,6 +46,7 @@
 
 	<import resource="applicationContext-core.xml" />
 	<import resource="applicationContext-ehcache.xml" />
+	<import resource="applicationContext-dao.xml" />
 	<!-- <import resource="applicationContext-shiro.xml" /> -->
 
 	<!-- production环境 -->

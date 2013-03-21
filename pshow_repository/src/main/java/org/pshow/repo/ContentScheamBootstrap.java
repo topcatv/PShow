@@ -16,17 +16,21 @@
  */
 package org.pshow.repo;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 import org.pshow.repo.datamodel.content.definition.PSModel;
+import org.pshow.repo.schema.ContentSchemaHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author roy
@@ -34,37 +38,38 @@ import org.springframework.core.io.Resource;
  */
 public class ContentScheamBootstrap {
 
-    private Resource[] definitions;
+    private Resource[]   definitions;
+    private Logger       logger = LoggerFactory.getLogger(ContentScheamBootstrap.class);
+    private ContentSchemaHolder csh;
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public void onBootstrap() throws IOException, JiBXException {
         // 锁定服务器在内容类型未加载完成前不提交服务
         lockServer();
         // 加载内容定义文件
-        loadContentSchemas();
+        List<PSModel> schemas = loadContentSchemas();
         // 注册内容定义
-        registContentSchemas();
+        csh.registContentSchemas(schemas);
         // 解锁服务
         unlockServer();
-    }
-
-    private void registContentSchemas() {
-        // TODO Auto-generated method stub
-
     }
 
     private void unlockServer() {
         ServerStauts.unlockServer();
     }
 
-    private void loadContentSchemas() throws IOException, JiBXException {
+    private List<PSModel> loadContentSchemas() throws IOException, JiBXException {
+        ArrayList<PSModel> schames = new ArrayList<PSModel>();
         for (Resource def : definitions) {
-            System.out.println(def.getURI());
+            logger.info(def.getURI().toString());
             IBindingFactory bfact = BindingDirectory.getFactory(PSModel.class);
             // unmarshal customer information from file
             IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
-            PSModel model = (PSModel)uctx.unmarshalDocument(def.getInputStream(), null);
-            System.out.println(model.getPublished().toLocaleString());
+            PSModel model = (PSModel) uctx.unmarshalDocument(def.getInputStream(), null);
+            logger.info(model.getPublished().toLocaleString());
+            schames.add(model);
         }
+        return schames;
 
     }
 
@@ -76,4 +81,8 @@ public class ContentScheamBootstrap {
         this.definitions = definitions;
     }
 
+    
+    public void setCsh(ContentSchemaHolder csh) {
+        this.csh = csh;
+    }
 }

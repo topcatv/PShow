@@ -14,16 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content.definition;
+package org.pshow.repo.dao;
+
+import java.util.List;
+
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.pshow.repo.datamodel.namespace.PSNamespace;
+
 
 /**
  * @author roy
- * 
+ *
  */
-public class ContentType extends ContentClass {
+public class NamespaceDaoImpl extends SqlSessionDaoSupport implements NamespaceDao {
 
-    ContentType() {
-        super();
+    @Override
+    public void insertNamespace(PSNamespace namespace) {
+        getSqlSession().insert("org.pshow.repo.datamodel.namespace.PSNamespace.insert", namespace);
+    }
+
+    @Override
+    public List<PSNamespace> findAllNamespaces() {
+        return getSqlSession().selectList("org.pshow.repo.datamodel.namespace.PSNamespace.getAll");
     }
 
 }

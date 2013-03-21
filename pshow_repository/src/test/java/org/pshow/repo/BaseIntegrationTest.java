@@ -24,7 +24,7 @@ import org.springframework.test.context.ContextConfiguration;
  *
  */
 @ContextConfiguration(locations={"classpath:applicationContext.xml"})
-@ActiveProfiles("test")
+@ActiveProfiles("development")
 abstract class BaseIntegrationTest {
 
 }

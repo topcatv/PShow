@@ -281,7 +281,7 @@
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
-		
+
 		<!-- jibx -->
 		<dependency>
 			<groupId>org.jibx</groupId>
@@ -292,9 +292,15 @@
 			<artifactId>jibx-extras</artifactId>
 		</dependency>
 		<dependency>
-				<groupId>org.jibx</groupId>
-				<artifactId>jibx-tools</artifactId>
-			</dependency>
+			<groupId>org.jibx</groupId>
+			<artifactId>jibx-tools</artifactId>
+		</dependency>
+
+		<!-- postgresql jdbc driver -->
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -303,7 +309,7 @@
 				<artifactId>jibx-maven-plugin</artifactId>
 				<version>1.2.5</version>
 				<configuration>
-					<schemaBindingDirectory>src/main/java/org/pshow/repo/datamodel/content/definition</schemaBindingDirectory>
+					<schemaBindingDirectory>src/main/resources/binding</schemaBindingDirectory>
 					<includeSchemaBindings>
 						<includeSchemaBindings>m2binding.xml</includeSchemaBindings>
 					</includeSchemaBindings>
@@ -320,7 +326,8 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
