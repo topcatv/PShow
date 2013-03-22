@@ -14,22 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.dao;
+package org.pshow.repo.cache;
 
-import java.util.List;
-
-import org.pshow.repo.datamodel.namespace.NamespacePrefixResolver;
-import org.pshow.repo.datamodel.namespace.PSNamespace;
+import java.io.Serializable;
 
 
 /**
  * @author roy
  *
  */
-public interface NamespaceDao extends NamespacePrefixResolver{
+public interface Store<K extends Serializable, V extends Object> {
+
+    void clear();
+
+    V get(K k);
+
+    void put(K k, V v);
+
+    void remove(K k);
+
+    int size();
     
-    void insertNamespace(PSNamespace namespace);
+    boolean contains(K k);
     
-    List<PSNamespace> findAllNamespaces();
+    boolean hasValue(V v);
 
 }

@@ -19,6 +19,8 @@ package org.pshow.repo.schema;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.pshow.repo.cache.Store;
 import org.pshow.repo.dao.NamespaceDao;
 import org.pshow.repo.datamodel.content.definition.ConstraintModel;
 import org.pshow.repo.datamodel.content.definition.ContentFacet;
@@ -28,17 +30,21 @@ import org.pshow.repo.datamodel.content.definition.PSModel;
 import org.pshow.repo.datamodel.namespace.PSNamespace;
 import org.pshow.repo.datamodel.namespace.QName;
 
-
 /**
  * @author roy
- *
+ * 
  */
 public class ContentSchemaHolderImpl implements ContentSchemaHolder {
-    
-    private NamespaceDao namespaceDao;
 
-    /* (non-Javadoc)
-     * @see org.pshow.repo.schema.ContentSchemaHolder#registContentSchemas(java.util.List)
+    private Store<QName, Object> store;
+
+    private NamespaceDao         namespaceDao;
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.schema.ContentSchemaHolder#registContentSchemas(java.util
+     * .List)
      */
     @Override
     public void registContentSchemas(List<PSModel> schemas) {
@@ -49,38 +55,51 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
             registFacets(psModel.getFacets());
             registConstraints(psModel.getConstraints());
         }
-        //效验注册的schema是否正确
+        // 效验注册的schema是否正确
         checkAllSchema();
 
     }
 
     private void registConstraints(List<ConstraintModel> constraints) {
-        // TODO Auto-generated method stub
-        
+        if (CollectionUtils.isNotEmpty(constraints)) {
+            for (ConstraintModel constraintModel : constraints) {
+                store.put(createKey(constraintModel.getName()), constraintModel);
+            }
+        }
+    }
+
+    private QName createKey(String name) {
+        return QName.createQName(QName.resolvePrefix(name), QName.resolveLocalName(name), namespaceDao);
     }
 
     private void registDataTypes(List<DataType> propertyTypes) {
-        // TODO Auto-generated method stub
-        
+        if (CollectionUtils.isNotEmpty(propertyTypes)) {
+            for (DataType dataType : propertyTypes) {
+                store.put(createKey(dataType.getName()), dataType);
+            }
+        }
     }
 
     private void registFacets(List<ContentFacet> facets) {
-        // TODO Auto-generated method stub
-        
+        if (CollectionUtils.isNotEmpty(facets)) {
+            for (ContentFacet facet : facets) {
+                store.put(createKey(facet.getName()), facet);
+            }
+        }
     }
 
     private void registTypes(List<ContentType> types) {
         // TODO Auto-generated method stub
-        
+
     }
 
     private void registNamespaces(List<PSNamespace> list) {
-        //加载已注册的namespace
+        // 加载已注册的namespace
         List<PSNamespace> exist_namespaces = loadNamespacesFromDB();
         if (list != null) {
             for (PSNamespace psNamespace : list) {
                 if (!exist_namespaces.contains(psNamespace)) {
-                    //如果从配置文件中加载的namespace不存在数据库中，写入数据库存并加入已存在namespace列表
+                    // 如果从配置文件中加载的namespace不存在数据库中，写入数据库存并加入已存在namespace列表
                     namespaceDao.insertNamespace(psNamespace);
                     exist_namespaces.add(psNamespace);
                 }
@@ -96,11 +115,14 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
 
     private void checkAllSchema() {
         // TODO Auto-generated method stub
-        
+
     }
 
-    /* (non-Javadoc)
-     * @see org.pshow.repo.schema.ContentSchemaHolder#registContentSchema(org.pshow.repo.datamodel.content.definition.PSModel)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.schema.ContentSchemaHolder#registContentSchema(org.pshow
+     * .repo.datamodel.content.definition.PSModel)
      */
     @Override
     public void registContentSchema(PSModel schema) {
@@ -108,8 +130,11 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
 
     }
 
-    /* (non-Javadoc)
-     * @see org.pshow.repo.schema.ContentSchemaHolder#getNamespace(org.pshow.repo.datamodel.namespace.QName)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.schema.ContentSchemaHolder#getNamespace(org.pshow.repo
+     * .datamodel.namespace.QName)
      */
     @Override
     public PSNamespace getNamespace(QName name) {
@@ -117,7 +142,8 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
         return null;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.pshow.repo.schema.ContentSchemaHolder#getAllNamespace()
      */
     @Override
@@ -125,8 +151,11 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
         return getRegisteredObject(QName.createQName("", "", null), new ArrayList<PSNamespace>());
     }
 
-    /* (non-Javadoc)
-     * @see org.pshow.repo.schema.ContentSchemaHolder#getContentType(org.pshow.repo.datamodel.namespace.QName)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.schema.ContentSchemaHolder#getContentType(org.pshow.repo
+     * .datamodel.namespace.QName)
      */
     @Override
     public ContentType getContentType(QName name) {
@@ -134,7 +163,8 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
         return null;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.pshow.repo.schema.ContentSchemaHolder#getAllContentType()
      */
     @Override
@@ -143,7 +173,6 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
         return null;
     }
 
-    
     public void setNamespaceDao(NamespaceDao namespaceDao) {
         this.namespaceDao = namespaceDao;
     }
@@ -206,6 +235,10 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     public boolean hasConstraint(QName name) {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    public void setStore(Store<QName, Object> store) {
+        this.store = store;
     }
 
 }

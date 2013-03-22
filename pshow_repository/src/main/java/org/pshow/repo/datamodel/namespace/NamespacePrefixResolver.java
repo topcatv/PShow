@@ -16,7 +16,6 @@
  */
 package org.pshow.repo.datamodel.namespace;
 
-import java.util.Collection;
 
 /**
  * @author roy
@@ -26,6 +25,6 @@ public interface NamespacePrefixResolver {
 
 	String getNamespaceURI(String prefix);
 	
-	Collection<String> getPrefixes(String namespaceURI);
+	String getPrefix(String namespaceURI);
 
 }

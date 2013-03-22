@@ -14,38 +14,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.dao;
+package org.pshow.repo.cache;
 
-import java.util.List;
-
-import org.mybatis.spring.support.SqlSessionDaoSupport;
-import org.pshow.repo.datamodel.namespace.PSNamespace;
-
+import java.io.Serializable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author roy
- *
+ * 
  */
-public class NamespaceDaoImpl extends SqlSessionDaoSupport implements NamespaceDao {
+public class MemoryStore<K extends Serializable, V extends Object> implements Store<K, V> {
+
+    private ConcurrentHashMap<K, V> cache = new ConcurrentHashMap<K, V>();
 
     @Override
-    public void insertNamespace(PSNamespace namespace) {
-        getSqlSession().insert("org.pshow.repo.datamodel.namespace.PSNamespace.insert", namespace);
+    public void clear() {
+        cache.clear();
     }
 
     @Override
-    public List<PSNamespace> findAllNamespaces() {
-        return getSqlSession().selectList("org.pshow.repo.datamodel.namespace.PSNamespace.getAll");
+    public V get(K k) {
+        return cache.get(k);
     }
 
     @Override
-    public String getNamespaceURI(String prefix) {
-        return getSqlSession().selectOne("org.pshow.repo.datamodel.namespace.PSNamespace.findNamespaceByPrefix", prefix);
+    public void put(K k, V v) {
+        cache.put(k, v);
     }
 
     @Override
-    public String getPrefix(String namespaceURI) {
-        return getSqlSession().selectOne("org.pshow.repo.datamodel.namespace.PSNamespace.findNamespaceByURI", namespaceURI);
+    public void remove(K k) {
+        cache.remove(k);
+    }
+
+    @Override
+    public int size() {
+        return cache.size();
+    }
+
+    @Override
+    public boolean contains(K k) {
+        return cache.containsKey(k);
+    }
+
+    @Override
+    public boolean hasValue(V v) {
+        return cache.containsValue(v);
     }
 
 }

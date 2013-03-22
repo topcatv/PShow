@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.pshow</groupId>
 	<artifactId>pshow_content</artifactId>
@@ -31,6 +30,7 @@
 		<mockito.version>1.9.0</mockito.version>
 		<powermock.version>1.4.12</powermock.version>
 		<commons-lang3.version>3.1</commons-lang3.version>
+		<commons-collections.version>3.2.1</commons-collections.version>
 		<commons-io.version>2.4</commons-io.version>
 		<guava.version>13.0.1</guava.version>
 		<joda-time.version>2.1</joda-time.version>
@@ -337,6 +337,11 @@
 						<artifactId>commons-logging</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>commons-collections</groupId>
+				<artifactId>commons-collections</artifactId>
+				<version>${commons-collections.version}</version>
 			</dependency>
 
 			<!-- google java library -->

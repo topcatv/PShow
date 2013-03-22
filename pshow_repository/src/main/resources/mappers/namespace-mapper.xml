@@ -16,4 +16,10 @@
 		select id, versions,
 		uri, n_prefix from ps_namespace
 	</select>
+	<select id="findNamespaceByPrefix" resultType="string" parameterType="string">
+		select uri from ps_namespace where n_perfix=#{value}
+	</select>
+	<select id="findNamespaceByURI" resultMap="string" parameterType="string">
+		select n_prefix from ps_namespace where uri=#{value}
+	</select>
 </mapper>
