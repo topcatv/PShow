@@ -18,7 +18,7 @@
    <data-types>
 
       <data-type name="d:any">
-         <java-class>java.lang.Serializable</java-class>
+         <java-class>java.io.Serializable</java-class>
       </data-type>
 
       <data-type name="d:text">

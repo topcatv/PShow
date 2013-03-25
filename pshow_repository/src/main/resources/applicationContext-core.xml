@@ -18,7 +18,10 @@
 
 	<bean id="contentSchemaHolder" class="org.pshow.repo.schema.ContentSchemaHolderImpl">
 		<property name="namespaceDao" ref="namespaceDao" />
+		<property name="store" ref="memoryStore"></property>
 	</bean>
+	
+	<bean id="memoryStore" class="org.pshow.repo.cache.MemoryStore" />
 
 	<bean id="contentService" class="org.pshow.repo.service.ContentServiceImpl">
 	</bean>

@@ -36,13 +36,15 @@ public interface ContentSchemaHolder {
     
     void registContentSchema(PSModel schema);
     
-    boolean hasRegisteredObject();
+    boolean hasRegisteredObject(QName name);
     
     <E> E getRegisteredObject(QName name, E e);
     
     boolean hasNamespace(QName name);
     
-    PSNamespace getNamespace(QName name);
+    PSNamespace getNamespaceByUri(String uri);
+    
+    PSNamespace getNamespaceByPrefix(String prefix);
     
     List<PSNamespace> getAllNamespace();
     

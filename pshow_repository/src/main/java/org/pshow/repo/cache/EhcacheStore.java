@@ -83,4 +83,9 @@ public class EhcacheStore<K extends Serializable, V extends Object> implements S
     public boolean hasValue(V v) {
         return ehcache.isValueInCache(v);
     }
+
+    
+    public void setName(String name) {
+        this.name = name;
+    }
 }

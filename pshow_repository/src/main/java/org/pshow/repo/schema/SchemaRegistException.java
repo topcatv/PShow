@@ -14,11 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content.definition;
+package org.pshow.repo.schema;
+
 
 /**
  * @author roy
- * 
+ *
  */
-public class ContentFacet extends ContentClass {
+public class SchemaRegistException extends RuntimeException{
+
+    public SchemaRegistException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+        // TODO Auto-generated constructor stub
+    }
+
+    public SchemaRegistException(String message, Throwable cause) {
+        super(message, cause);
+        // TODO Auto-generated constructor stub
+    }
+
+    public SchemaRegistException(String message) {
+        super(message);
+        // TODO Auto-generated constructor stub
+    }
+
+    public SchemaRegistException(Throwable cause) {
+        super(cause);
+        // TODO Auto-generated constructor stub
+    }
+
+    private static final long serialVersionUID = 1L;
+
 }

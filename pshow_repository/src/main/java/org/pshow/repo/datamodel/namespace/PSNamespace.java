@@ -24,6 +24,15 @@ public class PSNamespace {
 
     private String uri;
     private String prefix;
+    
+    
+    public PSNamespace() {
+    }
+    
+    public PSNamespace(String uri, String prefix){
+        this.uri = uri;
+        this.prefix = prefix;
+    }
 
     public String getUri() {
         return uri;
@@ -63,6 +72,11 @@ public class PSNamespace {
             if (other.uri != null) return false;
         } else if (!uri.equals(other.uri)) return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Namespace [uri=" + uri + ", prefix=" + prefix + "]";
     }
 
 }
