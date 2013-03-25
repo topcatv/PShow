@@ -35,10 +35,6 @@ public abstract class ContentClass {
 	private List<Association>	associations	= new ArrayList<Association>();
 	private List<String>	  mandatoryFacets	= new ArrayList<String>();
 
-	ContentClass() {
-
-	}
-
 	public String getName() {
 		return name;
 	}

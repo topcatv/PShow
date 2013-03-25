@@ -17,7 +17,9 @@
 package org.pshow.repo.schema;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.pshow.repo.cache.Store;
@@ -27,14 +29,29 @@ import org.pshow.repo.datamodel.content.definition.ContentFacet;
 import org.pshow.repo.datamodel.content.definition.ContentType;
 import org.pshow.repo.datamodel.content.definition.DataType;
 import org.pshow.repo.datamodel.content.definition.PSModel;
+import org.pshow.repo.datamodel.content.definition.Property;
 import org.pshow.repo.datamodel.namespace.PSNamespace;
 import org.pshow.repo.datamodel.namespace.QName;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 
 /**
  * @author roy
  * 
  */
 public class ContentSchemaHolderImpl implements ContentSchemaHolder {
+
+    private static final String  ALL_NAMESPACE  = "sys:all_namespace";
+
+    private static final String  ALL_CONSTRAINT = "sys:all_constraint";
+
+    private static final String  ALL_DATATYPE   = "sys:all_datatype";
+
+    private static final String  ALL_FACET      = "sys:all_facet";
+
+    private static final String  ALL_TYPE       = "sys:all_type";
 
     private Store<QName, Object> store;
 
@@ -49,23 +66,23 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     @Override
     public void registContentSchemas(List<PSModel> schemas) {
         for (PSModel psModel : schemas) {
-            registNamespaces(psModel.getNamespaces());
-            registDataTypes(psModel.getPropertyTypes());
-            registTypes(psModel.getTypes());
-            registFacets(psModel.getFacets());
-            registConstraints(psModel.getConstraints());
+            registContentSchema(psModel);
         }
-        // 效验注册的schema是否正确
-        checkAllSchema();
-
     }
 
     private void registConstraints(List<ConstraintModel> constraints) {
         if (CollectionUtils.isNotEmpty(constraints)) {
             for (ConstraintModel constraintModel : constraints) {
+                checkConstraint(constraintModel);
                 store.put(createKey(constraintModel.getName()), constraintModel);
             }
+            store.put(createKey(ALL_CONSTRAINT), constraints);
         }
+    }
+
+    private void checkConstraint(ConstraintModel constraintModel) {
+        if (store.contains(createKey(constraintModel.getName()))) { throw new SchemaRegistException(String.format("Constraint regist error: duplicate constraint[%s]",
+                constraintModel.getName())); }
     }
 
     private QName createKey(String name) {
@@ -75,22 +92,67 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     private void registDataTypes(List<DataType> propertyTypes) {
         if (CollectionUtils.isNotEmpty(propertyTypes)) {
             for (DataType dataType : propertyTypes) {
+                checkDataType(dataType);
                 store.put(createKey(dataType.getName()), dataType);
             }
+            store.put(createKey(ALL_DATATYPE), propertyTypes);
         }
+    }
+
+    /**
+     * 检查要注册的数据类型是否可注册
+     * 
+     * @param dataType
+     */
+    private void checkDataType(DataType dataType) {
+        try {
+            // 值类型是否可被加载
+            getClass().getClassLoader().loadClass(dataType.getJavaClassName());
+        } catch (ClassNotFoundException e) {
+            throw new SchemaRegistException(String.format("DataType regist error: can't load class '%s' for datatype[%s]", dataType.getJavaClassName(), dataType.getName()), e);
+        }
+        // 类型是否已注册
+        if (store.contains(createKey(dataType.getName()))) { throw new SchemaRegistException(String.format("DataType regist error: duplicate datatype[%s]", dataType.getName())); }
     }
 
     private void registFacets(List<ContentFacet> facets) {
         if (CollectionUtils.isNotEmpty(facets)) {
             for (ContentFacet facet : facets) {
+                checkFacet(facet);
                 store.put(createKey(facet.getName()), facet);
             }
+            store.put(createKey(ALL_FACET), facets);
+        }
+    }
+
+    private void checkFacet(ContentFacet facet) {
+        if (hasContentType(createKey(facet.getName()))) { throw new SchemaRegistException(String.format("ContentFacet regist error: duplicate content facet[%s]", facet.getName())); }
+        List<Property> properties = facet.getProperties();
+        for (Property property : properties) {
+            String datatype_name = property.getPropertyType();
+            if (!store.contains(createKey(datatype_name))) { throw new SchemaRegistException(String.format(
+                    "ContentFacet regist error: can't find datatype[%s] for property['%s'] of facet[%s]", datatype_name, property.getName(), facet.getName())); }
         }
     }
 
     private void registTypes(List<ContentType> types) {
-        // TODO Auto-generated method stub
+        if (CollectionUtils.isNotEmpty(types)) {
+            for (ContentType type : types) {
+                checkContentType(type);
+                store.put(createKey(type.getName()), type);
+            }
+            store.put(createKey(ALL_TYPE), types);
+        }
+    }
 
+    private void checkContentType(ContentType type) {
+        if (hasContentType(createKey(type.getName()))) { throw new SchemaRegistException(String.format("ContentType regist error: duplicate content type[%s]", type.getName())); }
+        List<Property> properties = type.getProperties();
+        for (Property property : properties) {
+            String datatype_name = property.getPropertyType();
+            if (!store.contains(createKey(datatype_name))) { throw new SchemaRegistException(String.format(
+                    "ContentType regist error: can't find datatype[%s] for property['%s'] of type[%s]", datatype_name, property.getName(), type.getName())); }
+        }
     }
 
     private void registNamespaces(List<PSNamespace> list) {
@@ -105,6 +167,27 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
                 }
             }
         }
+        BiMap<String, String> namespaces = Maps.synchronizedBiMap(HashBiMap.<String, String> create());
+        for (PSNamespace psNamespace : exist_namespaces) {
+            checkNamespace(namespaces, psNamespace);
+            namespaces.put(psNamespace.getUri(), psNamespace.getPrefix());
+        }
+        store.put(createKey(ALL_NAMESPACE), namespaces);
+    }
+
+    /**
+     * 检查否有重复的namespace
+     * 
+     * @param namespaces
+     * @param psNamespace
+     */
+    private void checkNamespace(BiMap<String, String> namespaces, PSNamespace psNamespace) {
+        // 是否有重复的uri
+        if (namespaces.containsKey(psNamespace.getUri())) { throw new SchemaRegistException(String.format("Namespace regist error: duplicate namespace uri -> %s",
+                psNamespace.toString())); }
+        // 是否有重复的prefix
+        if (namespaces.containsValue(psNamespace.getPrefix())) { throw new SchemaRegistException(String.format("Namespace regist error: duplicate namespace prefix -> %s",
+                psNamespace.toString())); }
     }
 
     private List<PSNamespace> loadNamespacesFromDB() {
@@ -114,7 +197,6 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     }
 
     private void checkAllSchema() {
-        // TODO Auto-generated method stub
 
     }
 
@@ -126,8 +208,13 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
      */
     @Override
     public void registContentSchema(PSModel schema) {
-        // TODO Auto-generated method stub
-
+        registNamespaces(schema.getNamespaces());
+        registDataTypes(schema.getPropertyTypes());
+        registConstraints(schema.getConstraints());
+        registTypes(schema.getTypes());
+        registFacets(schema.getFacets());
+        // 效验注册的schema是否正确
+        checkAllSchema();
     }
 
     /*
@@ -137,8 +224,10 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
      * .datamodel.namespace.QName)
      */
     @Override
-    public PSNamespace getNamespace(QName name) {
-        // TODO Auto-generated method stub
+    public PSNamespace getNamespaceByUri(String uri) {
+        BiMap<String, String> namespaces = getRegisteredObject(createKey(ALL_NAMESPACE), HashBiMap.<String, String> create());
+        String prefix = namespaces.get(uri);
+        if (prefix != null) { return new PSNamespace(uri, prefix); }
         return null;
     }
 
@@ -148,7 +237,14 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
      */
     @Override
     public List<PSNamespace> getAllNamespace() {
-        return getRegisteredObject(QName.createQName("", "", null), new ArrayList<PSNamespace>());
+        ArrayList<PSNamespace> namespace = new ArrayList<PSNamespace>();
+        BiMap<String, String> namespaces = getRegisteredObject(createKey(ALL_NAMESPACE), HashBiMap.<String, String> create());
+        Iterator<Entry<String, String>> iterator = namespaces.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Entry<String, String> entry = (Entry<String, String>) iterator.next();
+            namespace.add(new PSNamespace(entry.getKey(), entry.getValue()));
+        }
+        return namespace;
     }
 
     /*
@@ -159,8 +255,7 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
      */
     @Override
     public ContentType getContentType(QName name) {
-        // TODO Auto-generated method stub
-        return null;
+        return getRegisteredObject(name, new ContentType());
     }
 
     /*
@@ -169,8 +264,7 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
      */
     @Override
     public List<ContentType> getAllContentType() {
-        // TODO Auto-generated method stub
-        return null;
+        return getRegisteredObject(createKey(ALL_TYPE), new ArrayList<ContentType>());
     }
 
     public void setNamespaceDao(NamespaceDao namespaceDao) {
@@ -178,67 +272,70 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     }
 
     @Override
-    public boolean hasRegisteredObject() {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean hasRegisteredObject(QName name) {
+        return store.contains(name);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <E> E getRegisteredObject(QName name, E e) {
-        // TODO Auto-generated method stub
-        return null;
+        return (E) store.get(name);
     }
 
     @Override
     public ContentFacet getFacet(QName name) {
-        // TODO Auto-generated method stub
-        return null;
+        return getRegisteredObject(name, new ContentFacet());
     }
 
     @Override
     public List<ContentFacet> getAllFacet() {
-        // TODO Auto-generated method stub
-        return null;
+        return getRegisteredObject(createKey(ALL_FACET), new ArrayList<ContentFacet>());
     }
 
     @Override
     public ConstraintModel getConstraint(QName name) {
-        // TODO Auto-generated method stub
-        return null;
+        return getRegisteredObject(name, new ConstraintModel());
     }
 
     @Override
     public List<ConstraintModel> getAllConstraint() {
-        // TODO Auto-generated method stub
-        return null;
+        return getRegisteredObject(createKey(ALL_CONSTRAINT), new ArrayList<ConstraintModel>());
     }
 
     @Override
     public boolean hasNamespace(QName name) {
-        // TODO Auto-generated method stub
+        if (store.contains(name)) { return ((store.get(name) instanceof PSNamespace) ? true : false); }
         return false;
     }
 
     @Override
     public boolean hasContentType(QName name) {
-        // TODO Auto-generated method stub
+        if (store.contains(name)) { return ((store.get(name) instanceof ContentType) ? true : false); }
         return false;
     }
 
     @Override
     public boolean hasFacet(QName name) {
-        // TODO Auto-generated method stub
+        if (store.contains(name)) { return ((store.get(name) instanceof ContentFacet) ? true : false); }
         return false;
     }
 
     @Override
     public boolean hasConstraint(QName name) {
-        // TODO Auto-generated method stub
+        if (store.contains(name)) { return ((store.get(name) instanceof ConstraintModel) ? true : false); }
         return false;
     }
 
     public void setStore(Store<QName, Object> store) {
         this.store = store;
+    }
+
+    @Override
+    public PSNamespace getNamespaceByPrefix(String prefix) {
+        BiMap<String, String> namespaces = getRegisteredObject(createKey(ALL_NAMESPACE), HashBiMap.<String, String> create());
+        String uri = namespaces.inverse().get(prefix);
+        if (uri != null) { return new PSNamespace(uri, prefix); }
+        return null;
     }
 
 }

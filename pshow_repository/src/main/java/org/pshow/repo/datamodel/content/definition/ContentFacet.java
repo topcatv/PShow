@@ -21,7 +21,4 @@ package org.pshow.repo.datamodel.content.definition;
  * 
  */
 public class ContentFacet extends ContentClass {
-	ContentFacet() {
-		super();
-	}
 }

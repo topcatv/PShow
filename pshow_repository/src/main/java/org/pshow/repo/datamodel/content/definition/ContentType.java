@@ -22,8 +22,4 @@ package org.pshow.repo.datamodel.content.definition;
  */
 public class ContentType extends ContentClass {
 
-    ContentType() {
-        super();
-    }
-
 }
