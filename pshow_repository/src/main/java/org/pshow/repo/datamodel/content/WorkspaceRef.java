@@ -22,13 +22,12 @@ import java.io.Serializable;
  * @author roy
  * 
  */
-public final class ContentRef implements Serializable {
+public class WorkspaceRef implements Serializable {
 
-    private static final long serialVersionUID = 8338924273495196146L;
-
+    private static final long serialVersionUID = 7054747646221168285L;
     private String            id;
-
-    public ContentRef(String id) {
+    
+    public WorkspaceRef(String id) {
         super();
         this.id = id;
     }
@@ -36,4 +35,5 @@ public final class ContentRef implements Serializable {
     public String getId() {
         return id;
     }
+
 }

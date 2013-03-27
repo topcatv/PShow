@@ -38,8 +38,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 
 /**
- * @author roy
- * 
+ * @author roy TODO: 返回的数据不可被修改，需要给返回的数据提供副本
  */
 public class ContentSchemaHolderImpl implements ContentSchemaHolder {
 
@@ -81,8 +80,9 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     }
 
     private void checkConstraint(ConstraintModel constraintModel) {
-        if (store.contains(createKey(constraintModel.getName()))) { throw new SchemaRegistException(String.format("Constraint regist error: duplicate constraint[%s]",
-                constraintModel.getName())); }
+        if (hasConstraint(createKey(constraintModel.getName()))) {
+            throw new SchemaRegistException(String.format("Constraint regist error: duplicate constraint[%s]", constraintModel.getName()));
+        }
     }
 
     private QName createKey(String name) {
@@ -112,7 +112,9 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
             throw new SchemaRegistException(String.format("DataType regist error: can't load class '%s' for datatype[%s]", dataType.getJavaClassName(), dataType.getName()), e);
         }
         // 类型是否已注册
-        if (store.contains(createKey(dataType.getName()))) { throw new SchemaRegistException(String.format("DataType regist error: duplicate datatype[%s]", dataType.getName())); }
+        if (store.contains(createKey(dataType.getName()))) {
+            throw new SchemaRegistException(String.format("DataType regist error: duplicate datatype[%s]", dataType.getName()));
+        }
     }
 
     private void registFacets(List<ContentFacet> facets) {
@@ -126,12 +128,27 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     }
 
     private void checkFacet(ContentFacet facet) {
-        if (hasContentType(createKey(facet.getName()))) { throw new SchemaRegistException(String.format("ContentFacet regist error: duplicate content facet[%s]", facet.getName())); }
+        if (hasFacet(createKey(facet.getName()))) {
+            throw new SchemaRegistException(String.format("ContentFacet regist error: duplicate content facet[%s]", facet.getName()));
+        }
         List<Property> properties = facet.getProperties();
         for (Property property : properties) {
+            // 验证属性的值类型是否正确
             String datatype_name = property.getPropertyType();
-            if (!store.contains(createKey(datatype_name))) { throw new SchemaRegistException(String.format(
-                    "ContentFacet regist error: can't find datatype[%s] for property['%s'] of facet[%s]", datatype_name, property.getName(), facet.getName())); }
+            if (!hasRegisteredObject(createKey(datatype_name))) {
+                throw new SchemaRegistException(String.format("ContentFacet regist error: can't find datatype[%s] for property['%s'] of facet[%s]", datatype_name,
+                        property.getName(), facet.getName()));
+            }
+            // 验证属性引用的约束是否正确
+            List<ConstraintModel> constraintModels = property.getConstraintModels();
+            if (constraintModels != null) {
+                for (ConstraintModel constraintModel : constraintModels) {
+                    if (!hasConstraint(createKey(constraintModel.getRef()))) {
+                        throw new SchemaRegistException(String.format("ContentFacet regist error: can't find constraint[%s] for property['%s'] of facet[%s]",
+                                constraintModel.getRef(), property.getName(), facet.getName()));
+                    }
+                }
+            }
         }
     }
 
@@ -146,12 +163,27 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     }
 
     private void checkContentType(ContentType type) {
-        if (hasContentType(createKey(type.getName()))) { throw new SchemaRegistException(String.format("ContentType regist error: duplicate content type[%s]", type.getName())); }
+        if (hasContentType(createKey(type.getName()))) {
+            throw new SchemaRegistException(String.format("ContentType regist error: duplicate content type[%s]", type.getName()));
+        }
         List<Property> properties = type.getProperties();
         for (Property property : properties) {
+            // 验证属性的值类型是否正确
             String datatype_name = property.getPropertyType();
-            if (!store.contains(createKey(datatype_name))) { throw new SchemaRegistException(String.format(
-                    "ContentType regist error: can't find datatype[%s] for property['%s'] of type[%s]", datatype_name, property.getName(), type.getName())); }
+            if (!hasRegisteredObject(createKey(datatype_name))) {
+                throw new SchemaRegistException(String.format("ContentType regist error: can't find datatype[%s] for property['%s'] of type[%s]", datatype_name,
+                        property.getName(), type.getName()));
+            }
+            // 验证属性引用的约束是否正确
+            List<ConstraintModel> constraintModels = property.getConstraintModels();
+            if (constraintModels != null) {
+                for (ConstraintModel constraintModel : constraintModels) {
+                    if (!hasConstraint(createKey(constraintModel.getRef()))) {
+                        throw new SchemaRegistException(String.format("ContentType regist error: can't find constraint[%s] for property['%s'] of facet[%s]",
+                                constraintModel.getRef(), property.getName(), type.getName()));
+                    }
+                }
+            }
         }
     }
 
@@ -183,21 +215,19 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
      */
     private void checkNamespace(BiMap<String, String> namespaces, PSNamespace psNamespace) {
         // 是否有重复的uri
-        if (namespaces.containsKey(psNamespace.getUri())) { throw new SchemaRegistException(String.format("Namespace regist error: duplicate namespace uri -> %s",
-                psNamespace.toString())); }
+        if (namespaces.containsKey(psNamespace.getUri())) {
+            throw new SchemaRegistException(String.format("Namespace regist error: duplicate namespace uri -> %s", psNamespace.toString()));
+        }
         // 是否有重复的prefix
-        if (namespaces.containsValue(psNamespace.getPrefix())) { throw new SchemaRegistException(String.format("Namespace regist error: duplicate namespace prefix -> %s",
-                psNamespace.toString())); }
+        if (namespaces.containsValue(psNamespace.getPrefix())) {
+            throw new SchemaRegistException(String.format("Namespace regist error: duplicate namespace prefix -> %s", psNamespace.toString()));
+        }
     }
 
     private List<PSNamespace> loadNamespacesFromDB() {
         ArrayList<PSNamespace> namespaces = new ArrayList<PSNamespace>();
         namespaces.addAll(namespaceDao.findAllNamespaces());
         return namespaces;
-    }
-
-    private void checkAllSchema() {
-
     }
 
     /*
@@ -213,8 +243,6 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
         registConstraints(schema.getConstraints());
         registTypes(schema.getTypes());
         registFacets(schema.getFacets());
-        // 效验注册的schema是否正确
-        checkAllSchema();
     }
 
     /*
@@ -227,7 +255,9 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     public PSNamespace getNamespaceByUri(String uri) {
         BiMap<String, String> namespaces = getRegisteredObject(createKey(ALL_NAMESPACE), HashBiMap.<String, String> create());
         String prefix = namespaces.get(uri);
-        if (prefix != null) { return new PSNamespace(uri, prefix); }
+        if (prefix != null) {
+            return new PSNamespace(uri, prefix);
+        }
         return null;
     }
 
@@ -304,25 +334,33 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
 
     @Override
     public boolean hasNamespace(QName name) {
-        if (store.contains(name)) { return ((store.get(name) instanceof PSNamespace) ? true : false); }
+        if (store.contains(name)) {
+            return ((store.get(name) instanceof PSNamespace) ? true : false);
+        }
         return false;
     }
 
     @Override
     public boolean hasContentType(QName name) {
-        if (store.contains(name)) { return ((store.get(name) instanceof ContentType) ? true : false); }
+        if (store.contains(name)) {
+            return ((store.get(name) instanceof ContentType) ? true : false);
+        }
         return false;
     }
 
     @Override
     public boolean hasFacet(QName name) {
-        if (store.contains(name)) { return ((store.get(name) instanceof ContentFacet) ? true : false); }
+        if (store.contains(name)) {
+            return ((store.get(name) instanceof ContentFacet) ? true : false);
+        }
         return false;
     }
 
     @Override
     public boolean hasConstraint(QName name) {
-        if (store.contains(name)) { return ((store.get(name) instanceof ConstraintModel) ? true : false); }
+        if (store.contains(name)) {
+            return ((store.get(name) instanceof ConstraintModel) ? true : false);
+        }
         return false;
     }
 
@@ -334,7 +372,9 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     public PSNamespace getNamespaceByPrefix(String prefix) {
         BiMap<String, String> namespaces = getRegisteredObject(createKey(ALL_NAMESPACE), HashBiMap.<String, String> create());
         String uri = namespaces.inverse().get(prefix);
-        if (uri != null) { return new PSNamespace(uri, prefix); }
+        if (uri != null) {
+            return new PSNamespace(uri, prefix);
+        }
         return null;
     }
 

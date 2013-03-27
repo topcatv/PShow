@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pshow.repo.datamodel.content.ContentData">
+	<resultMap id="contentResultMap" type="org.pshow.repo.datamodel.content.ContentData">
+		<result property="id" column="uri" />
+		<result property="uuid" column="uuid" />
+		<result property="typeId" column="type_qname_id" />
+		<result property="creater" column="creater" />
+		<result property="created" column="created" />
+		<result property="modifier" column="modifier" />
+		<result property="modified" column="modified" />
+		<result property="versions" column="versions" />
+		<result property="parentId" column="parent_id" />
+		<result property="workspaceId" column="workspace_id" />
+		<result property="aclId" column="acl_id" />
+	</resultMap>
+	<insert id="insertContent" parameterType="org.pshow.repo.datamodel.content.ContentData">
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+			SELECT nextval('seq_content') as id
+		</selectKey>
+		insert into ps_content
+		(id, type_qname_id, acl_id, workspace_id, uuid, creator, created, modifier, modified, versions, parent_id)
+		values
+		(#{id}, #{typeId}, #{aclId}, #{workspaceId}, #{uuid}, #{creator}, now(), #{modifier}, now(), #{versions}, #{parentId})
+	</insert>
+	<update id="updateContent" parameterType="org.pshow.repo.datamodel.content.ContentData">
+		update ps_content
+		<set>
+			<if test="modifier != null">modifier=#{modifier},</if>
+			<if test="versions > 1">versions=#{versions},</if>
+			<if test="parentId > 0">parent_id=#{parentId},</if>
+			<if test="workspaceId > 0">workspace_id=#{workspaceId},</if>
+			<if test="aclId > 0">acl_id=#{aclId}</if>
+		</set>
+		where id=#{id}
+	</update>
+	<select id="getUuidById" parameterType="long" resultType="string">
+		select uuid from ps_content where id=#{value}
+	</select>
+</mapper>

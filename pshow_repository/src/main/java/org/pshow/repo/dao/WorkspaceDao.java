@@ -14,26 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content;
+package org.pshow.repo.dao;
 
-import java.io.Serializable;
+import org.pshow.repo.datamodel.content.Workspace;
+
 
 /**
  * @author roy
- * 
+ *
  */
-public final class ContentRef implements Serializable {
+public interface WorkspaceDao {
 
-    private static final long serialVersionUID = 8338924273495196146L;
+    Workspace findWorkspaceByUUID(String uuid);
 
-    private String            id;
+    Workspace findWorkspaceByName(String name);
 
-    public ContentRef(String id) {
-        super();
-        this.id = id;
-    }
+    void insertWorkspace(Workspace workspace);
 
-    public String getId() {
-        return id;
-    }
 }

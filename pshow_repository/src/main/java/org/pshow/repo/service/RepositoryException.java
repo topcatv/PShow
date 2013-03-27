@@ -14,26 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content;
-
-import java.io.Serializable;
+package org.pshow.repo.service;
 
 /**
  * @author roy
  * 
  */
-public final class ContentRef implements Serializable {
+public class RepositoryException extends Exception {
 
-    private static final long serialVersionUID = 8338924273495196146L;
-
-    private String            id;
-
-    public ContentRef(String id) {
+    public RepositoryException() {
         super();
-        this.id = id;
     }
 
-    public String getId() {
-        return id;
+    public RepositoryException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
+
+    public RepositoryException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RepositoryException(String message) {
+        super(message);
+    }
+
+    public RepositoryException(Throwable cause) {
+        super(cause);
+    }
+
+    private static final long serialVersionUID = 3005297646246708491L;
+
 }

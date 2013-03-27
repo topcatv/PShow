@@ -16,13 +16,16 @@
  */
 package org.pshow.repo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.method.MethodConstraintViolationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.pshow.repo.datamodel.content.ContentRef;
+import org.pshow.repo.datamodel.content.WorkspaceRef;
 import org.pshow.repo.service.ContentService;
+import org.pshow.repo.service.DuplicateWorkspaceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -32,20 +35,39 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @SuppressWarnings("deprecation")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class IntercepterTest extends BaseIntegrationTest {
+public class AllTest extends BaseIntegrationTest {
 	@Autowired
 	private ContentService cs;
-	
 	@Test
-	public void test(){
+	public void testIntercepter(){
 		try {
-	        cs.getContent(null);
+            cs.getContent(null);
         } catch (MethodConstraintViolationException e) {
 			assertEquals("{javax.validation.constraints.NotNull.message}", e.getConstraintViolations().iterator().next().getMessageTemplate());
 			return;
 		}
 		
 		fail("Was expecting a ConstraintViolationException.");
+	}
+	
+	@Test
+	public void testCreateWorksapce(){
+	    try {
+            WorkspaceRef workspace = cs.createWorkspace("default");
+            fail("not to here");
+            cs.getRoot(workspace);
+        } catch (DuplicateWorkspaceException e) {
+            assertEquals("workspace[default] already exist.", e.getMessage());
+        }
+	}
+	
+	@Test
+	public void testGetroot(){
+	    WorkspaceRef workspace = cs.findWorkspace("default");
+	    ContentRef root = cs.getRoot(workspace);
+	    assertNotNull(root);
+	    assertNotNull(root.getId());
+	    assertTrue(StringUtils.isNotEmpty(root.getId()));
 	}
 
 }

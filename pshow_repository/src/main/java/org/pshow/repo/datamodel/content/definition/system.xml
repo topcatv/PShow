@@ -128,7 +128,7 @@
                 <facet>sys:facet_root</facet>
             </mandatory-facets>
         </type>
-        <type name="sys:reference">
+        <!-- <type name="sys:reference">
             <title>Reference</title>
             <parent>sys:base</parent>
             <properties>
@@ -140,7 +140,7 @@
             </properties>
             <associations/>
             <mandatory-facets/>
-        </type>
+        </type> -->
         <type name="sys:lost_found">
             <title>Lost+Found</title>
             <parent>sys:container</parent>
@@ -226,7 +226,7 @@
             <associations/>
             <mandatory-facets/>
         </facet>
-        <facet name="sys:archived">
+        <!-- <facet name="sys:archived">
             <title>Archived</title>
             <properties>
                 <property name="sys:archivedOriginalParentAssoc">
@@ -285,7 +285,7 @@
             </properties>
             <associations/>
             <mandatory-facets/>
-        </facet>
+        </facet> 
         <facet name="sys:localized">
             <title>Translation</title>
             <properties>
@@ -298,6 +298,6 @@
             </properties>
             <associations/>
             <mandatory-facets/>
-        </facet>
+        </facet> -->
     </facets>
 </model>

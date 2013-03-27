@@ -14,26 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content;
-
-import java.io.Serializable;
+package org.pshow.repo.service;
 
 /**
  * @author roy
  * 
  */
-public final class ContentRef implements Serializable {
+public class DuplicateWorkspaceException extends RepositoryException {
 
-    private static final long serialVersionUID = 8338924273495196146L;
+    private static final long serialVersionUID = -3678433888416512841L;
 
-    private String            id;
-
-    public ContentRef(String id) {
+    public DuplicateWorkspaceException() {
         super();
-        this.id = id;
     }
 
-    public String getId() {
-        return id;
+    public DuplicateWorkspaceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
+
+    public DuplicateWorkspaceException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DuplicateWorkspaceException(String message) {
+        super(message);
+    }
+
+    public DuplicateWorkspaceException(Throwable cause) {
+        super(cause);
+    }
+
 }

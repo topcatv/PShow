@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pshow.repo.datamodel.content.Workspace">
+	<resultMap id="workspaceResultMap" type="org.pshow.repo.datamodel.content.Workspace">
+		<result property="id" column="id" />
+		<result property="uuid" column="uuid" />
+		<result property="name" column="workspace_name" />
+		<result property="rootId" column="content_root_id" />
+	</resultMap>
+	<insert id="insertWorkspace" parameterType="org.pshow.repo.datamodel.content.Workspace">
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+	        SELECT nextval('seq_workspace') as id  
+	    </selectKey>
+		insert into ps_workspace (id, uuid, workspace_name, content_root_id) values	(#{id}, #{uuid}, #{name}, #{rootId})
+	</insert>
+	<select id="findWorkspaceByUUID" resultMap="workspaceResultMap" parameterType="string">
+		select id, uuid, workspace_name, content_root_id from ps_workspace where uuid=#{value}
+	</select>
+	<select id="findWorkspaceByName" resultMap="workspaceResultMap" parameterType="string">
+		select id, uuid, workspace_name, content_root_id from ps_workspace where workspace_name=#{value}
+	</select>
+</mapper>

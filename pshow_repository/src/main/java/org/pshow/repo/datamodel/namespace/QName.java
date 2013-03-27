@@ -37,6 +37,12 @@ public final class QName implements Comparable<QName>, Serializable, Cloneable {
         this.localName = localName;
     }
 
+    public static QName createQName(String uri, String localName) {
+        if (localName == null || localName.length() == 0) { throw new InvalidQNameException("A QName must consist of a local name"); }
+        if (uri == null || uri.length() == 0) { throw new InvalidQNameException("A QName must consist of a namespace uri"); }
+        return new QName(uri, localName, null);
+    }
+
     public static QName createQName(String prefix, String localName, NamespacePrefixResolver prefixResolver) throws InvalidQNameException, NamespaceException {
         // Validate Arguments
         if (localName == null || localName.length() == 0) { throw new InvalidQNameException("A QName must consist of a local name"); }
@@ -49,21 +55,21 @@ public final class QName implements Comparable<QName>, Serializable, Cloneable {
         if (uri == null) { throw new NamespaceException("Namespace prefix " + prefix + " is not mapped to a namespace URI"); }
         return new QName(uri, localName, prefix);
     }
-    
-    public static String resolvePrefix(String name){
-        if(StringUtils.isNotBlank(name)){
-            if(StringUtils.contains(name, ":")){
-                String[] split = StringUtils.split(name,":");
+
+    public static String resolvePrefix(String name) {
+        if (StringUtils.isNotBlank(name)) {
+            if (StringUtils.contains(name, ":")) {
+                String[] split = StringUtils.split(name, ":");
                 return split[0];
             }
         }
         return "";
     }
-    
-    public static String resolveLocalName(String name){
-        if(StringUtils.isNotBlank(name)){
-            if(StringUtils.contains(name, ":")){
-                String[] split = StringUtils.split(name,":");
+
+    public static String resolveLocalName(String name) {
+        if (StringUtils.isNotBlank(name)) {
+            if (StringUtils.contains(name, ":")) {
+                String[] split = StringUtils.split(name, ":");
                 return split[1];
             }
         }

@@ -14,26 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.datamodel.content;
+package org.pshow.repo.dao;
 
-import java.io.Serializable;
+import org.pshow.repo.datamodel.content.ContentData;
+
 
 /**
  * @author roy
- * 
+ *
  */
-public final class ContentRef implements Serializable {
+public interface ContentDao {
 
-    private static final long serialVersionUID = 8338924273495196146L;
+    String getUuidById(long id);
 
-    private String            id;
+    void insertContent(ContentData cdata);
 
-    public ContentRef(String id) {
-        super();
-        this.id = id;
-    }
+    void updateContent(ContentData cdata);
 
-    public String getId() {
-        return id;
-    }
 }

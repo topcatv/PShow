@@ -25,8 +25,10 @@ import javax.validation.constraints.NotNull;
 
 import org.pshow.repo.audit.Auditable;
 import org.pshow.repo.datamodel.content.ContentRef;
+import org.pshow.repo.datamodel.content.WorkspaceRef;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.datamodel.namespace.QNamePattern;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -35,51 +37,57 @@ import org.springframework.validation.annotation.Validated;
  */
 @Auditable
 @Validated
+@Transactional
 public interface ContentService {
 
-	ContentRef getRoot();
+    WorkspaceRef createWorkspace(String name) throws DuplicateWorkspaceException;
 
-	@Auditable(parameters = { "id" }, recordable = { true })
-	ContentRef getContent(@NotNull Long id);
+    @Transactional(readOnly = true)
+    WorkspaceRef findWorkspace(String name);
 
-	ContentRef createContent(ContentRef parentRef, String name, QName typeQName);
+    ContentRef getRoot(WorkspaceRef workspace);
 
-	ContentRef createContent(ContentRef parentRef, String name, QName typeQName, Map<QName, Serializable> properties);
+    @Auditable(parameters = { "id" }, recordable = { true })
+    ContentRef getContent(@NotNull Long id);
 
-	void moveContent(ContentRef moveToContentRef, ContentRef newParentRef);
+    ContentRef createContent(ContentRef parentRef, String name, QName typeQName);
 
-	QName getType(ContentRef contentRef);
+    ContentRef createContent(ContentRef parentRef, String name, QName typeQName, Map<QName, Serializable> properties);
 
-	Set<QName> getFacets(ContentRef contentRef);
+    void moveContent(ContentRef moveToContentRef, ContentRef newParentRef);
 
-	boolean hasFacet(ContentRef contentRef, QName facetQName);
+    QName getType(ContentRef contentRef);
 
-	void deleteContent(ContentRef contentRef);
+    Set<QName> getFacets(ContentRef contentRef);
 
-	Map<QName, Serializable> getProperties(ContentRef contentRef);
+    boolean hasFacet(ContentRef contentRef, QName facetQName);
 
-	Serializable getProperty(ContentRef contentRef, QName qname);
+    void deleteContent(ContentRef contentRef);
 
-	void setProperties(ContentRef contentRef, Map<QName, Serializable> properties);
+    Map<QName, Serializable> getProperties(ContentRef contentRef);
 
-	void addProperties(ContentRef contentRef, Map<QName, Serializable> properties);
+    Serializable getProperty(ContentRef contentRef, QName qname);
 
-	void setProperty(ContentRef contentRef, QName qname, Serializable value);
+    void setProperties(ContentRef contentRef, Map<QName, Serializable> properties);
 
-	void removeProperty(ContentRef contentRef, QName qname);
+    void addProperties(ContentRef contentRef, Map<QName, Serializable> properties);
 
-	ContentRef getParent(ContentRef contentRef);
+    void setProperty(ContentRef contentRef, QName qname, Serializable value);
 
-	List<ContentRef> getChild(ContentRef contentRef);
+    void removeProperty(ContentRef contentRef, QName qname);
 
-	List<ContentRef> getChild(ContentRef contentRef, QNamePattern typeQNamePattern);
+    ContentRef getParent(ContentRef contentRef);
 
-	List<ContentRef> getChild(ContentRef contentRef, Set<QName> typeQNames);
+    List<ContentRef> getChild(ContentRef contentRef);
 
-	List<ContentRef> getChildByName(ContentRef contentRef, String name);
+    List<ContentRef> getChild(ContentRef contentRef, QNamePattern typeQNamePattern);
 
-	void addFacet(ContentRef contentRef, QName facetTypeQName, Map<QName, Serializable> facetProperties);
+    List<ContentRef> getChild(ContentRef contentRef, Set<QName> typeQNames);
 
-	void removeAspect(ContentRef contentRef, QName facetTypeQName);
+    List<ContentRef> getChildByName(ContentRef contentRef, String name);
+
+    void addFacet(ContentRef contentRef, QName facetTypeQName, Map<QName, Serializable> facetProperties);
+
+    void removeAspect(ContentRef contentRef, QName facetTypeQName);
 
 }

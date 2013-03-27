@@ -9,5 +9,11 @@
 	<bean id="namespaceDao" class="org.pshow.repo.dao.NamespaceDaoImpl">
 		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
 	</bean>
+	<bean id="workspaceDao" class="org.pshow.repo.dao.WorkspaceDaoImpl">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="contentDao" class="org.pshow.repo.dao.ContentDaoImpl">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
 
 </beans>

@@ -8,9 +8,10 @@
 		<result property="prefix" column="n_prefix" />
 	</resultMap>
 	<insert id="insert" parameterType="org.pshow.repo.datamodel.namespace.PSNamespace">
-		insert into
-		ps_namespace (id, versions, uri, n_prefix) values
-		(nextval('seq_namespace'), 1, #{uri}, #{prefix})
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+	        SELECT nextval('seq_namespace') as id  
+	    </selectKey>
+		insert into	ps_namespace (id, versions, uri, n_prefix) values (#{id}, 1, #{uri}, #{prefix})
 	</insert>
 	<select id="getAll" resultMap="namespaceResultMap">
 		select id, versions, uri, n_prefix from ps_namespace
