@@ -15,5 +15,11 @@
 	<bean id="contentDao" class="org.pshow.repo.dao.ContentDaoImpl">
 		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
 	</bean>
+	<bean id="qnameDao" class="org.pshow.repo.dao.QNameDaoImpl">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="propertyDao" class="org.pshow.repo.dao.PropertyDaoImpl">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
 
 </beans>

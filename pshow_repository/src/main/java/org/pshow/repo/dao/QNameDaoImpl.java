@@ -16,22 +16,33 @@
  */
 package org.pshow.repo.dao;
 
-import java.util.List;
-
-import org.pshow.repo.dao.model.NamespaceModel;
-import org.pshow.repo.datamodel.namespace.NamespacePrefixResolver;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.pshow.repo.dao.model.QNameModel;
+import org.pshow.repo.datamodel.namespace.QName;
 
 
 /**
  * @author roy
  *
  */
-public interface NamespaceDao extends NamespacePrefixResolver{
-    
-    void insertNamespace(NamespaceModel namespace);
-    
-    List<NamespaceModel> findAllNamespaces();
+public class QNameDaoImpl extends SqlSessionDaoSupport implements QNameDao {
 
-    NamespaceModel findNamespaceByUri(String uri);
+    /* (non-Javadoc)
+     * @see org.pshow.repo.dao.QNameDao#insertQName(org.pshow.repo.dao.model.QNameModel)
+     */
+    @Override
+    public void insertQName(QNameModel qNameModel) {
+        getSqlSession().insert("org.pshow.repo.dao.model.QNameModel.insertQName", qNameModel);
+    }
+
+    @Override
+    public int count(QNameModel qName) {
+        return getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.count", qName);
+    }
+
+    @Override
+    public QNameModel findQName(QName qName) {
+        return getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.findQName", qName);
+    }
 
 }

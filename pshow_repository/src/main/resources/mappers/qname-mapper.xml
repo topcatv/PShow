@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pshow.repo.dao.model.QNameModel">
+	<resultMap id="qnameResultMap" type="org.pshow.repo.dao.model.QNameModel">
+		<result property="localName" column="local_name" />
+		<result property="namespaceId" column="ns_id" />
+		<result property="id" column="id" />
+	</resultMap>
+	<insert id="insertQName" parameterType="org.pshow.repo.dao.model.QNameModel">
+		<selectKey keyProperty="id" resultType="long" order="BEFORE">
+	        SELECT nextval('seq_qname') as id  
+	    </selectKey>
+		insert into	ps_qname (id, ns_id, local_name) values (#{id}, #{namespaceId}, #{localName})
+	</insert>
+	<select id="count" parameterType="org.pshow.repo.dao.model.QNameModel" resultType="int">
+		select count(1) from ps_qname where ns_id=#{namespaceId} and local_name=#{localName}
+	</select>
+	<select id="findQName" parameterType="org.pshow.repo.datamodel.namespace.QName" resultMap="qnameResultMap">
+		select a.id, a.ns_id, a.local_name from ps_qname a left join ps_namespace b on a.ns_id=b.id where b.uri=#{namespaceURI} and a.local_name=#{localName}
+	</select>
+</mapper>

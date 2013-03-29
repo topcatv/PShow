@@ -16,22 +16,22 @@
  */
 package org.pshow.repo.dao;
 
-import java.util.List;
-
-import org.pshow.repo.dao.model.NamespaceModel;
-import org.pshow.repo.datamodel.namespace.NamespacePrefixResolver;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.pshow.repo.dao.model.PropertyModel;
 
 
 /**
  * @author roy
  *
  */
-public interface NamespaceDao extends NamespacePrefixResolver{
-    
-    void insertNamespace(NamespaceModel namespace);
-    
-    List<NamespaceModel> findAllNamespaces();
+public class PropertyDaoImpl extends SqlSessionDaoSupport implements PropertyDao {
 
-    NamespaceModel findNamespaceByUri(String uri);
+    /* (non-Javadoc)
+     * @see org.pshow.repo.dao.PropertyDao#insertProperty(org.pshow.repo.dao.model.PropertyModel)
+     */
+    @Override
+    public void insertProperty(PropertyModel propertyModel) {
+        getSqlSession().insert("org.pshow.repo.dao.model.PropertyModel.insertProperty",propertyModel);
+    }
 
 }

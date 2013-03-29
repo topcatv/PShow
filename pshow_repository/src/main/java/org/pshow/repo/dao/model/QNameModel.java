@@ -14,24 +14,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.dao;
-
-import java.util.List;
-
-import org.pshow.repo.dao.model.NamespaceModel;
-import org.pshow.repo.datamodel.namespace.NamespacePrefixResolver;
-
+package org.pshow.repo.dao.model;
 
 /**
  * @author roy
- *
+ * 
  */
-public interface NamespaceDao extends NamespacePrefixResolver{
-    
-    void insertNamespace(NamespaceModel namespace);
-    
-    List<NamespaceModel> findAllNamespaces();
+public class QNameModel {
 
-    NamespaceModel findNamespaceByUri(String uri);
+    private long   id;
+    private long   namespaceId;
+    private String localName;
+
+    public QNameModel(){
+        
+    }
+    
+    public QNameModel(long namespaceId, String localName) {
+        this.namespaceId = namespaceId;
+        this.localName = localName;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getLocalName() {
+        return localName;
+    }
+
+    public void setLocalName(String localName) {
+        this.localName = localName;
+    }
+
+    
+    public long getNamespaceId() {
+        return namespaceId;
+    }
+
+    
+    public void setNamespaceId(long namespaceId) {
+        this.namespaceId = namespaceId;
+    }
 
 }

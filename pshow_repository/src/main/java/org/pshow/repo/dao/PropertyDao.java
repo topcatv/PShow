@@ -16,22 +16,15 @@
  */
 package org.pshow.repo.dao;
 
-import java.util.List;
-
-import org.pshow.repo.dao.model.NamespaceModel;
-import org.pshow.repo.datamodel.namespace.NamespacePrefixResolver;
+import org.pshow.repo.dao.model.PropertyModel;
 
 
 /**
  * @author roy
  *
  */
-public interface NamespaceDao extends NamespacePrefixResolver{
-    
-    void insertNamespace(NamespaceModel namespace);
-    
-    List<NamespaceModel> findAllNamespaces();
+public interface PropertyDao {
 
-    NamespaceModel findNamespaceByUri(String uri);
+    void insertProperty(PropertyModel propertyModel);
 
 }

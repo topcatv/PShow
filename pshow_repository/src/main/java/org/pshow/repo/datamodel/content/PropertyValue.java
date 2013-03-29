@@ -16,25 +16,92 @@
  */
 package org.pshow.repo.datamodel.content;
 
-import org.pshow.repo.datamodel.content.definition.DataType;
+import java.io.Serializable;
+import java.util.Date;
+
+import org.pshow.repo.datamodel.content.definition.DataType.Type;
+import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 
 /**
  * @author roy
- *
+ * 
  */
 public class PropertyValue {
-	private Object value;
-	
-	public PropertyValue(Object value) {
-		this.value = value;
+
+    private Serializable value;
+    private Type         type;
+
+    public PropertyValue(Serializable value) throws DataTypeUnSupportExeception {
+        this.value = value;
+        this.type = Type.getObjectType(this.value);
     }
 
-	public Object getValue() {
-    	return value;
+    public Serializable getValue() {
+        return value;
     }
-	
-	public DataType getType(){
-		return null;
-	}
+
+    public Type getType() {
+        return this.type;
+    }
+
+    public int getActualType() {
+        return type.getActualType();
+    }
+
+    public String getTextValue() {
+        if (this.type == Type.TEXT) {
+            return (String) value;
+        }
+        return null;
+    }
+
+    public Long getLongValue() {
+        if (this.type == Type.LONG) {
+            return Long.valueOf(value.toString());
+        }
+        return null;
+    }
+
+    public Integer getIntValue() {
+        if (this.type == Type.INT) {
+            return Integer.valueOf(value.toString());
+        }
+        return null;
+    }
+
+    public Float getFloatValue() {
+        if (this.type == Type.FLOAT) {
+            return Float.valueOf(value.toString());
+        }
+        return null;
+    }
+
+    public Double getDoubleValue() {
+        if (this.type == Type.DOUBLE) {
+            return Double.valueOf(value.toString());
+        }
+        return null;
+    }
+
+    public Date getDateValue() {
+        if (this.type == Type.DATE) {
+            return (Date) value;
+        }
+        return null;
+    }
+
+    public Date getDateTimeValue() {
+        if (this.type == Type.DATETIME) {
+            return (Date) value;
+        }
+        return null;
+    }
+
+    public Boolean getBooleanValue() {
+        if (this.type == Type.BOOLEAN) {
+            return Boolean.valueOf(value.toString());
+        }
+        return null;
+    }
 
 }

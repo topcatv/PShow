@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pshow.repo.dao.model.PropertyModel">
+	<resultMap id="propertyResultMap" type="org.pshow.repo.dao.model.PropertyModel">
+		<result property="contentId" column="content_id" />
+		<result property="actualType" column="actual_type_n" />
+		<result property="propertyQName" column="qname_id" />
+		<result property="stringValue" column="string_v" />
+		<result property="booleanValue" column="boolean_v" />
+		<result property="longValue" column="long_v" />
+		<result property="floatValue" column="float_v" />
+		<result property="doubleValue" column="double_v" />
+		<result property="serializableValue" column="serializable_v" />
+	</resultMap>
+	<insert id="insertProperty" parameterType="org.pshow.repo.dao.model.PropertyModel">
+		insert into ps_content_properties
+		(content_id, actual_type_n, boolean_v, long_v, float_v, double_v, string_v, serializable_v, qname_id, list_index)
+		values
+		(#{contentId}, #{actualType}, #{booleanValue}, #{longValue}, #{floatValue}, #{doubleValue}, #{stringValue}, #{serializableValue}, #{propertyQName}, 1)
+	</insert>
+</mapper>

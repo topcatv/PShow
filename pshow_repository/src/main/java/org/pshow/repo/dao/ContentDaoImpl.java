@@ -50,4 +50,9 @@ public class ContentDaoImpl extends SqlSessionDaoSupport implements ContentDao {
         getSqlSession().update("org.pshow.repo.datamodel.content.ContentData.updateContent", cdata);
     }
 
+    @Override
+    public ContentData getContentByUUID(String uuid) {
+        return getSqlSession().selectOne("org.pshow.repo.datamodel.content.ContentData.getContentByUUID", uuid);
+    }
+
 }

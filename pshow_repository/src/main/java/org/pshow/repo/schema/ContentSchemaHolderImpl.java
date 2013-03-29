@@ -17,6 +17,7 @@
 package org.pshow.repo.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -24,7 +25,11 @@ import java.util.Map.Entry;
 import org.apache.commons.collections.CollectionUtils;
 import org.pshow.repo.cache.Store;
 import org.pshow.repo.dao.NamespaceDao;
+import org.pshow.repo.dao.QNameDao;
+import org.pshow.repo.dao.model.NamespaceModel;
+import org.pshow.repo.dao.model.QNameModel;
 import org.pshow.repo.datamodel.content.definition.ConstraintModel;
+import org.pshow.repo.datamodel.content.definition.ContentClass;
 import org.pshow.repo.datamodel.content.definition.ContentFacet;
 import org.pshow.repo.datamodel.content.definition.ContentType;
 import org.pshow.repo.datamodel.content.definition.DataType;
@@ -55,6 +60,8 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
     private Store<QName, Object> store;
 
     private NamespaceDao         namespaceDao;
+
+    private QNameDao             qnameDao;
 
     /*
      * (non-Javadoc)
@@ -121,6 +128,8 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
         if (CollectionUtils.isNotEmpty(facets)) {
             for (ContentFacet facet : facets) {
                 checkFacet(facet);
+                registTypeQName(facet);
+                registPropertyQName(facet.getProperties());
                 store.put(createKey(facet.getName()), facet);
             }
             store.put(createKey(ALL_FACET), facets);
@@ -156,10 +165,32 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
         if (CollectionUtils.isNotEmpty(types)) {
             for (ContentType type : types) {
                 checkContentType(type);
+                registTypeQName(type);
+                registPropertyQName(type.getProperties());
                 store.put(createKey(type.getName()), type);
             }
             store.put(createKey(ALL_TYPE), types);
         }
+    }
+
+    private void registPropertyQName(List<Property> properties) {
+        for (Property property : properties) {
+            saveQNameIfNotExist(property.getName());
+        }
+    }
+
+    private void saveQNameIfNotExist(String name) {
+        String uri = namespaceDao.getNamespaceURI(QName.resolvePrefix(name));
+        NamespaceModel model = namespaceDao.findNamespaceByUri(uri);
+        QNameModel qNameModel = new QNameModel(model.getId(), QName.resolveLocalName(name));
+        if (qnameDao.count(qNameModel) > 0) {
+            return;
+        }
+        qnameDao.insertQName(qNameModel);
+    }
+
+    private void registTypeQName(ContentClass type) {
+        saveQNameIfNotExist(type.getName());
     }
 
     private void checkContentType(ContentType type) {
@@ -194,7 +225,7 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
             for (PSNamespace psNamespace : list) {
                 if (!exist_namespaces.contains(psNamespace)) {
                     // 如果从配置文件中加载的namespace不存在数据库中，写入数据库存并加入已存在namespace列表
-                    namespaceDao.insertNamespace(psNamespace);
+                    namespaceDao.insertNamespace(new NamespaceModel(psNamespace.getUri(), psNamespace.getPrefix()));
                     exist_namespaces.add(psNamespace);
                 }
             }
@@ -226,8 +257,16 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
 
     private List<PSNamespace> loadNamespacesFromDB() {
         ArrayList<PSNamespace> namespaces = new ArrayList<PSNamespace>();
-        namespaces.addAll(namespaceDao.findAllNamespaces());
+        namespaces.addAll(convertNamespace(namespaceDao.findAllNamespaces()));
         return namespaces;
+    }
+
+    private Collection<? extends PSNamespace> convertNamespace(List<NamespaceModel> findAllNamespaces) {
+        ArrayList<PSNamespace> result = new ArrayList<PSNamespace>();
+        for (NamespaceModel namespaceModel : findAllNamespaces) {
+            result.add(new PSNamespace(namespaceModel.getUri(), namespaceModel.getPrefix()));
+        }
+        return result;
     }
 
     /*
@@ -376,6 +415,10 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
             return new PSNamespace(uri, prefix);
         }
         return null;
+    }
+
+    public void setQnameDao(QNameDao qnameDao) {
+        this.qnameDao = qnameDao;
     }
 
 }

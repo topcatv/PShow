@@ -16,6 +16,12 @@
  */
 package org.pshow.repo.datamodel.content.definition;
 
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
+
+import org.pshow.repo.datamodel.content.ContentData;
+
 /**
  * @author roy
  * 
@@ -26,6 +32,46 @@ public class DataType {
     private String title         = null;
     private String description   = null;
     private String javaClassName = null;
+
+    public static enum Type {
+        ANY(0), TEXT(1), CONTENT(2), INT(3), LONG(4), FLOAT(5), DOUBLE(6), DATE(7), DATETIME(8), BOOLEAN(9);
+
+        private final int type;
+
+        Type(int type) {
+            this.type = type;
+        }
+
+        public int getActualType() {
+            return this.type;
+        }
+
+        public static Type getObjectType(Serializable o) throws DataTypeUnSupportExeception {
+            if (o instanceof Boolean) {
+                return BOOLEAN;
+            } else if (o instanceof String) {
+                return TEXT;
+            } else if (o instanceof ContentData) {
+                return CONTENT;
+            } else if (o instanceof Integer) {
+                return INT;
+            } else if (o instanceof Long) {
+                return LONG;
+            } else if (o instanceof Float) {
+                return FLOAT;
+            } else if (o instanceof Double) {
+                return DOUBLE;
+            } else if (o instanceof Date) {
+                return DATE;
+            } else if (o instanceof Calendar) {
+                return DATETIME;
+            } else if (o instanceof Serializable) {
+                return ANY;
+            } else {
+                throw new DataTypeUnSupportExeception(String.format("Unsupport [%s] data type", o.getClass().getName()));
+            }
+        }
+    }
 
     public String getName() {
         return name;

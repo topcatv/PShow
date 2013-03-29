@@ -18,16 +18,24 @@ package org.pshow.repo;
 
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.method.MethodConstraintViolationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
+import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
+import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.service.ContentService;
 import org.pshow.repo.service.DuplicateWorkspaceException;
+import org.pshow.repo.service.TypeNotExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.google.common.collect.Maps;
 
 /**
  * @author roy
@@ -69,5 +77,37 @@ public class AllTest extends BaseIntegrationTest {
 	    assertNotNull(root.getId());
 	    assertTrue(StringUtils.isNotEmpty(root.getId()));
 	}
+	
+	@Test
+    public void testCreateContent(){
+        WorkspaceRef workspace = cs.findWorkspace("default");
+        ContentRef root = cs.getRoot(workspace);
+        ContentRef createContent = null;
+        try {
+            createContent = cs.createContent(root, QName.createQName("fdsafsdfsa", "test"));
+            fail("not to here");
+        } catch (TypeNotExistException e) {
+            assertEquals("Create content error: type[QName [prefix=null, namespaceURI=fdsafsdfsa, localName=test]] not exist.", e.getMessage());
+        }
+        try {
+            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+        } catch (TypeNotExistException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
+        assertNotNull(createContent);
+        Map<QName, Serializable> properties = Maps.newHashMap();
+        properties.put(QName.createQName("http://www.pshow.org/model/system/0.1", "node-uuid"), "this is a test");
+        try {
+            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"), properties);
+        } catch (TypeNotExistException e) {
+            e.printStackTrace();
+            fail("not to here");
+        } catch (DataTypeUnSupportExeception e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
+        assertNotNull(createContent);
+    }
 
 }

@@ -19,7 +19,7 @@ package org.pshow.repo.dao;
 import java.util.List;
 
 import org.mybatis.spring.support.SqlSessionDaoSupport;
-import org.pshow.repo.datamodel.namespace.PSNamespace;
+import org.pshow.repo.dao.model.NamespaceModel;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -34,12 +34,12 @@ public class NamespaceDaoImpl extends SqlSessionDaoSupport implements NamespaceD
     private static BiMap<String, String> namespaces = Maps.synchronizedBiMap(HashBiMap.<String, String> create());
 
     @Override
-    public void insertNamespace(PSNamespace namespace) {
+    public void insertNamespace(NamespaceModel namespace) {
         getSqlSession().insert("org.pshow.repo.datamodel.namespace.PSNamespace.insert", namespace);
     }
 
     @Override
-    public List<PSNamespace> findAllNamespaces() {
+    public List<NamespaceModel> findAllNamespaces() {
         return getSqlSession().selectList("org.pshow.repo.datamodel.namespace.PSNamespace.getAll");
     }
 
@@ -57,10 +57,16 @@ public class NamespaceDaoImpl extends SqlSessionDaoSupport implements NamespaceD
     public String getPrefix(String namespaceURI) {
         String prefix = namespaces.get(namespaceURI);
         if (prefix == null) {
-            prefix = getSqlSession().selectOne("org.pshow.repo.datamodel.namespace.PSNamespace.findNamespaceByURI", namespaceURI);
+            NamespaceModel model =  getSqlSession().selectOne("org.pshow.repo.datamodel.namespace.PSNamespace.findNamespaceByUri", namespaceURI);
+            prefix = model.getPrefix();
             namespaces.put(namespaceURI, prefix);
         }
         return prefix;
+    }
+
+    @Override
+    public NamespaceModel findNamespaceByUri(String uri) {
+        return getSqlSession().selectOne("org.pshow.repo.datamodel.namespace.PSNamespace.findNamespaceByUri", uri);
     }
 
 }

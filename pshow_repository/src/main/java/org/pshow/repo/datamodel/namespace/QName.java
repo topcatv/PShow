@@ -120,4 +120,9 @@ public final class QName implements Comparable<QName>, Serializable, Cloneable {
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
+    @Override
+    public String toString() {
+        return "QName [prefix=" + prefix + ", namespaceURI=" + namespaceURI + ", localName=" + localName + "]";
+    }
 }

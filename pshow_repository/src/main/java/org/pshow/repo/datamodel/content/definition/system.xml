@@ -8,7 +8,7 @@
         <namespace uri="http://www.pshow.org/model/datatype/0.1" prefix="d"/>
     </imports>
     <namespaces>
-        <namespace uri="www.pshow.org/model/system/0.1" prefix="sys"/>
+        <namespace uri="http://www.pshow.org/model/system/0.1" prefix="sys"/>
     </namespaces>
     <data-types/>
     <constraints/>
@@ -26,7 +26,7 @@
             <associations/>
             <mandatory-facets>
                 <facet>sys:referenceable</facet>
-                <facet>sys:localized</facet>
+                <!-- <facet>sys:localized</facet> -->
             </mandatory-facets>
         </type>
         <type name="sys:descriptor">

@@ -31,4 +31,6 @@ public interface ContentDao {
 
     void updateContent(ContentData cdata);
 
+    ContentData getContentByUUID(String uuid);
+
 }

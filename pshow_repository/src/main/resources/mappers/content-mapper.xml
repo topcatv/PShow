@@ -4,7 +4,7 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.pshow.repo.datamodel.content.ContentData">
 	<resultMap id="contentResultMap" type="org.pshow.repo.datamodel.content.ContentData">
-		<result property="id" column="uri" />
+		<result property="id" column="id" />
 		<result property="uuid" column="uuid" />
 		<result property="typeId" column="type_qname_id" />
 		<result property="creater" column="creater" />
@@ -38,5 +38,8 @@
 	</update>
 	<select id="getUuidById" parameterType="long" resultType="string">
 		select uuid from ps_content where id=#{value}
+	</select>
+	<select id="getContentByUUID" parameterType="string" resultMap="contentResultMap">
+		select id, type_qname_id, acl_id, workspace_id, uuid, creator, created, modifier, modified, versions, parent_id  from ps_content where uuid=#{value}
 	</select>
 </mapper>

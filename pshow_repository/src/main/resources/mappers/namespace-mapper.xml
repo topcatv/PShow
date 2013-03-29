@@ -3,11 +3,13 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.pshow.repo.datamodel.namespace.PSNamespace">
-	<resultMap id="namespaceResultMap" type="org.pshow.repo.datamodel.namespace.PSNamespace">
+	<resultMap id="namespaceResultMap" type="org.pshow.repo.dao.model.NamespaceModel">
 		<result property="uri" column="uri" />
 		<result property="prefix" column="n_prefix" />
+		<result property="id" column="id" />
+		<result property="versions" column="versions" />
 	</resultMap>
-	<insert id="insert" parameterType="org.pshow.repo.datamodel.namespace.PSNamespace">
+	<insert id="insert" parameterType="org.pshow.repo.dao.model.NamespaceModel">
 		<selectKey keyProperty="id" resultType="long" order="BEFORE">
 	        SELECT nextval('seq_namespace') as id  
 	    </selectKey>
@@ -19,7 +21,7 @@
 	<select id="findNamespaceByPrefix" resultType="string" parameterType="string">
 		select uri from ps_namespace where n_prefix=#{value}
 	</select>
-	<select id="findNamespaceByURI" resultType="string" parameterType="string">
-		select n_prefix from ps_namespace where uri=#{value}
+	<select id="findNamespaceByUri" resultMap="namespaceResultMap" parameterType="string">
+		select id, versions, uri, n_prefix from ps_namespace where uri=#{value}
 	</select>
 </mapper>

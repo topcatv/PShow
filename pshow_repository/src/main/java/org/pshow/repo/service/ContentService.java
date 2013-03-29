@@ -26,9 +26,9 @@ import javax.validation.constraints.NotNull;
 import org.pshow.repo.audit.Auditable;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
+import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.datamodel.namespace.QNamePattern;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -37,12 +37,10 @@ import org.springframework.validation.annotation.Validated;
  */
 @Auditable
 @Validated
-@Transactional
 public interface ContentService {
 
     WorkspaceRef createWorkspace(String name) throws DuplicateWorkspaceException;
 
-    @Transactional(readOnly = true)
     WorkspaceRef findWorkspace(String name);
 
     ContentRef getRoot(WorkspaceRef workspace);
@@ -50,9 +48,9 @@ public interface ContentService {
     @Auditable(parameters = { "id" }, recordable = { true })
     ContentRef getContent(@NotNull Long id);
 
-    ContentRef createContent(ContentRef parentRef, String name, QName typeQName);
+    ContentRef createContent(ContentRef parentRef, QName typeQName) throws TypeNotExistException;
 
-    ContentRef createContent(ContentRef parentRef, String name, QName typeQName, Map<QName, Serializable> properties);
+    ContentRef createContent(ContentRef parentRef, QName typeQName, Map<QName, Serializable> properties) throws TypeNotExistException, DataTypeUnSupportExeception;
 
     void moveContent(ContentRef moveToContentRef, ContentRef newParentRef);
 
@@ -83,10 +81,6 @@ public interface ContentService {
     List<ContentRef> getChild(ContentRef contentRef, QNamePattern typeQNamePattern);
 
     List<ContentRef> getChild(ContentRef contentRef, Set<QName> typeQNames);
-
-    List<ContentRef> getChildByName(ContentRef contentRef, String name);
-
-    void addFacet(ContentRef contentRef, QName facetTypeQName, Map<QName, Serializable> facetProperties);
 
     void removeAspect(ContentRef contentRef, QName facetTypeQName);
 

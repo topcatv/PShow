@@ -18,6 +18,7 @@
 
 	<bean id="contentSchemaHolder" class="org.pshow.repo.schema.ContentSchemaHolderImpl">
 		<property name="namespaceDao" ref="namespaceDao" />
+		<property name="qnameDao" ref="qnameDao" />
 		<property name="store" ref="memoryStore"></property>
 	</bean>
 
@@ -27,5 +28,8 @@
 		<property name="namespaceDao" ref="namespaceDao" />
 		<property name="workspaceDao" ref="workspaceDao" />
 		<property name="contentDao" ref="contentDao" />
+		<property name="qnameDao" ref="qnameDao" />
+		<property name="propertyDao" ref="propertyDao" />
+		<property name="schemaHolder" ref="contentSchemaHolder" />
 	</bean>
 </beans>
