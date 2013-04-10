@@ -20,33 +20,28 @@ package org.pshow.repo.service;
  * @author roy
  * 
  */
-public class TypeNotExistException extends RepositoryException {
+public class TypeNotExistException extends TypeException {
 
     private static final long serialVersionUID = -1374945941024322709L;
 
     public TypeNotExistException() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     public TypeNotExistException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
-        // TODO Auto-generated constructor stub
     }
 
     public TypeNotExistException(String message, Throwable cause) {
         super(message, cause);
-        // TODO Auto-generated constructor stub
     }
 
     public TypeNotExistException(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 
     public TypeNotExistException(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
     }
 
 }

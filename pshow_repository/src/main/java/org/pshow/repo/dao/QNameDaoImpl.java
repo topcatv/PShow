@@ -45,4 +45,9 @@ public class QNameDaoImpl extends SqlSessionDaoSupport implements QNameDao {
         return getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.findQName", qName);
     }
 
+    @Override
+    public QNameModel findQNameById(long id) {
+        return getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.findQNameById", id);
+    }
+
 }

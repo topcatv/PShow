@@ -24,6 +24,7 @@ public class QNameModel {
 
     private long   id;
     private long   namespaceId;
+    private String namespaceURI;
     private String localName;
 
     public QNameModel(){
@@ -59,6 +60,16 @@ public class QNameModel {
     
     public void setNamespaceId(long namespaceId) {
         this.namespaceId = namespaceId;
+    }
+
+    
+    public String getNamespaceURI() {
+        return namespaceURI;
+    }
+
+    
+    public void setNamespaceURI(String namespaceURI) {
+        this.namespaceURI = namespaceURI;
     }
 
 }

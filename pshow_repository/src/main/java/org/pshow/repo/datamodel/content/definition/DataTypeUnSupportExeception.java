@@ -16,14 +16,14 @@
  */
 package org.pshow.repo.datamodel.content.definition;
 
-import org.pshow.repo.service.RepositoryException;
+import org.pshow.repo.service.TypeException;
 
 
 /**
  * @author roy
  *
  */
-public class DataTypeUnSupportExeception extends RepositoryException {
+public class DataTypeUnSupportExeception extends TypeException {
     private static final long serialVersionUID = -3306642210487678404L;
 
     public DataTypeUnSupportExeception() {

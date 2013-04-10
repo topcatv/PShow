@@ -36,6 +36,7 @@ import org.pshow.repo.datamodel.content.WorkspaceRef;
 import org.pshow.repo.datamodel.content.definition.ContentFacet;
 import org.pshow.repo.datamodel.content.definition.ContentType;
 import org.pshow.repo.datamodel.content.definition.DataType;
+import org.pshow.repo.datamodel.content.definition.DataType.Type;
 import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 import org.pshow.repo.datamodel.content.definition.Property;
 import org.pshow.repo.datamodel.namespace.QName;
@@ -90,7 +91,7 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-    public ContentRef createContent(ContentRef parentRef, QName typeQName) throws TypeNotExistException {
+    public ContentRef createContent(ContentRef parentRef, QName typeQName) throws TypeException {
         ContentRef createContent = null;
         try {
             createContent = createContent(parentRef, typeQName, null);
@@ -118,8 +119,8 @@ public class ContentServiceImpl implements ContentService {
     }
 
     private long findTypeId(QName typeQName) {
-        // TODO Auto-generated method stub
-        return 0;
+        QNameModel findQName = qnameDao.findQName(typeQName);
+        return findQName == null ? 0L : findQName.getId();
     }
 
     /*
@@ -131,7 +132,7 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-    public ContentRef createContent(ContentRef parentRef, QName typeQName, Map<QName, Serializable> properties) throws TypeNotExistException, DataTypeUnSupportExeception {
+    public ContentRef createContent(ContentRef parentRef, QName typeQName, Map<QName, Serializable> properties) throws TypeException {
         if (!schemaHolder.hasContentType(typeQName)) {
             throw new TypeNotExistException(String.format("Create content error: type[%s] not exist.", typeQName.toString()));
         }
@@ -156,7 +157,7 @@ public class ContentServiceImpl implements ContentService {
         return cdata;
     }
 
-    private void saveProperties(long id, QName typeQName, Map<QName, Serializable> properties) throws DataTypeUnSupportExeception {
+    private void saveProperties(long id, QName typeQName, Map<QName, Serializable> properties) throws TypeException {
         ContentType contentType = schemaHolder.getContentType(typeQName);
         saveProperties(properties, contentType.getProperties(), id);
         List<String> mandatoryFacets = contentType.getMandatoryFacets();
@@ -166,10 +167,10 @@ public class ContentServiceImpl implements ContentService {
         }
     }
 
-    private void saveProperties(Map<QName, Serializable> properties, List<Property> properties_definition, long contentId) throws DataTypeUnSupportExeception {
+    private void saveProperties(Map<QName, Serializable> properties, List<Property> properties_definition, long contentId) throws TypeException {
         for (Property property : properties_definition) {
             Serializable value = properties.get(createKey(property.getName()));
-            if(value == null){
+            if (value == null) {
                 continue;
             }
             DataType dataType = schemaHolder.getRegisteredObject(createKey(property.getPropertyType()), new DataType());
@@ -182,7 +183,6 @@ public class ContentServiceImpl implements ContentService {
     }
 
     private void savePropertyValue(PropertyValue propertyValue, long contentId, long propertyQnameId) {
-        // TODO Auto-generated method stub
         PropertyModel propertyModel = new PropertyModel();
         propertyModel.setContentId(contentId);
         propertyModel.setPropertyQName(propertyQnameId);
@@ -195,9 +195,11 @@ public class ContentServiceImpl implements ContentService {
         propertyDao.insertProperty(propertyModel);
     }
 
-    private void checkValueType(DataType dataType, Serializable value) {
-        // TODO Auto-generated method stub
-
+    private void checkValueType(DataType dataType, Serializable value) throws TypeException {
+        Type valueType = Type.getObjectType(value);
+        if (!valueType.equals(dataType.getType())) {
+            throw new TypeException(String.format("value type [%s] not consist definition type [%s]", value.getClass().getName(), dataType.getJavaClassName()));
+        }
     }
 
     private QName createKey(String property_name) {
@@ -224,8 +226,10 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public QName getType(ContentRef contentRef) {
-        // TODO Auto-generated method stub
-        return null;
+        ContentData self = contentDao.getContentByUUID(contentRef.getId());
+        long typeId = self.getTypeId();
+        QNameModel qNameModel = qnameDao.findQNameById(typeId);
+        return QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName());
     }
 
     /*

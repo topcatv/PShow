@@ -104,4 +104,35 @@ public class DataType {
     public void setJavaClassName(String javaClassName) {
         this.javaClassName = javaClassName;
     }
+
+    public Type getType() throws DataTypeUnSupportExeception {
+        try {
+            Class<?> typeClass = Class.forName(javaClassName);
+            if (typeClass.equals(Boolean.class)) {
+                return Type.BOOLEAN;
+            } else if (typeClass.equals(String.class)) {
+                return Type.TEXT;
+            } else if (typeClass.equals(ContentData.class)) {
+                return Type.CONTENT;
+            } else if (typeClass.equals(Integer.class)) {
+                return Type.INT;
+            } else if (typeClass.equals(Long.class)) {
+                return Type.LONG;
+            } else if (typeClass.equals(Float.class)) {
+                return Type.FLOAT;
+            } else if (typeClass.equals(Double.class)) {
+                return Type.DOUBLE;
+            } else if (typeClass.equals(Date.class)) {
+                return Type.DATE;
+            } else if (typeClass.equals(Calendar.class)) {
+                return Type.DATETIME;
+            } else if (typeClass.equals(Serializable.class)) {
+                return Type.ANY;
+            } else {
+                throw new DataTypeUnSupportExeception(String.format("Unsupport [%s] data type", javaClassName));
+            }
+        } catch (ClassNotFoundException e) {
+            throw new DataTypeUnSupportExeception(String.format("Unsupport [%s] data type", javaClassName), e);
+        }
+    }
 }

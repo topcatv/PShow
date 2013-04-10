@@ -14,23 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.dao;
-
-import org.pshow.repo.dao.model.QNameModel;
-import org.pshow.repo.datamodel.namespace.QName;
+package org.pshow.repo.service;
 
 
 /**
  * @author roy
  *
  */
-public interface QNameDao {
+public class TypeException extends RepositoryException {
+    public TypeException() {
+        super();
+    }
 
-    void insertQName(QNameModel qNameModel);
+    public TypeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 
-    int count(QNameModel qNameModel);
+    public TypeException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    QNameModel findQName(QName qName);
+    public TypeException(String message) {
+        super(message);
+    }
 
-    QNameModel findQNameById(long id);
+    public TypeException(Throwable cause) {
+        super(cause);
+    }
+
+    private static final long serialVersionUID = -4226401769057745529L;
+
 }

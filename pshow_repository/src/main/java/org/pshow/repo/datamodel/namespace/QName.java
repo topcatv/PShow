@@ -31,7 +31,7 @@ public final class QName implements Comparable<QName>, Serializable, Cloneable {
     private final String      namespaceURI;
     private final String      localName;
 
-    public QName(String uri, String localName, String prefix) {
+    private QName(String uri, String localName, String prefix) {
         this.prefix = prefix;
         this.namespaceURI = uri;
         this.localName = localName;

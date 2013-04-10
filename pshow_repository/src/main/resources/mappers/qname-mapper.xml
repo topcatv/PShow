@@ -6,6 +6,7 @@
 	<resultMap id="qnameResultMap" type="org.pshow.repo.dao.model.QNameModel">
 		<result property="localName" column="local_name" />
 		<result property="namespaceId" column="ns_id" />
+		<result property="namespaceURI" column="uri" />
 		<result property="id" column="id" />
 	</resultMap>
 	<insert id="insertQName" parameterType="org.pshow.repo.dao.model.QNameModel">
@@ -19,5 +20,8 @@
 	</select>
 	<select id="findQName" parameterType="org.pshow.repo.datamodel.namespace.QName" resultMap="qnameResultMap">
 		select a.id, a.ns_id, a.local_name from ps_qname a left join ps_namespace b on a.ns_id=b.id where b.uri=#{namespaceURI} and a.local_name=#{localName}
+	</select>
+	<select id="findQNameById" parameterType="long" resultMap="qnameResultMap">
+		select a.id, a.ns_id, a.local_name, b.uri from ps_qname a left join ps_namespace b on a.ns_id=b.id where a.id=#{value}
 	</select>
 </mapper>

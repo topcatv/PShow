@@ -27,11 +27,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
-import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.service.ContentService;
 import org.pshow.repo.service.DuplicateWorkspaceException;
-import org.pshow.repo.service.TypeNotExistException;
+import org.pshow.repo.service.TypeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -86,12 +85,12 @@ public class AllTest extends BaseIntegrationTest {
         try {
             createContent = cs.createContent(root, QName.createQName("fdsafsdfsa", "test"));
             fail("not to here");
-        } catch (TypeNotExistException e) {
+        } catch (TypeException e) {
             assertEquals("Create content error: type[QName [prefix=null, namespaceURI=fdsafsdfsa, localName=test]] not exist.", e.getMessage());
         }
         try {
             createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
-        } catch (TypeNotExistException e) {
+        } catch (TypeException e) {
             e.printStackTrace();
             fail("not to here");
         }
@@ -100,14 +99,13 @@ public class AllTest extends BaseIntegrationTest {
         properties.put(QName.createQName("http://www.pshow.org/model/system/0.1", "node-uuid"), "this is a test");
         try {
             createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"), properties);
-        } catch (TypeNotExistException e) {
+        } catch (TypeException e) {
             e.printStackTrace();
             fail("not to here");
-        } catch (DataTypeUnSupportExeception e) {
-            e.printStackTrace();
-            fail("not to here");
-        }
+        } 
         assertNotNull(createContent);
+        QName type = cs.getType(createContent);
+        assertEquals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"), type);
     }
 
 }
