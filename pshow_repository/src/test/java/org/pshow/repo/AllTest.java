@@ -19,6 +19,7 @@ package org.pshow.repo;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
 import org.pshow.repo.datamodel.namespace.QName;
+import org.pshow.repo.datamodel.namespace.QNamePattern;
 import org.pshow.repo.service.ContentService;
 import org.pshow.repo.service.DuplicateWorkspaceException;
 import org.pshow.repo.service.TypeException;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * @author roy
@@ -92,6 +95,40 @@ public class AllTest extends BaseIntegrationTest {
         testGetType(second);
         
         testMoveContent(second,first);
+        
+        testGetChildByFilter(first);
+    }
+
+    private void testGetChildByFilter(ContentRef first) {
+        HashSet<QName> filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+        List<ContentRef> child = cs.getChild(first, filterSet);
+        assertNotNull(child);
+        assertEquals(1, child.size());
+        
+        filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
+        child = cs.getChild(first, filterSet);
+        assertNotNull(child);
+        assertEquals(0, child.size());
+        
+        child = cs.getChild(first, new QNamePattern() {
+            
+            @Override
+            public boolean isMatch(QName qname) {
+                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+            }
+        });
+        assertNotNull(child);
+        assertEquals(1, child.size());
+        
+        child = cs.getChild(first, new QNamePattern() {
+            
+            @Override
+            public boolean isMatch(QName qname) {
+                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
+            }
+        });
+        assertNotNull(child);
+        assertEquals(0, child.size());
     }
 
     private void testMoveContent(ContentRef second, ContentRef first) {

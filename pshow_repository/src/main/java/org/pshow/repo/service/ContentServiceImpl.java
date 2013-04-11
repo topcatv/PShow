@@ -382,8 +382,16 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public List<ContentRef> getChild(ContentRef contentRef, QNamePattern typeQNamePattern) {
-        // TODO Auto-generated method stub
-        return null;
+        List<ContentData> result = contentDao.getContentByParentUUID(contentRef.getId());
+        List<ContentRef> child = new ArrayList<ContentRef>();
+        for (ContentData contentData : result) {
+            QNameModel typeQNameModel = qnameDao.findQNameById(contentData.getTypeId());
+            QName typeQName = QName.createQName(typeQNameModel.getNamespaceURI(), typeQNameModel.getLocalName());
+            if (typeQNamePattern.isMatch(typeQName)) {
+                child.add(new ContentRef(contentData.getUuid()));
+            }
+        }
+        return child;
     }
 
     /*
@@ -394,8 +402,16 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public List<ContentRef> getChild(ContentRef contentRef, Set<QName> typeQNames) {
-        // TODO Auto-generated method stub
-        return null;
+        List<ContentData> result = contentDao.getContentByParentUUID(contentRef.getId());
+        List<ContentRef> child = new ArrayList<ContentRef>();
+        for (ContentData contentData : result) {
+            QNameModel typeQNameModel = qnameDao.findQNameById(contentData.getTypeId());
+            QName typeQName = QName.createQName(typeQNameModel.getNamespaceURI(), typeQNameModel.getLocalName());
+            if (typeQNames.contains(typeQName)) {
+                child.add(new ContentRef(contentData.getUuid()));
+            }
+        }
+        return child;
     }
 
     /*
