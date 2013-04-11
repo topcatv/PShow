@@ -16,6 +16,8 @@
  */
 package org.pshow.repo.dao;
 
+import java.util.List;
+
 import org.pshow.repo.datamodel.content.ContentData;
 
 
@@ -32,5 +34,7 @@ public interface ContentDao {
     void updateContent(ContentData cdata);
 
     ContentData getContentByUUID(String uuid);
+
+    List<ContentData> getContentByParentUUID(String uuid);
 
 }

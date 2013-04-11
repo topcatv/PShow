@@ -16,6 +16,7 @@
  */
 package org.pshow.repo.dao;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.mybatis.spring.support.SqlSessionDaoSupport;
@@ -53,6 +54,11 @@ public class ContentDaoImpl extends SqlSessionDaoSupport implements ContentDao {
     @Override
     public ContentData getContentByUUID(String uuid) {
         return getSqlSession().selectOne("org.pshow.repo.datamodel.content.ContentData.getContentByUUID", uuid);
+    }
+
+    @Override
+    public List<ContentData> getContentByParentUUID(String uuid) {
+        return getSqlSession().selectList("org.pshow.repo.datamodel.content.ContentData.getContentByParentUUID", uuid);
     }
 
 }

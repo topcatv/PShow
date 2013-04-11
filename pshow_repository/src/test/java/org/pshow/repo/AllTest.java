@@ -19,6 +19,7 @@ package org.pshow.repo;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -81,20 +82,28 @@ public class AllTest extends BaseIntegrationTest {
     public void testCreateContent(){
         WorkspaceRef workspace = cs.findWorkspace("default");
         ContentRef root = cs.getRoot(workspace);
+        
+        testCreateFail(root);
+        
+        ContentRef first = testCreateSuccess(root);
+        
+        ContentRef second = testCreateWithPropertiesSuccess(root);
+        
+        testGetType(second);
+        
+        testMoveContent(second,first);
+    }
+
+    private void testMoveContent(ContentRef second, ContentRef first) {
+        cs.moveContent(second, first);
+        List<ContentRef> child = cs.getChild(first);
+        assertNotNull(child);
+        assertEquals(1, child.size());
+        assertEquals(child.get(0), second);
+    }
+
+    private ContentRef testCreateWithPropertiesSuccess(ContentRef root) {
         ContentRef createContent = null;
-        try {
-            createContent = cs.createContent(root, QName.createQName("fdsafsdfsa", "test"));
-            fail("not to here");
-        } catch (TypeException e) {
-            assertEquals("Create content error: type[QName [prefix=null, namespaceURI=fdsafsdfsa, localName=test]] not exist.", e.getMessage());
-        }
-        try {
-            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
-        } catch (TypeException e) {
-            e.printStackTrace();
-            fail("not to here");
-        }
-        assertNotNull(createContent);
         Map<QName, Serializable> properties = Maps.newHashMap();
         properties.put(QName.createQName("http://www.pshow.org/model/system/0.1", "node-uuid"), "this is a test");
         try {
@@ -102,7 +111,32 @@ public class AllTest extends BaseIntegrationTest {
         } catch (TypeException e) {
             e.printStackTrace();
             fail("not to here");
-        } 
+        }
+        return createContent;
+    }
+
+    private ContentRef testCreateSuccess(ContentRef root) {
+        ContentRef createContent = null;
+        try {
+            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+        } catch (TypeException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
+        assertNotNull(createContent);
+        return createContent;
+    }
+
+    private void testCreateFail(ContentRef root) {
+        try {
+            cs.createContent(root, QName.createQName("fdsafsdfsa", "test"));
+            fail("not to here");
+        } catch (TypeException e) {
+            assertEquals("Create content error: type[QName [prefix=null, namespaceURI=fdsafsdfsa, localName=test]] not exist.", e.getMessage());
+        }
+    }
+
+    private void testGetType(ContentRef createContent) {
         assertNotNull(createContent);
         QName type = cs.getType(createContent);
         assertEquals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"), type);

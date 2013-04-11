@@ -40,6 +40,14 @@
 		select uuid from ps_content where id=#{value}
 	</select>
 	<select id="getContentByUUID" parameterType="string" resultMap="contentResultMap">
-		select id, type_qname_id, acl_id, workspace_id, uuid, creator, created, modifier, modified, versions, parent_id  from ps_content where uuid=#{value}
+		select id, type_qname_id, acl_id, workspace_id, uuid, creator, created, modifier, modified, versions, parent_id 
+		from ps_content 
+		where uuid=#{value}
+	</select>
+	<select id="getContentByParentUUID" parameterType="string" resultMap="contentResultMap">
+		select a.id, a.type_qname_id, a.acl_id, a.workspace_id, a.uuid, a.creator, a.created, a.modifier, a.modified, a.versions, a.parent_id 
+		from ps_content a left join ps_content b 
+		on a.parent_id=b.id
+		where b.uuid=#{value}
 	</select>
 </mapper>

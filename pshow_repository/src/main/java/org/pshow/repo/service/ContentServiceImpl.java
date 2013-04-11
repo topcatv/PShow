@@ -17,6 +17,7 @@
 package org.pshow.repo.service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -214,8 +215,10 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public void moveContent(ContentRef moveToContentRef, ContentRef newParentRef) {
-        // TODO Auto-generated method stub
-
+        ContentData moveToContent = contentDao.getContentByUUID(moveToContentRef.getId());
+        ContentData newParent = contentDao.getContentByUUID(newParentRef.getId());
+        moveToContent.setParentId(newParent.getId());
+        contentDao.updateContent(moveToContent);
     }
 
     /*
@@ -363,8 +366,12 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public List<ContentRef> getChild(ContentRef contentRef) {
-        // TODO Auto-generated method stub
-        return null;
+        List<ContentData> result = contentDao.getContentByParentUUID(contentRef.getId());
+        List<ContentRef> child = new ArrayList<ContentRef>();
+        for (ContentData contentData : result) {
+            child.add(new ContentRef(contentData.getUuid()));
+        }
+        return child;
     }
 
     /*
