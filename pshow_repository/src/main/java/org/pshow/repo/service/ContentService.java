@@ -54,6 +54,8 @@ public interface ContentService {
     void moveContent(ContentRef moveToContentRef, ContentRef newParentRef);
 
     QName getType(ContentRef contentRef);
+    
+    void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties);
 
     Set<QName> getFacets(ContentRef contentRef);
 

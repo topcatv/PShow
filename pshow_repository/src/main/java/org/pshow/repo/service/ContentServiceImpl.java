@@ -495,4 +495,10 @@ public class ContentServiceImpl implements ContentService {
         this.qnameDao = qnameDao;
     }
 
+    @Override
+    public void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

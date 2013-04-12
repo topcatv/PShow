@@ -1,20 +1,4 @@
 require({cache:{
-'dojox/main':function(){
-define("dojox/main", ["dojo/_base/kernel"], function(dojo) {
-	// module:
-	//		dojox/main
-
-	/*=====
-	return {
-		// summary:
-		//		The dojox package main module; dojox package is somewhat unusual in that the main module currently just provides an empty object.
-		//		Apps should require modules from the dojox packages directly, rather than loading this module.
-	};
-	=====*/
-
-	return dojo.dojox;
-});
-},
 'dojox/mobile/compat':function(){
 define([
 	"dojo/_base/lang",
@@ -98,6 +82,22 @@ return {
 	return dojo.dijit;
 });
 
+},
+'dojox/main':function(){
+define("dojox/main", ["dojo/_base/kernel"], function(dojo) {
+	// module:
+	//		dojox/main
+
+	/*=====
+	return {
+		// summary:
+		//		The dojox package main module; dojox package is somewhat unusual in that the main module currently just provides an empty object.
+		//		Apps should require modules from the dojox packages directly, rather than loading this module.
+	};
+	=====*/
+
+	return dojo.dojox;
+});
 }}});
 // wrapped by build app
 define("dojox/mobile/app/compat", ["dijit","dojo","dojox","dojo/require!dojox/mobile/compat"], function(dijit,dojo,dojox){

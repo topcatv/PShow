@@ -24,6 +24,7 @@ define("dojox/form/nls/Uploader", { root:
 "it": true,
 "hu": true,
 "hr": true,
+"he": true,
 "fr": true,
 "fi": true,
 "es": true,

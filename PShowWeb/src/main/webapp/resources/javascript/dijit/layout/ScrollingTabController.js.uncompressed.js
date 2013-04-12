@@ -152,7 +152,7 @@ var ScrollingTabController = declare("dijit.layout.ScrollingTabController", [Tab
 		if(children.length){
 			var leftTab = children[this.isLeftToRight() ? 0 : children.length - 1].domNode,
 				rightTab = children[this.isLeftToRight() ? children.length - 1 : 0].domNode;
-			return rightTab.offsetLeft + domStyle.get(rightTab, "width") - leftTab.offsetLeft;
+			return rightTab.offsetLeft + rightTab.offsetWidth - leftTab.offsetLeft;
 		}else{
 			return 0;
 		}
@@ -283,7 +283,7 @@ var ScrollingTabController = declare("dijit.layout.ScrollingTabController", [Tab
 			return {
 				min: this.isLeftToRight() ? 0 : children[children.length-1].domNode.offsetLeft,
 				max: this.isLeftToRight() ?
-					(children[children.length-1].domNode.offsetLeft + domStyle.get(children[children.length-1].domNode, "width")) - scrollNodeWidth :
+					(children[children.length-1].domNode.offsetLeft + children[children.length-1].domNode.offsetWidth) - scrollNodeWidth :
 					maxPossibleScroll
 			};
 		}else{

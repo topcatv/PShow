@@ -664,7 +664,7 @@ define([
 				// dijitInputField class gives placeHolder same padding as the input field
 				// parent node already has dijitInputField class but it doesn't affect this <span>
 				// since it's position: absolute.
-				this._phspan = domConstruct.create('span',{className:'dijitPlaceHolder dijitInputField'},this.textbox,'after');
+				this._phspan = domConstruct.create('span',{ onmousedown:function(e){ e.preventDefault(); }, className:'dijitPlaceHolder dijitInputField'},this.textbox,'after');
 			}
 			this._phspan.innerHTML="";
 			this._phspan.appendChild(this._phspan.ownerDocument.createTextNode(v));
@@ -877,112 +877,6 @@ return currency;
 });
 
 },
-'dijit/DialogUnderlay':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-attr", // domAttr.set
-	"dojo/window", // winUtils.getBox
-	"./_Widget",
-	"./_TemplatedMixin",
-	"./BackgroundIframe"
-], function(declare, domAttr, winUtils, _Widget, _TemplatedMixin, BackgroundIframe){
-
-	// module:
-	//		dijit/DialogUnderlay
-
-	return declare("dijit.DialogUnderlay", [_Widget, _TemplatedMixin], {
-		// summary:
-		//		The component that blocks the screen behind a `dijit.Dialog`
-		//
-		// description:
-		//		A component used to block input behind a `dijit.Dialog`. Only a single
-		//		instance of this widget is created by `dijit.Dialog`, and saved as
-		//		a reference to be shared between all Dialogs as `dijit._underlay`
-		//
-		//		The underlay itself can be styled based on and id:
-		//	|	#myDialog_underlay { background-color:red; }
-		//
-		//		In the case of `dijit.Dialog`, this id is based on the id of the Dialog,
-		//		suffixed with _underlay.
-
-		// Template has two divs; outer div is used for fade-in/fade-out, and also to hold background iframe.
-		// Inner div has opacity specified in CSS file.
-		templateString: "<div class='dijitDialogUnderlayWrapper'><div class='dijitDialogUnderlay' data-dojo-attach-point='node'></div></div>",
-
-		// Parameters on creation or updatable later
-
-		// dialogId: String
-		//		Id of the dialog.... DialogUnderlay's id is based on this id
-		dialogId: "",
-
-		// class: String
-		//		This class name is used on the DialogUnderlay node, in addition to dijitDialogUnderlay
-		"class": "",
-
-		_setDialogIdAttr: function(id){
-			domAttr.set(this.node, "id", id + "_underlay");
-			this._set("dialogId", id);
-		},
-
-		_setClassAttr: function(clazz){
-			this.node.className = "dijitDialogUnderlay " + clazz;
-			this._set("class", clazz);
-		},
-
-		postCreate: function(){
-			// summary:
-			//		Append the underlay to the body
-			this.ownerDocumentBody.appendChild(this.domNode);
-		},
-
-		layout: function(){
-			// summary:
-			//		Sets the background to the size of the viewport
-			//
-			// description:
-			//		Sets the background to the size of the viewport (rather than the size
-			//		of the document) since we need to cover the whole browser window, even
-			//		if the document is only a few lines long.
-			// tags:
-			//		private
-
-			var is = this.node.style,
-				os = this.domNode.style;
-
-			// hide the background temporarily, so that the background itself isn't
-			// causing scrollbars to appear (might happen when user shrinks browser
-			// window and then we are called to resize)
-			os.display = "none";
-
-			// then resize and show
-			var viewport = winUtils.getBox(this.ownerDocument);
-			os.top = viewport.t + "px";
-			os.left = viewport.l + "px";
-			is.width = viewport.w + "px";
-			is.height = viewport.h + "px";
-			os.display = "block";
-		},
-
-		show: function(){
-			// summary:
-			//		Show the dialog underlay
-			this.domNode.style.display = "block";
-			this.layout();
-			this.bgIframe = new BackgroundIframe(this.domNode);
-		},
-
-		hide: function(){
-			// summary:
-			//		Hides the dialog underlay
-			this.bgIframe.destroy();
-			delete this.bgIframe;
-			this.domNode.style.display = "none";
-		}
-	});
-});
-
-},
-'url:dijit/form/templates/ComboButton.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tcellspacing='0' cellpadding='0' role=\"presentation\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonNode\" data-dojo-attach-point=\"buttonNode\" data-dojo-attach-event=\"ondijitclick:_onClick,onkeypress:_onButtonKeyPress\"\n\t\t><div id=\"${id}_button\" class=\"dijitReset dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><div class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitInline dijitButtonText\" id=\"${id}_label\" data-dojo-attach-point=\"containerNode\" role=\"presentation\"></div\n\t\t></div\n\t\t></td\n\t\t><td id=\"${id}_arrow\" class='dijitReset dijitRight dijitButtonNode dijitArrowButton'\n\t\t\tdata-dojo-attach-point=\"_popupStateNode,focusNode,_buttonNode\"\n\t\t\tdata-dojo-attach-event=\"onkeypress:_onArrowKeyPress\"\n\t\t\ttitle=\"${optionsTitle}\"\n\t\t\trole=\"button\" aria-haspopup=\"true\"\n\t\t\t><div class=\"dijitReset dijitArrowButtonInner\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitArrowButtonChar\" role=\"presentation\">&#9660;</div\n\t\t></td\n\t\t><td style=\"display:none !important;\"\n\t\t\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" data-dojo-attach-point=\"valueNode\" role=\"presentation\"\n\t\t/></td></tr></tbody\n></table>\n",
 'dijit/layout/ScrollingTabController':function(){
 define([
 	"dojo/_base/array", // array.forEach
@@ -1135,7 +1029,7 @@ var ScrollingTabController = declare("dijit.layout.ScrollingTabController", [Tab
 		if(children.length){
 			var leftTab = children[this.isLeftToRight() ? 0 : children.length - 1].domNode,
 				rightTab = children[this.isLeftToRight() ? children.length - 1 : 0].domNode;
-			return rightTab.offsetLeft + domStyle.get(rightTab, "width") - leftTab.offsetLeft;
+			return rightTab.offsetLeft + rightTab.offsetWidth - leftTab.offsetLeft;
 		}else{
 			return 0;
 		}
@@ -1266,7 +1160,7 @@ var ScrollingTabController = declare("dijit.layout.ScrollingTabController", [Tab
 			return {
 				min: this.isLeftToRight() ? 0 : children[children.length-1].domNode.offsetLeft,
 				max: this.isLeftToRight() ?
-					(children[children.length-1].domNode.offsetLeft + domStyle.get(children[children.length-1].domNode, "width")) - scrollNodeWidth :
+					(children[children.length-1].domNode.offsetLeft + children[children.length-1].domNode.offsetWidth) - scrollNodeWidth :
 					maxPossibleScroll
 			};
 		}else{
@@ -1480,6 +1374,112 @@ declare(
 });
 
 return ScrollingTabController;
+});
+
+},
+'url:dijit/form/templates/ComboButton.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tcellspacing='0' cellpadding='0' role=\"presentation\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonNode\" data-dojo-attach-point=\"buttonNode\" data-dojo-attach-event=\"ondijitclick:_onClick,onkeypress:_onButtonKeyPress\"\n\t\t><div id=\"${id}_button\" class=\"dijitReset dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><div class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitInline dijitButtonText\" id=\"${id}_label\" data-dojo-attach-point=\"containerNode\" role=\"presentation\"></div\n\t\t></div\n\t\t></td\n\t\t><td id=\"${id}_arrow\" class='dijitReset dijitRight dijitButtonNode dijitArrowButton'\n\t\t\tdata-dojo-attach-point=\"_popupStateNode,focusNode,_buttonNode\"\n\t\t\tdata-dojo-attach-event=\"onkeypress:_onArrowKeyPress\"\n\t\t\ttitle=\"${optionsTitle}\"\n\t\t\trole=\"button\" aria-haspopup=\"true\"\n\t\t\t><div class=\"dijitReset dijitArrowButtonInner\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitArrowButtonChar\" role=\"presentation\">&#9660;</div\n\t\t></td\n\t\t><td style=\"display:none !important;\"\n\t\t\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" data-dojo-attach-point=\"valueNode\" role=\"presentation\"\n\t\t/></td></tr></tbody\n></table>\n",
+'dijit/DialogUnderlay':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/window", // winUtils.getBox
+	"./_Widget",
+	"./_TemplatedMixin",
+	"./BackgroundIframe"
+], function(declare, domAttr, winUtils, _Widget, _TemplatedMixin, BackgroundIframe){
+
+	// module:
+	//		dijit/DialogUnderlay
+
+	return declare("dijit.DialogUnderlay", [_Widget, _TemplatedMixin], {
+		// summary:
+		//		The component that blocks the screen behind a `dijit.Dialog`
+		//
+		// description:
+		//		A component used to block input behind a `dijit.Dialog`. Only a single
+		//		instance of this widget is created by `dijit.Dialog`, and saved as
+		//		a reference to be shared between all Dialogs as `dijit._underlay`
+		//
+		//		The underlay itself can be styled based on and id:
+		//	|	#myDialog_underlay { background-color:red; }
+		//
+		//		In the case of `dijit.Dialog`, this id is based on the id of the Dialog,
+		//		suffixed with _underlay.
+
+		// Template has two divs; outer div is used for fade-in/fade-out, and also to hold background iframe.
+		// Inner div has opacity specified in CSS file.
+		templateString: "<div class='dijitDialogUnderlayWrapper'><div class='dijitDialogUnderlay' data-dojo-attach-point='node'></div></div>",
+
+		// Parameters on creation or updatable later
+
+		// dialogId: String
+		//		Id of the dialog.... DialogUnderlay's id is based on this id
+		dialogId: "",
+
+		// class: String
+		//		This class name is used on the DialogUnderlay node, in addition to dijitDialogUnderlay
+		"class": "",
+
+		_setDialogIdAttr: function(id){
+			domAttr.set(this.node, "id", id + "_underlay");
+			this._set("dialogId", id);
+		},
+
+		_setClassAttr: function(clazz){
+			this.node.className = "dijitDialogUnderlay " + clazz;
+			this._set("class", clazz);
+		},
+
+		postCreate: function(){
+			// summary:
+			//		Append the underlay to the body
+			this.ownerDocumentBody.appendChild(this.domNode);
+		},
+
+		layout: function(){
+			// summary:
+			//		Sets the background to the size of the viewport
+			//
+			// description:
+			//		Sets the background to the size of the viewport (rather than the size
+			//		of the document) since we need to cover the whole browser window, even
+			//		if the document is only a few lines long.
+			// tags:
+			//		private
+
+			var is = this.node.style,
+				os = this.domNode.style;
+
+			// hide the background temporarily, so that the background itself isn't
+			// causing scrollbars to appear (might happen when user shrinks browser
+			// window and then we are called to resize)
+			os.display = "none";
+
+			// then resize and show
+			var viewport = winUtils.getBox(this.ownerDocument);
+			os.top = viewport.t + "px";
+			os.left = viewport.l + "px";
+			is.width = viewport.w + "px";
+			is.height = viewport.h + "px";
+			os.display = "block";
+		},
+
+		show: function(){
+			// summary:
+			//		Show the dialog underlay
+			this.domNode.style.display = "block";
+			this.layout();
+			this.bgIframe = new BackgroundIframe(this.domNode);
+		},
+
+		hide: function(){
+			// summary:
+			//		Hides the dialog underlay
+			this.bgIframe.destroy();
+			delete this.bgIframe;
+			this.domNode.style.display = "none";
+		}
+	});
 });
 
 },
@@ -1887,7 +1887,7 @@ define([
 				this.defer("focus");
 			}
 
-			if(has("ios")){
+			if(has("touch")){
 				this._justGotMouseUp = true;
 				this.defer(function(){
 					this._justGotMouseUp = false;
@@ -1938,11 +1938,12 @@ define([
 
 			this.inherited(arguments);
 
+			var keyboardEventNode = this.focusNode || this.domNode;
 			this.own(
 				on(this._buttonNode, "mousedown", lang.hitch(this, "_onDropDownMouseDown")),
 				on(this._buttonNode, "click", lang.hitch(this, "_onDropDownClick")),
-				on(this.focusNode, "keydown", lang.hitch(this, "_onKey")),
-				on(this.focusNode, "keyup", lang.hitch(this, "_onKeyUp"))
+				on(keyboardEventNode, "keydown", lang.hitch(this, "_onKey")),
+				on(keyboardEventNode, "keyup", lang.hitch(this, "_onKeyUp"))
 			);
 		},
 
@@ -1976,7 +1977,7 @@ define([
 				event.stop(e);
 			}else if(!this._opened &&
 					(e.keyCode == keys.DOWN_ARROW ||
-						( (e.keyCode == keys.ENTER || e.keyCode == dojo.keys.SPACE) &&
+						( (e.keyCode == keys.ENTER || e.keyCode == keys.SPACE) &&
 						  //ignore enter and space if the event is for a text input
 						  ((target.tagName || "").toLowerCase() !== 'input' ||
 						     (target.type && target.type.toLowerCase() !== 'text'))))){
@@ -2724,7 +2725,7 @@ return declare("dijit._editor.plugins.EnterKeyHandling", _Plugin, {
 							}
 						}
 					});
-					if(has("ie") == 9){
+					if(has("ie") >= 9){
 						this.connect(editor.document, "onpaste", function(e){
 							setTimeout(dojo.hitch(this, function(){
 								// Use the old range/selection code to kick IE 9 into updating
@@ -2763,7 +2764,7 @@ return declare("dijit._editor.plugins.EnterKeyHandling", _Plugin, {
 					var block = this.editor._sCall('getAncestorElement', [this.blockNodeForEnter]);
 					if(block){
 						block.innerHTML=this.bogusHtmlContent;
-						if(has("ie")){
+						if(has("ie") <= 9){
 							// move to the start by moving backwards one char
 							var r = this.editor.document.selection.createRange();
 							r.move('character',-1);
@@ -3270,9 +3271,20 @@ return declare("dijit._MenuBase",
 	//		or DropDownButton/ComboButton.   Note though that it always get focused when opened via the keyboard.
 	autoFocus: false,
 
+	childSelector: function(/*DOMNode*/ node){
+		// summary:
+		//		Selector (passed to on.selector()) used to identify MenuItem child widgets, but exclude inert children
+		//		like MenuSeparator.  If subclass overrides to a string (ex: "> *"), the subclass must require dojo/query.
+		// tags:
+		//		protected
+
+		var widget = registry.byNode(node);
+		return node.parentNode == this.containerNode && widget && widget.focus;
+	},
+
 	postCreate: function(){
 		var self = this,
-			matches = function(node){ return domClass.contains(node, "dijitMenuItem"); };
+			matches = typeof this.childSelector == "string" ? this.childSelector : lang.hitch(this, "childSelector");
 		this.own(
 			on(this.containerNode, on.selector(matches, mouse.enter), function(){
 				self.onItemHover(registry.byNode(this));
@@ -3648,25 +3660,6 @@ return declare("dijit._MenuBase",
 });
 
 },
-'dijit/PopupMenuBarItem':function(){
-define([
-	"dojo/_base/declare", // declare
-	"./PopupMenuItem",
-	"./MenuBarItem"
-], function(declare, PopupMenuItem, MenuBarItem){
-
-	// module:
-	//		dijit/PopupMenuBarItem
-
-	var _MenuBarItemMixin = MenuBarItem._MenuBarItemMixin;
-
-	return declare("dijit.PopupMenuBarItem", [PopupMenuItem, _MenuBarItemMixin], {
-		// summary:
-		//		Item in a MenuBar like "File" or "Edit", that spawns a submenu when pressed (or hovered)
-	});
-});
-
-},
 'dijit/tree/ForestStoreModel':function(){
 define("dijit/tree/ForestStoreModel", [
 	"dojo/_base/array", // array.indexOf array.some
@@ -3949,6 +3942,25 @@ return declare("dijit.tree.ForestStoreModel", TreeStoreModel, {
 });
 
 },
+'dijit/PopupMenuBarItem':function(){
+define([
+	"dojo/_base/declare", // declare
+	"./PopupMenuItem",
+	"./MenuBarItem"
+], function(declare, PopupMenuItem, MenuBarItem){
+
+	// module:
+	//		dijit/PopupMenuBarItem
+
+	var _MenuBarItemMixin = MenuBarItem._MenuBarItemMixin;
+
+	return declare("dijit.PopupMenuBarItem", [PopupMenuItem, _MenuBarItemMixin], {
+		// summary:
+		//		Item in a MenuBar like "File" or "Edit", that spawns a submenu when pressed (or hovered)
+	});
+});
+
+},
 'url:dijit/layout/templates/AccordionButton.html':"<div data-dojo-attach-event='onclick:_onTitleClick' class='dijitAccordionTitle' role=\"presentation\">\n\t<div data-dojo-attach-point='titleNode,focusNode' data-dojo-attach-event='onkeypress:_onTitleKeyPress'\n\t\t\tclass='dijitAccordionTitleFocus' role=\"tab\" aria-expanded=\"false\"\n\t\t><span class='dijitInline dijitAccordionArrow' role=\"presentation\"></span\n\t\t><span class='arrowTextUp' role=\"presentation\">+</span\n\t\t><span class='arrowTextDown' role=\"presentation\">-</span\n\t\t><img src=\"${_blankGif}\" alt=\"\" class=\"dijitIcon\" data-dojo-attach-point='iconNode' style=\"vertical-align: middle\" role=\"presentation\"/>\n\t\t<span role=\"presentation\" data-dojo-attach-point='titleTextNode' class='dijitAccordionText'></span>\n\t</div>\n</div>\n",
 'dijit/TitlePane':function(){
 define([
@@ -4114,11 +4126,13 @@ return declare("dijit.TitlePane", [ContentPane, _TemplatedMixin, _CssStateMixin]
 
 		this.focusNode.setAttribute("role", canToggle ? "button" : "heading");
 		if(canToggle){
-			// TODO: if canToggle is switched from true to false shouldn't we remove this setting?
 			this.focusNode.setAttribute("aria-controls", this.id+"_pane");
-			domAttr.set(this.focusNode, "tabIndex", this.tabIndex);
+			this.focusNode.setAttribute("tabIndex", this.tabIndex);
+			this.focusNode.setAttribute("aria-pressed", this.open);
 		}else{
+			domAttr.remove(this.focusNode, "aria-controls");
 			domAttr.remove(this.focusNode, "tabIndex");
+			domAttr.remove(this.focusNode, "aria-pressed");
 		}
 
 		this._set("toggleable", canToggle);
@@ -4676,7 +4690,7 @@ define("dijit/form/_SearchMixin", [
 });
 
 },
-'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode,_popupStateNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-point=\"valueNode\"\n/></span>\n",
+'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode,_popupStateNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\"\n/></span>\n",
 'dijit/form/ToggleButton':function(){
 define("dijit/form/ToggleButton", [
 	"dojo/_base/declare", // declare
@@ -4731,6 +4745,8 @@ return declare("dijit.form.NumberSpinner", [_Spinner, NumberTextBox.Mixin], {
 	//
 	// example:
 	//	| new NumberSpinner({ constraints:{ max:300, min:100 }}, "someInput");
+
+	baseClass: "dijitTextBox dijitSpinner dijitNumberTextBox",
 
 	adjust: function(/*Object*/ val, /*Number*/ delta){
 		// summary:
@@ -4849,92 +4865,6 @@ define([
 		//		set("value", ...) accepts either a Date object or a string.
 		value: new Date("")	// value.toString()="NaN"
 	});
-});
-
-},
-'dijit/form/ComboButton':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/_base/event", // event.stop
-	"dojo/keys", // keys
-	"../focus",		// focus.focus()
-	"./DropDownButton",
-	"dojo/text!./templates/ComboButton.html"
-], function(declare, event, keys, focus, DropDownButton, template){
-
-// module:
-//		dijit/form/ComboButton
-
-return declare("dijit.form.ComboButton", DropDownButton, {
-	// summary:
-	//		A combination button and drop-down button.
-	//		Users can click one side to "press" the button, or click an arrow
-	//		icon to display the drop down.
-	//
-	// example:
-	// |	<button data-dojo-type="dijit/form/ComboButton" onClick="...">
-	// |		<span>Hello world</span>
-	// |		<div data-dojo-type="dijit/Menu">...</div>
-	// |	</button>
-	//
-	// example:
-	// |	var button1 = new ComboButton({label: "hello world", onClick: foo, dropDown: "myMenu"});
-	// |	dojo.body().appendChild(button1.domNode);
-	//
-
-	templateString: template,
-
-	// Map widget attributes to DOMNode attributes.
-	_setIdAttr: "",	// override _FormWidgetMixin which puts id on the focusNode
-	_setTabIndexAttr: ["focusNode", "titleNode"],
-	_setTitleAttr: "titleNode",
-
-	// optionsTitle: String
-	//		Text that describes the options menu (accessibility)
-	optionsTitle: "",
-
-	baseClass: "dijitComboButton",
-
-	// Set classes like dijitButtonContentsHover or dijitArrowButtonActive depending on
-	// mouse action over specified node
-	cssStateNodes: {
-		"buttonNode": "dijitButtonNode",
-		"titleNode": "dijitButtonContents",
-		"_popupStateNode": "dijitDownArrowButton"
-	},
-
-	_focusedNode: null,
-
-	_onButtonKeyPress: function(/*Event*/ evt){
-		// summary:
-		//		Handler for right arrow key when focus is on left part of button
-		if(evt.charOrCode == keys[this.isLeftToRight() ? "RIGHT_ARROW" : "LEFT_ARROW"]){
-			focus.focus(this._popupStateNode);
-			event.stop(evt);
-		}
-	},
-
-	_onArrowKeyPress: function(/*Event*/ evt){
-		// summary:
-		//		Handler for left arrow key when focus is on right part of button
-		if(evt.charOrCode == keys[this.isLeftToRight() ? "LEFT_ARROW" : "RIGHT_ARROW"]){
-			focus.focus(this.titleNode);
-			event.stop(evt);
-		}
-	},
-
-	focus: function(/*String*/ position){
-		// summary:
-		//		Focuses this widget to according to position, if specified,
-		//		otherwise on arrow node
-		// position:
-		//		"start" or "end"
-		if(!this.disabled){
-			focus.focus(position == "start" ? this.titleNode : this._popupStateNode);
-		}
-	}
-});
-
 });
 
 },
@@ -5478,6 +5408,92 @@ define("dijit/layout/AccordionContainer", [
 	AccordionContainer._Button = AccordionButton;
 
 	return AccordionContainer;
+});
+
+},
+'dijit/form/ComboButton':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/event", // event.stop
+	"dojo/keys", // keys
+	"../focus",		// focus.focus()
+	"./DropDownButton",
+	"dojo/text!./templates/ComboButton.html"
+], function(declare, event, keys, focus, DropDownButton, template){
+
+// module:
+//		dijit/form/ComboButton
+
+return declare("dijit.form.ComboButton", DropDownButton, {
+	// summary:
+	//		A combination button and drop-down button.
+	//		Users can click one side to "press" the button, or click an arrow
+	//		icon to display the drop down.
+	//
+	// example:
+	// |	<button data-dojo-type="dijit/form/ComboButton" onClick="...">
+	// |		<span>Hello world</span>
+	// |		<div data-dojo-type="dijit/Menu">...</div>
+	// |	</button>
+	//
+	// example:
+	// |	var button1 = new ComboButton({label: "hello world", onClick: foo, dropDown: "myMenu"});
+	// |	dojo.body().appendChild(button1.domNode);
+	//
+
+	templateString: template,
+
+	// Map widget attributes to DOMNode attributes.
+	_setIdAttr: "",	// override _FormWidgetMixin which puts id on the focusNode
+	_setTabIndexAttr: ["focusNode", "titleNode"],
+	_setTitleAttr: "titleNode",
+
+	// optionsTitle: String
+	//		Text that describes the options menu (accessibility)
+	optionsTitle: "",
+
+	baseClass: "dijitComboButton",
+
+	// Set classes like dijitButtonContentsHover or dijitArrowButtonActive depending on
+	// mouse action over specified node
+	cssStateNodes: {
+		"buttonNode": "dijitButtonNode",
+		"titleNode": "dijitButtonContents",
+		"_popupStateNode": "dijitDownArrowButton"
+	},
+
+	_focusedNode: null,
+
+	_onButtonKeyPress: function(/*Event*/ evt){
+		// summary:
+		//		Handler for right arrow key when focus is on left part of button
+		if(evt.charOrCode == keys[this.isLeftToRight() ? "RIGHT_ARROW" : "LEFT_ARROW"]){
+			focus.focus(this._popupStateNode);
+			event.stop(evt);
+		}
+	},
+
+	_onArrowKeyPress: function(/*Event*/ evt){
+		// summary:
+		//		Handler for left arrow key when focus is on right part of button
+		if(evt.charOrCode == keys[this.isLeftToRight() ? "LEFT_ARROW" : "RIGHT_ARROW"]){
+			focus.focus(this.titleNode);
+			event.stop(evt);
+		}
+	},
+
+	focus: function(/*String*/ position){
+		// summary:
+		//		Focuses this widget to according to position, if specified,
+		//		otherwise on arrow node
+		// position:
+		//		"start" or "end"
+		if(!this.disabled){
+			focus.focus(position == "start" ? this.titleNode : this._popupStateNode);
+		}
+	}
+});
+
 });
 
 },
@@ -6883,6 +6899,22 @@ define([
 });
 
 },
+'dojo/_base/query':function(){
+define(["../query", "./NodeList"], function(query){
+	// module:
+	//		dojo/_base/query
+
+	/*=====
+	return {
+		// summary:
+		//		Deprecated.   Use dojo/query instead.
+	};
+	=====*/
+
+	return query;
+});
+
+},
 'dijit/form/_TextBoxMixin':function(){
 define([
 	"dojo/_base/array", // array.forEach
@@ -7360,22 +7392,6 @@ return _TextBoxMixin;
 });
 
 },
-'dojo/_base/query':function(){
-define(["../query", "./NodeList"], function(query){
-	// module:
-	//		dojo/_base/query
-
-	/*=====
-	return {
-		// summary:
-		//		Deprecated.   Use dojo/query instead.
-	};
-	=====*/
-
-	return query;
-});
-
-},
 'dijit/form/SimpleTextarea':function(){
 define("dijit/form/SimpleTextarea", [
 	"dojo/_base/declare", // declare
@@ -7766,10 +7782,15 @@ define([
 				moreAfter = [],
 				estBeforeLength = count - after.length,
 				before = this._getFilteredNodes(0, estBeforeLength, true, after[0]);
-				if(before.length < estBeforeLength && after.length > 0){
-					moreAfter = this._getFilteredNodes(after.length, estBeforeLength - before.length, false, after[after.length-1]);
-				}
+			if(before.length < estBeforeLength && after.length > 0){
+				moreAfter = this._getFilteredNodes(after[after.length-1].idx + 1, estBeforeLength - before.length, false, after[after.length-1]);
+			}
 			array.forEach(before.concat(after, moreAfter), function(n){ this.timeMenu.appendChild(n); }, this);
+			// never show empty due to a bad filter
+			if(!before.length && !after.length && !moreAfter.length && this.filterString){
+				this.filterString = '';
+				this._showText();
+			}
 		},
 
 		constructor: function(/*===== params, srcNodeRef =====*/){
@@ -7778,6 +7799,7 @@ define([
 			// params: Object|null
 			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
 			// srcNodeRef: DOMNode|String?
 			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
 
@@ -8091,6 +8113,7 @@ define("dijit/form/RadioButton", [
 'url:dijit/templates/TimePicker.html':"<div id=\"widget_${id}\" class=\"dijitMenu\"\n    ><div data-dojo-attach-point=\"upArrow\" class=\"dijitButtonNode dijitUpArrowButton\" data-dojo-attach-event=\"onmouseenter:_buttonMouse,onmouseleave:_buttonMouse\"\n\t\t><div class=\"dijitReset dijitInline dijitArrowButtonInner\" role=\"presentation\">&#160;</div\n\t\t><div class=\"dijitArrowButtonChar\">&#9650;</div></div\n    ><div data-dojo-attach-point=\"timeMenu,focusNode\" data-dojo-attach-event=\"onclick:_onOptionSelected,onmouseover,onmouseout\"></div\n    ><div data-dojo-attach-point=\"downArrow\" class=\"dijitButtonNode dijitDownArrowButton\" data-dojo-attach-event=\"onmouseenter:_buttonMouse,onmouseleave:_buttonMouse\"\n\t\t><div class=\"dijitReset dijitInline dijitArrowButtonInner\" role=\"presentation\">&#160;</div\n\t\t><div class=\"dijitArrowButtonChar\">&#9660;</div></div\n></div>\n",
 'dijit/InlineEditBox':function(){
 define([
+	"require",
 	"dojo/_base/array", // array.forEach
 	"dojo/_base/declare", // declare
 	"dojo/dom-attr", // domAttr.set domAttr.get
@@ -8114,7 +8137,8 @@ define([
 	"./form/TextBox",
 	"dojo/text!./templates/InlineEditBox.html",
 	"dojo/i18n!./nls/common"
-], function(array, declare, domAttr, domClass, domConstruct, domStyle, event, i18n, kernel, keys, lang, has, when, fm, _Widget, _TemplatedMixin, _WidgetsInTemplateMixin, _Container, Button, _TextBoxMixin, TextBox, template){
+], function(require, array, declare, domAttr, domClass, domConstruct, domStyle, event, i18n, kernel, keys, lang, has, when,
+			fm, _Widget, _TemplatedMixin, _WidgetsInTemplateMixin, _Container, Button, _TextBoxMixin, TextBox, template){
 
 	// module:
 	//		dijit/InlineEditBox
@@ -8432,6 +8456,7 @@ define([
 			// params: Object|null
 			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
 			// srcNodeRef: DOMNode|String?
 			//		If a srcNodeRef (DOM node) is specified:
 			//
@@ -9313,7 +9338,7 @@ return dojo.cookie;
 });
 
 },
-'url:dijit/form/templates/DropDownBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\"\n\trole=\"combobox\"\n\t><div class='dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer'\n\t\tdata-dojo-attach-point=\"_buttonNode, _popupStateNode\" role=\"presentation\"\n\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t${_buttonInputDisabled}\n\t/></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' ${!nameAttrSetting} type=\"text\" autocomplete=\"off\"\n\t\t\tdata-dojo-attach-point=\"textbox,focusNode\" role=\"textbox\" aria-haspopup=\"true\"\n\t/></div\n></div>\n",
+'url:dijit/form/templates/DropDownBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\"\n\trole=\"combobox\"\n\t><div class='dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer'\n\t\tdata-dojo-attach-point=\"_buttonNode, _popupStateNode\" role=\"presentation\"\n\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"button presentation\" aria-hidden=\"true\"\n\t\t\t${_buttonInputDisabled}\n\t/></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' ${!nameAttrSetting} type=\"text\" autocomplete=\"off\"\n\t\t\tdata-dojo-attach-point=\"textbox,focusNode\" role=\"textbox\" aria-haspopup=\"true\"\n\t/></div\n></div>\n",
 'dijit/ProgressBar':function(){
 define([
 	"require",			// require.toUrl
@@ -9421,8 +9446,6 @@ return declare("dijit.ProgressBar", [_Widget, _TemplatedMixin], {
 		var percent = 1;
 		if(this.indeterminate){
 			ap.removeAttribute("aria-valuenow");
-			ap.removeAttribute("aria-valuemin");
-			ap.removeAttribute("aria-valuemax");
 		}else{
 			if(String(this.progress).indexOf("%") != -1){
 				percent = Math.min(parseFloat(this.progress)/100, 1);
@@ -9431,12 +9454,14 @@ return declare("dijit.ProgressBar", [_Widget, _TemplatedMixin], {
 				this.progress = Math.min(this.progress, this.maximum);
 				percent = this.maximum ? this.progress / this.maximum : 0;
 			}
-
-			ap.setAttribute("aria-describedby", this.labelNode.id);
 			ap.setAttribute("aria-valuenow", this.progress);
-			ap.setAttribute("aria-valuemin", 0);
-			ap.setAttribute("aria-valuemax", this.maximum);
 		}
+
+		// Even indeterminate ProgressBars should have these attributes
+		ap.setAttribute("aria-describedby", this.labelNode.id);
+		ap.setAttribute("aria-valuemin", 0);
+		ap.setAttribute("aria-valuemax", this.maximum);
+		
 		this.labelNode.innerHTML = this.report(percent);
 
 		domClass.toggle(this.domNode, "dijitProgressBarIndeterminate", this.indeterminate);
@@ -10098,8 +10123,8 @@ define([
 
 },
 'url:dijit/templates/MenuItem.html':"<tr class=\"dijitReset dijitMenuItem\" data-dojo-attach-point=\"focusNode\" role=\"menuitem\" tabIndex=\"-1\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<img src=\"${_blankGif}\" alt=\"\" class=\"dijitIcon dijitMenuItemIcon\" data-dojo-attach-point=\"iconNode\"/>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"arrowWrapper\" style=\"visibility: hidden\">\n\t\t\t<img src=\"${_blankGif}\" alt=\"\" class=\"dijitMenuExpand\"/>\n\t\t\t<span class=\"dijitMenuExpandA11y\">+</span>\n\t\t</div>\n\t</td>\n</tr>\n",
-'url:dijit/form/templates/CheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><input\n\t \t${!nameAttrSetting} type=\"${type}\" ${checkedAttrSetting}\n\t\tclass=\"dijitReset dijitCheckBoxInput\"\n\t\tdata-dojo-attach-point=\"focusNode\"\n\t \tdata-dojo-attach-event=\"onclick:_onClick\"\n/></div>\n",
-'url:dijit/form/templates/VerticalSlider.html':"<table class=\"dijit dijitReset dijitSlider dijitSliderV\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" rules=\"none\" data-dojo-attach-event=\"onkeypress:_onKeyPress,onkeyup:_onKeyUp\"\n\trole=\"presentation\"\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset dijitSliderButtonContainer dijitSliderButtonContainerV\"\n\t\t\t><div class=\"dijitSliderIncrementIconV\" style=\"display:none\" data-dojo-attach-point=\"decrementButton\"><span class=\"dijitSliderButtonInner\">+</span></div\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset\"\n\t\t\t><center><div class=\"dijitSliderBar dijitSliderBumper dijitSliderBumperV dijitSliderTopBumper\" data-dojo-attach-event=\"press:_onClkIncBumper\"></div></center\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td data-dojo-attach-point=\"leftDecoration\" class=\"dijitReset dijitSliderDecoration dijitSliderDecorationL dijitSliderDecorationV\"></td\n\t\t><td class=\"dijitReset dijitSliderDecorationC\" style=\"height:100%;\"\n\t\t\t><input data-dojo-attach-point=\"valueNode\" type=\"hidden\" ${!nameAttrSetting}\n\t\t\t/><center class=\"dijitReset dijitSliderBarContainerV\" role=\"presentation\" data-dojo-attach-point=\"sliderBarContainer\"\n\t\t\t\t><div role=\"presentation\" data-dojo-attach-point=\"remainingBar\" class=\"dijitSliderBar dijitSliderBarV dijitSliderRemainingBar dijitSliderRemainingBarV\" data-dojo-attach-event=\"press:_onBarClick\"><!--#5629--></div\n\t\t\t\t><div role=\"presentation\" data-dojo-attach-point=\"progressBar\" class=\"dijitSliderBar dijitSliderBarV dijitSliderProgressBar dijitSliderProgressBarV\" data-dojo-attach-event=\"press:_onBarClick\"\n\t\t\t\t\t><div class=\"dijitSliderMoveable dijitSliderMoveableV\" style=\"vertical-align:top;\"\n\t\t\t\t\t\t><div data-dojo-attach-point=\"sliderHandle,focusNode\" class=\"dijitSliderImageHandle dijitSliderImageHandleV\" data-dojo-attach-event=\"press:_onHandleClick\" role=\"slider\"></div\n\t\t\t\t\t></div\n\t\t\t\t></div\n\t\t\t></center\n\t\t></td\n\t\t><td data-dojo-attach-point=\"containerNode,rightDecoration\" class=\"dijitReset dijitSliderDecoration dijitSliderDecorationR dijitSliderDecorationV\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset\"\n\t\t\t><center><div class=\"dijitSliderBar dijitSliderBumper dijitSliderBumperV dijitSliderBottomBumper\" data-dojo-attach-event=\"press:_onClkDecBumper\"></div></center\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset dijitSliderButtonContainer dijitSliderButtonContainerV\"\n\t\t\t><div class=\"dijitSliderDecrementIconV\" style=\"display:none\" data-dojo-attach-point=\"incrementButton\"><span class=\"dijitSliderButtonInner\">-</span></div\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n></table>\n",
+'url:dijit/form/templates/CheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><input\n\t \t${!nameAttrSetting} type=\"${type}\" role=\"${type}\" aria-checked=\"false\" ${checkedAttrSetting}\n\t\tclass=\"dijitReset dijitCheckBoxInput\"\n\t\tdata-dojo-attach-point=\"focusNode\"\n\t \tdata-dojo-attach-event=\"onclick:_onClick\"\n/></div>\n",
+'url:dijit/form/templates/VerticalSlider.html':"<table class=\"dijit dijitReset dijitSlider dijitSliderV\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" rules=\"none\" data-dojo-attach-event=\"onkeypress:_onKeyPress,onkeyup:_onKeyUp\"\n\trole=\"presentation\"\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset dijitSliderButtonContainer dijitSliderButtonContainerV\"\n\t\t\t><div class=\"dijitSliderIncrementIconV\" style=\"display:none\" data-dojo-attach-point=\"decrementButton\"><span class=\"dijitSliderButtonInner\">+</span></div\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset\"\n\t\t\t><center><div class=\"dijitSliderBar dijitSliderBumper dijitSliderBumperV dijitSliderTopBumper\" data-dojo-attach-event=\"press:_onClkIncBumper\"></div></center\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td data-dojo-attach-point=\"leftDecoration\" class=\"dijitReset dijitInline dijitSliderDecoration dijitSliderDecorationL dijitSliderDecorationV\"></td\n\t\t><td class=\"dijitReset dijitSliderDecorationC\" style=\"height:100%;\"\n\t\t\t><input data-dojo-attach-point=\"valueNode\" type=\"hidden\" ${!nameAttrSetting}\n\t\t\t/><center class=\"dijitReset dijitSliderBarContainerV\" role=\"presentation\" data-dojo-attach-point=\"sliderBarContainer\"\n\t\t\t\t><div role=\"presentation\" data-dojo-attach-point=\"remainingBar\" class=\"dijitSliderBar dijitSliderBarV dijitSliderRemainingBar dijitSliderRemainingBarV\" data-dojo-attach-event=\"press:_onBarClick\"><!--#5629--></div\n\t\t\t\t><div role=\"presentation\" data-dojo-attach-point=\"progressBar\" class=\"dijitSliderBar dijitSliderBarV dijitSliderProgressBar dijitSliderProgressBarV\" data-dojo-attach-event=\"press:_onBarClick\"\n\t\t\t\t\t><div class=\"dijitSliderMoveable dijitSliderMoveableV\" style=\"vertical-align:top;\"\n\t\t\t\t\t\t><div data-dojo-attach-point=\"sliderHandle,focusNode\" class=\"dijitSliderImageHandle dijitSliderImageHandleV\" data-dojo-attach-event=\"press:_onHandleClick\" role=\"slider\"></div\n\t\t\t\t\t></div\n\t\t\t\t></div\n\t\t\t></center\n\t\t></td\n\t\t><td data-dojo-attach-point=\"containerNode,rightDecoration\" class=\"dijitReset dijitInline dijitSliderDecoration dijitSliderDecorationR dijitSliderDecorationV\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset\"\n\t\t\t><center><div class=\"dijitSliderBar dijitSliderBumper dijitSliderBumperV dijitSliderBottomBumper\" data-dojo-attach-event=\"press:_onClkDecBumper\"></div></center\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n\t><tr class=\"dijitReset\"\n\t\t><td class=\"dijitReset\"></td\n\t\t><td class=\"dijitReset dijitSliderButtonContainer dijitSliderButtonContainerV\"\n\t\t\t><div class=\"dijitSliderDecrementIconV\" style=\"display:none\" data-dojo-attach-point=\"incrementButton\"><span class=\"dijitSliderButtonInner\">-</span></div\n\t\t></td\n\t\t><td class=\"dijitReset\"></td\n\t></tr\n></table>\n",
 'dijit/layout/LayoutContainer':function(){
 define([
 	"dojo/_base/kernel", // kernel.deprecated
@@ -10426,25 +10451,25 @@ define([
 				this._onDeck=null;
 			}
 		},
-		
-		_setAutoTextDir: function(/*Object*/node){
-		    // summary:
-		    //		Resolve "auto" text direction for children nodes
-		    // tags:
-		    //		private
 
-            this.applyTextDir(node, has("ie") ? node.outerText : node.textContent);
-            array.forEach(node.children, function(child){this._setAutoTextDir(child); }, this);
+		_setAutoTextDir: function(/*Object*/node){
+			// summary:
+			//		Resolve "auto" text direction for children nodes
+			// tags:
+			//		private
+
+			this.applyTextDir(node, has("ie") ? node.outerText : node.textContent);
+			array.forEach(node.children, function(child){this._setAutoTextDir(child); }, this);
 		},
-		
+
 		_setTextDirAttr: function(/*String*/ textDir){
-		    // summary:
-		    //		Setter for textDir.
-		    // description:
-		    //		Users shouldn't call this function; they should be calling
-		    //		set('textDir', value)
-		    // tags:
-		    //		private
+			// summary:
+			//		Setter for textDir.
+			// description:
+			//		Users shouldn't call this function; they should be calling
+			//		set('textDir', value)
+			// tags:
+			//		private
 
 			this._set("textDir", textDir);
 
@@ -11549,30 +11574,6 @@ define([
 				this.messages = i18n.getLocalization("dijit.form", "validate", this.lang);
 				this.rangeMessage = this.messages.rangeMessage;
 			}
-		},
-
-		_setConstraintsAttr: function(/*Object*/ constraints){
-			this.inherited(arguments);
-			if(this.focusNode){ // not set when called from postMixInProperties
-				if(this.constraints.min !== undefined){
-					this.focusNode.setAttribute("aria-valuemin", this.constraints.min);
-				}else{
-					this.focusNode.removeAttribute("aria-valuemin");
-				}
-				if(this.constraints.max !== undefined){
-					this.focusNode.setAttribute("aria-valuemax", this.constraints.max);
-				}else{
-					this.focusNode.removeAttribute("aria-valuemax");
-				}
-			}
-		},
-
-		_setValueAttr: function(/*Number*/ value, /*Boolean?*/ priorityChange){
-			// summary:
-			//		Hook so set('value', ...) works.
-
-			this.focusNode.setAttribute("aria-valuenow", value);
-			this.inherited(arguments);
 		},
 
 		applyTextDir: function(/*===== element, text =====*/){
@@ -14869,7 +14870,7 @@ return function(query, options){
 	//		used to match strings by more complex expressions
 	//		(and then the regex's or object's test() method will be used to match values).
 	//
-	// options: Store.QueryOptions?
+	// options: dojo/store/api/Store.QueryOptions?
 	//		An object that contains optional information such as sort, start, and count.
 	//
 	// returns: Function
@@ -14957,9 +14958,10 @@ define([
 	"dojo/dom-construct", // domConstruct.create
 	"dojo/has",
 	"dojo/_base/lang", // lang.hitch
+	"dojo/on",
 	"dojo/_base/window", // win.body
 	"../Viewport"
-], function(declare, domConstruct, has, lang, win, Viewport){
+], function(declare, domConstruct, has, lang, on, win, Viewport){
 
 	// module:
 	//		dijit/form/_ExpandingTextAreaMixin
@@ -14971,7 +14973,7 @@ define([
 			rows:"5",
 			cols:"20",
 			value: ' ',
-			style: {zoom:1, overflow:'hidden', visibility:'hidden', position:'absolute', border:"0px solid black", padding:"0px"}
+			style: {zoom:1, fontSize:"12px", height:"96px", overflow:'hidden', visibility:'hidden', position:'absolute', border:"5px solid white", margin:"0", padding:"0", boxSizing: 'border-box', MsBoxSizing: 'border-box', WebkitBoxSizing: 'border-box', MozBoxSizing: 'border-box' }
 		}, body, "last");
 		var needsHelpShrinking = te.scrollHeight >= te.clientHeight;
 		body.removeChild(te);
@@ -14990,13 +14992,13 @@ define([
 		postCreate: function(){
 			this.inherited(arguments);
 			var textarea = this.textbox;
-
-			this.connect(textarea, "onscroll", "_resizeLater");
-			this.connect(textarea, "onresize", "_resizeLater");
-			this.connect(textarea, "onfocus", "_resizeLater");
-			this.own(Viewport.on("resize", lang.hitch(this, "_resizeLater")));
 			textarea.style.overflowY = "hidden";
-			this._estimateHeight();
+			this.own(on(textarea, "focus, resize", lang.hitch(this, "_resizeLater")));
+		},
+
+		startup: function(){ 
+			this.inherited(arguments);
+			this.own(Viewport.on("resize", lang.hitch(this, "_resizeLater")));
 			this._resizeLater();
 		},
 
@@ -15012,12 +15014,8 @@ define([
 			//		In IE, the resize event is supposed to fire when the textarea becomes visible again and that will correct the size automatically.
 			//
 			var textarea = this.textbox;
-			textarea.style.height = "auto";
 			// #rows = #newlines+1
-			// Note: on Moz, the following #rows appears to be 1 too many.
-			// Actually, Moz is reserving room for the scrollbar.
-			// If you increase the font size, this behavior becomes readily apparent as the last line gets cut off without the +1.
-			textarea.rows = (textarea.value.match(/\n/g) || []).length + 2;
+			textarea.rows = (textarea.value.match(/\n/g) || []).length + 1;
 		},
 
 		_resizeLater: function(){
@@ -15045,24 +15043,19 @@ define([
 			if(this.busyResizing){ return; }
 			this.busyResizing = true;
 			if(textareaScrollHeight() || textarea.offsetHeight){
-				var currentHeight = textarea.style.height;
-				if(!(/px/.test(currentHeight))){
-					currentHeight = textareaScrollHeight();
-					textarea.rows = 1;
-					textarea.style.height = currentHeight + "px";
-				}
-				var newH = Math.max(Math.max(textarea.offsetHeight, parseInt(currentHeight)) - textarea.clientHeight, 0) + textareaScrollHeight();
+				var newH = textareaScrollHeight() + Math.max(textarea.offsetHeight - textarea.clientHeight, 0);
 				var newHpx = newH + "px";
 				if(newHpx != textarea.style.height){
-					textarea.rows = 1;
 					textarea.style.height = newHpx;
+					textarea.rows = 1; // rows can act like a minHeight if not cleared
 				}
 				if(has("textarea-needs-help-shrinking")){
 					var	origScrollHeight = textareaScrollHeight(),
 						newScrollHeight = origScrollHeight,
 						origMinHeight = textarea.style.minHeight,
 						decrement = 4, // not too fast, not too slow
-						thisScrollHeight;
+						thisScrollHeight,
+						origScrollTop = textarea.scrollTop;
 					textarea.style.minHeight = newHpx; // maintain current height
 					textarea.style.height = "auto"; // allow scrollHeight to change
 					while(newH > 0){
@@ -15078,8 +15071,10 @@ define([
 					}
 					textarea.style.height = newH + "px";
 					textarea.style.minHeight = origMinHeight;
+					textarea.scrollTop = origScrollTop;
 				}
 				textarea.style.overflowY = textareaScrollHeight() > textarea.clientHeight ? "auto" : "hidden";
+				if(textarea.style.overflowY == "hidden"){ textarea.scrollTop = 0; }
 			}else{
 				// hidden content of unknown size
 				this._estimateHeight();
@@ -15772,6 +15767,7 @@ define([
 			// params: Object|null
 			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
 			// srcNodeRef: DOMNode|String?
 			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
 
@@ -16487,7 +16483,30 @@ define([
 				}
 				this._wheelTimer = this.defer(function(){ this._arrowReleased(node); }, 50);
 			}
+		},
 
+		_setConstraintsAttr: function(/*Object*/ constraints){
+			this.inherited(arguments);
+			if(this.focusNode){ // not set when called from postMixInProperties
+				if(this.constraints.min !== undefined){
+					this.focusNode.setAttribute("aria-valuemin", this.constraints.min);
+				}else{
+					this.focusNode.removeAttribute("aria-valuemin");
+				}
+				if(this.constraints.max !== undefined){
+					this.focusNode.setAttribute("aria-valuemax", this.constraints.max);
+				}else{
+					this.focusNode.removeAttribute("aria-valuemax");
+				}
+			}
+		},
+
+		_setValueAttr: function(/*Number*/ value, /*Boolean?*/ priorityChange){
+			// summary:
+			//		Hook so set('value', ...) works.
+
+			this.focusNode.setAttribute("aria-valuenow", value);
+			this.inherited(arguments);
 		},
 
 		postCreate: function(){
@@ -16730,7 +16749,7 @@ var __parentConstrainedMoveableArgs = declare( [__constrainedMoveableArgs], {
 });
 =====*/
 
-var parentConstrainedMoveable = declare("dnd.move.parentConstrainedMoveable", constrainedMoveable, {
+var parentConstrainedMoveable = declare("dojo.dnd.move.parentConstrainedMoveable", constrainedMoveable, {
 	// area:
 	//		object attributes (for markup)
 	area: "content",
@@ -16775,6 +16794,153 @@ return {
 	boxConstrainedMoveable: boxConstrainedMoveable,
 	parentConstrainedMoveable: parentConstrainedMoveable
 };
+
+});
+
+},
+'dijit/layout/_TabContainerBase':function(){
+define([
+	"dojo/text!./templates/TabContainer.html",
+	"./StackContainer",
+	"./utils",	// marginBox2contextBox, layoutChildren
+	"../_TemplatedMixin",
+	"dojo/_base/declare", // declare
+	"dojo/dom-class", // domClass.add
+	"dojo/dom-geometry", // domGeometry.contentBox
+	"dojo/dom-style" // domStyle.style
+], function(template, StackContainer, layoutUtils, _TemplatedMixin, declare, domClass, domGeometry, domStyle){
+
+// module:
+//		dijit/layout/_TabContainerBase
+
+
+return declare("dijit.layout._TabContainerBase", [StackContainer, _TemplatedMixin], {
+	// summary:
+	//		Abstract base class for TabContainer.   Must define _makeController() to instantiate
+	//		and return the widget that displays the tab labels
+	// description:
+	//		A TabContainer is a container that has multiple panes, but shows only
+	//		one pane at a time.  There are a set of tabs corresponding to each pane,
+	//		where each tab has the name (aka title) of the pane, and optionally a close button.
+
+	// tabPosition: String
+	//		Defines where tabs go relative to tab content.
+	//		"top", "bottom", "left-h", "right-h"
+	tabPosition: "top",
+
+	baseClass: "dijitTabContainer",
+
+	// tabStrip: [const] Boolean
+	//		Defines whether the tablist gets an extra class for layouting, putting a border/shading
+	//		around the set of tabs.   Not supported by claro theme.
+	tabStrip: false,
+
+	// nested: [const] Boolean
+	//		If true, use styling for a TabContainer nested inside another TabContainer.
+	//		For tundra etc., makes tabs look like links, and hides the outer
+	//		border since the outer TabContainer already has a border.
+	nested: false,
+
+	templateString: template,
+
+	postMixInProperties: function(){
+		// set class name according to tab position, ex: dijitTabContainerTop
+		this.baseClass += this.tabPosition.charAt(0).toUpperCase() + this.tabPosition.substr(1).replace(/-.*/, "");
+
+		this.srcNodeRef && domStyle.set(this.srcNodeRef, "visibility", "hidden");
+
+		this.inherited(arguments);
+	},
+
+	buildRendering: function(){
+		this.inherited(arguments);
+
+		// Create the tab list that will have a tab (a.k.a. tab button) for each tab panel
+		this.tablist = this._makeController(this.tablistNode);
+
+		if(!this.doLayout){ domClass.add(this.domNode, "dijitTabContainerNoLayout"); }
+
+		if(this.nested){
+			/* workaround IE's lack of support for "a > b" selectors by
+			 * tagging each node in the template.
+			 */
+			domClass.add(this.domNode, "dijitTabContainerNested");
+			domClass.add(this.tablist.containerNode, "dijitTabContainerTabListNested");
+			domClass.add(this.tablistSpacer, "dijitTabContainerSpacerNested");
+			domClass.add(this.containerNode, "dijitTabPaneWrapperNested");
+		}else{
+			domClass.add(this.domNode, "tabStrip-" + (this.tabStrip ? "enabled" : "disabled"));
+		}
+	},
+
+	_setupChild: function(/*dijit/_WidgetBase*/ tab){
+		// Overrides StackContainer._setupChild().
+		domClass.add(tab.domNode, "dijitTabPane");
+		this.inherited(arguments);
+	},
+
+	startup: function(){
+		if(this._started){ return; }
+
+		// wire up the tablist and its tabs
+		this.tablist.startup();
+
+		this.inherited(arguments);
+	},
+
+	layout: function(){
+		// Overrides StackContainer.layout().
+		// Configure the content pane to take up all the space except for where the tabs are
+
+		if(!this._contentBox || typeof(this._contentBox.l) == "undefined"){return;}
+
+		var sc = this.selectedChildWidget;
+
+		if(this.doLayout){
+			// position and size the titles and the container node
+			var titleAlign = this.tabPosition.replace(/-h/, "");
+			this.tablist.layoutAlign = titleAlign;
+			var children = [this.tablist, {
+				domNode: this.tablistSpacer,
+				layoutAlign: titleAlign
+			}, {
+				domNode: this.containerNode,
+				layoutAlign: "client"
+			}];
+			layoutUtils.layoutChildren(this.domNode, this._contentBox, children);
+
+			// Compute size to make each of my children.
+			// children[2] is the margin-box size of this.containerNode, set by layoutChildren() call above
+			this._containerContentBox = layoutUtils.marginBox2contentBox(this.containerNode, children[2]);
+
+			if(sc && sc.resize){
+				sc.resize(this._containerContentBox);
+			}
+		}else{
+			// just layout the tab controller, so it can position left/right buttons etc.
+			if(this.tablist.resize){
+				//make the tabs zero width so that they don't interfere with width calc, then reset
+				var s = this.tablist.domNode.style;
+				s.width="0";
+				var width = domGeometry.getContentBox(this.domNode).w;
+				s.width="";
+				this.tablist.resize({w: width});
+			}
+
+			// and call resize() on the selected pane just to tell it that it's been made visible
+			if(sc && sc.resize){
+				sc.resize();
+			}
+		}
+	},
+
+	destroy: function(){
+		if(this.tablist){
+			this.tablist.destroy();
+		}
+		this.inherited(arguments);
+	}
+});
 
 });
 
@@ -16945,153 +17111,6 @@ define([
 });
 
 },
-'dijit/layout/_TabContainerBase':function(){
-define([
-	"dojo/text!./templates/TabContainer.html",
-	"./StackContainer",
-	"./utils",	// marginBox2contextBox, layoutChildren
-	"../_TemplatedMixin",
-	"dojo/_base/declare", // declare
-	"dojo/dom-class", // domClass.add
-	"dojo/dom-geometry", // domGeometry.contentBox
-	"dojo/dom-style" // domStyle.style
-], function(template, StackContainer, layoutUtils, _TemplatedMixin, declare, domClass, domGeometry, domStyle){
-
-// module:
-//		dijit/layout/_TabContainerBase
-
-
-return declare("dijit.layout._TabContainerBase", [StackContainer, _TemplatedMixin], {
-	// summary:
-	//		Abstract base class for TabContainer.   Must define _makeController() to instantiate
-	//		and return the widget that displays the tab labels
-	// description:
-	//		A TabContainer is a container that has multiple panes, but shows only
-	//		one pane at a time.  There are a set of tabs corresponding to each pane,
-	//		where each tab has the name (aka title) of the pane, and optionally a close button.
-
-	// tabPosition: String
-	//		Defines where tabs go relative to tab content.
-	//		"top", "bottom", "left-h", "right-h"
-	tabPosition: "top",
-
-	baseClass: "dijitTabContainer",
-
-	// tabStrip: [const] Boolean
-	//		Defines whether the tablist gets an extra class for layouting, putting a border/shading
-	//		around the set of tabs.   Not supported by claro theme.
-	tabStrip: false,
-
-	// nested: [const] Boolean
-	//		If true, use styling for a TabContainer nested inside another TabContainer.
-	//		For tundra etc., makes tabs look like links, and hides the outer
-	//		border since the outer TabContainer already has a border.
-	nested: false,
-
-	templateString: template,
-
-	postMixInProperties: function(){
-		// set class name according to tab position, ex: dijitTabContainerTop
-		this.baseClass += this.tabPosition.charAt(0).toUpperCase() + this.tabPosition.substr(1).replace(/-.*/, "");
-
-		this.srcNodeRef && domStyle.set(this.srcNodeRef, "visibility", "hidden");
-
-		this.inherited(arguments);
-	},
-
-	buildRendering: function(){
-		this.inherited(arguments);
-
-		// Create the tab list that will have a tab (a.k.a. tab button) for each tab panel
-		this.tablist = this._makeController(this.tablistNode);
-
-		if(!this.doLayout){ domClass.add(this.domNode, "dijitTabContainerNoLayout"); }
-
-		if(this.nested){
-			/* workaround IE's lack of support for "a > b" selectors by
-			 * tagging each node in the template.
-			 */
-			domClass.add(this.domNode, "dijitTabContainerNested");
-			domClass.add(this.tablist.containerNode, "dijitTabContainerTabListNested");
-			domClass.add(this.tablistSpacer, "dijitTabContainerSpacerNested");
-			domClass.add(this.containerNode, "dijitTabPaneWrapperNested");
-		}else{
-			domClass.add(this.domNode, "tabStrip-" + (this.tabStrip ? "enabled" : "disabled"));
-		}
-	},
-
-	_setupChild: function(/*dijit/_WidgetBase*/ tab){
-		// Overrides StackContainer._setupChild().
-		domClass.add(tab.domNode, "dijitTabPane");
-		this.inherited(arguments);
-	},
-
-	startup: function(){
-		if(this._started){ return; }
-
-		// wire up the tablist and its tabs
-		this.tablist.startup();
-
-		this.inherited(arguments);
-	},
-
-	layout: function(){
-		// Overrides StackContainer.layout().
-		// Configure the content pane to take up all the space except for where the tabs are
-
-		if(!this._contentBox || typeof(this._contentBox.l) == "undefined"){return;}
-
-		var sc = this.selectedChildWidget;
-
-		if(this.doLayout){
-			// position and size the titles and the container node
-			var titleAlign = this.tabPosition.replace(/-h/, "");
-			this.tablist.layoutAlign = titleAlign;
-			var children = [this.tablist, {
-				domNode: this.tablistSpacer,
-				layoutAlign: titleAlign
-			}, {
-				domNode: this.containerNode,
-				layoutAlign: "client"
-			}];
-			layoutUtils.layoutChildren(this.domNode, this._contentBox, children);
-
-			// Compute size to make each of my children.
-			// children[2] is the margin-box size of this.containerNode, set by layoutChildren() call above
-			this._containerContentBox = layoutUtils.marginBox2contentBox(this.containerNode, children[2]);
-
-			if(sc && sc.resize){
-				sc.resize(this._containerContentBox);
-			}
-		}else{
-			// just layout the tab controller, so it can position left/right buttons etc.
-			if(this.tablist.resize){
-				//make the tabs zero width so that they don't interfere with width calc, then reset
-				var s = this.tablist.domNode.style;
-				s.width="0";
-				var width = domGeometry.getContentBox(this.domNode).w;
-				s.width="";
-				this.tablist.resize({w: width});
-			}
-
-			// and call resize() on the selected pane just to tell it that it's been made visible
-			if(sc && sc.resize){
-				sc.resize();
-			}
-		}
-	},
-
-	destroy: function(){
-		if(this.tablist){
-			this.tablist.destroy();
-		}
-		this.inherited(arguments);
-	}
-});
-
-});
-
-},
 'dojo/store/Memory':function(){
 define(["../_base/declare", "./util/QueryResults", "./util/SimpleQueryEngine" /*=====, "./api/Store" =====*/],
 function(declare, QueryResults, SimpleQueryEngine /*=====, Store =====*/){
@@ -17155,7 +17174,7 @@ return declare("dojo.store.Memory", base, {
 		//		Stores an object
 		// object: Object
 		//		The object to store.
-		// options: Store.PutDirectives??
+		// options: dojo/store/api/Store.PutDirectives?
 		//		Additional metadata for storing the data.  Includes an "id"
 		//		property if a specific id is to be used.
 		// returns: Number
@@ -17181,7 +17200,7 @@ return declare("dojo.store.Memory", base, {
 		//		Creates an object, throws an error if the object already exists
 		// object: Object
 		//		The object to store.
-		// options: Store.PutDirectives??
+		// options: dojo/store/api/Store.PutDirectives?
 		//		Additional metadata for storing the data.  Includes an "id"
 		//		property if a specific id is to be used.
 		// returns: Number
@@ -17210,9 +17229,9 @@ return declare("dojo.store.Memory", base, {
 		//		Queries the store for objects.
 		// query: Object
 		//		The query to use for retrieving objects from the store.
-		// options: Store.QueryOptions?
+		// options: dojo/store/api/Store.QueryOptions?
 		//		The optional arguments to apply to the resultset.
-		// returns: Store.QueryResults
+		// returns: dojo/store/api/Store.QueryResults
 		//		The results of the query, extended with iterative methods.
 		//
 		// example:
@@ -17262,6 +17281,7 @@ return declare("dojo.store.Memory", base, {
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\"\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n></div>\n",
 'dijit/Editor':function(){
 define([
+	"require",
 	"dojo/_base/array", // array.forEach
 	"dojo/_base/declare", // declare
 	"dojo/_base/Deferred", // Deferred
@@ -17290,7 +17310,7 @@ define([
 	"./_editor/RichText",
 	"./main",	// dijit._scopeName
 	"dojo/i18n!./_editor/nls/commands"
-], function(array, declare, Deferred, i18n, domAttr, domClass, domGeometry, domStyle,
+], function(require, array, declare, Deferred, i18n, domAttr, domClass, domGeometry, domStyle,
 			event, keys, lang, has, string, topic, win,
 			focusBase, _Container, Toolbar, ToolbarSeparator, _LayoutWidget, ToggleButton,
 			_Plugin, EnterKeyHandling, html, rangeapi, RichText, dijit){
@@ -18653,6 +18673,677 @@ define([
 });
 
 },
+'dijit/_editor/plugins/LinkDialog':function(){
+define([
+	"require",
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.get
+	"dojo/keys", // keys.ENTER
+	"dojo/_base/lang", // lang.delegate lang.hitch lang.trim
+	"dojo/sniff", // has("ie")
+	"dojo/_base/query", // query
+	"dojo/string", // string.substitute
+	"../../_Widget",
+	"../_Plugin",
+	"../../form/DropDownButton",
+	"../range"
+], function(require, declare, domAttr, keys, lang, has, query, string,
+	_Widget, _Plugin, DropDownButton, rangeapi){
+
+
+// module:
+//		dijit/_editor/plugins/LinkDialog
+// summary:
+//		Editor plugins: LinkDialog (for inserting links) and ImgLinkDialog (for inserting images)
+
+
+var LinkDialog = declare("dijit._editor.plugins.LinkDialog", _Plugin, {
+	// summary:
+	//		This plugin provides the basis for an 'anchor' (link) dialog and an extension of it
+	//		provides the image link dialog.
+	// description:
+	//		The command provided by this plugin is:
+	//
+	//		- createLink
+
+	// Override _Plugin.buttonClass.   This plugin is controlled by a DropDownButton
+	// (which triggers a TooltipDialog).
+	buttonClass: DropDownButton,
+
+	// Override _Plugin.useDefaultCommand... processing is handled by this plugin, not by dijit/Editor.
+	useDefaultCommand: false,
+
+	// urlRegExp: [protected] String
+	//		Used for validating input as correct URL.  While file:// urls are not terribly
+	//		useful, they are technically valid.
+	urlRegExp: "((https?|ftps?|file)\\://|\./|\.\./|/|)(/[a-zA-Z]{1,1}:/|)(((?:(?:[\\da-zA-Z](?:[-\\da-zA-Z]{0,61}[\\da-zA-Z])?)\\.)*(?:[a-zA-Z](?:[-\\da-zA-Z]{0,80}[\\da-zA-Z])?)\\.?)|(((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])|(0[xX]0*[\\da-fA-F]?[\\da-fA-F]\\.){3}0[xX]0*[\\da-fA-F]?[\\da-fA-F]|(0+[0-3][0-7][0-7]\\.){3}0+[0-3][0-7][0-7]|(0|[1-9]\\d{0,8}|[1-3]\\d{9}|4[01]\\d{8}|42[0-8]\\d{7}|429[0-3]\\d{6}|4294[0-8]\\d{5}|42949[0-5]\\d{4}|429496[0-6]\\d{3}|4294967[01]\\d{2}|42949672[0-8]\\d|429496729[0-5])|0[xX]0*[\\da-fA-F]{1,8}|([\\da-fA-F]{1,4}\\:){7}[\\da-fA-F]{1,4}|([\\da-fA-F]{1,4}\\:){6}((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])))(\\:\\d+)?(/(?:[^?#\\s/]+/)*(?:[^?#\\s/]{0,}(?:\\?[^?#\\s/]*)?(?:#.*)?)?)?",
+
+	// emailRegExp: [protected] String
+	//		Used for validating input as correct email address.  Taken from dojox.validate
+	emailRegExp:  "<?(mailto\\:)([!#-'*+\\-\\/-9=?A-Z^-~]+[.])*[!#-'*+\\-\\/-9=?A-Z^-~]+" /*username*/ + "@" +
+        "((?:(?:[\\da-zA-Z](?:[-\\da-zA-Z]{0,61}[\\da-zA-Z])?)\\.)+(?:[a-zA-Z](?:[-\\da-zA-Z]{0,6}[\\da-zA-Z])?)\\.?)|localhost|^[^-][a-zA-Z0-9_-]*>?",	// host.
+
+	// htmlTemplate: [protected] String
+	//		String used for templating the HTML to insert at the desired point.
+	htmlTemplate: "<a href=\"${urlInput}\" _djrealurl=\"${urlInput}\"" +
+		" target=\"${targetSelect}\"" +
+		">${textInput}</a>",
+
+	// tag: [protected] String
+	//		Tag used for the link type.
+	tag: "a",
+
+	// _hostRxp [private] RegExp
+	//		Regular expression used to validate url fragments (ip address, hostname, etc)
+	_hostRxp: /^((([^\[:]+):)?([^@]+)@)?(\[([^\]]+)\]|([^\[:]*))(:([0-9]+))?$/,
+
+	// _userAtRxp [private] RegExp
+	//		Regular expression used to validate e-mail address fragment.
+	_userAtRxp: /^([!#-'*+\-\/-9=?A-Z^-~]+[.])*[!#-'*+\-\/-9=?A-Z^-~]+@/i,
+
+	// linkDialogTemplate: [protected] String
+	//		Template for contents of TooltipDialog to pick URL
+	linkDialogTemplate: [
+		"<table role='presentation'><tr><td>",
+		"<label for='${id}_urlInput'>${url}</label>",
+		"</td><td>",
+		"<input data-dojo-type='dijit.form.ValidationTextBox' required='true' " +
+		"id='${id}_urlInput' name='urlInput' data-dojo-props='intermediateChanges:true'/>",
+		"</td></tr><tr><td>",
+		"<label for='${id}_textInput'>${text}</label>",
+		"</td><td>",
+		"<input data-dojo-type='dijit.form.ValidationTextBox' required='true' id='${id}_textInput' " +
+		"name='textInput' data-dojo-props='intermediateChanges:true'/>",
+		"</td></tr><tr><td>",
+		"<label for='${id}_targetSelect'>${target}</label>",
+		"</td><td>",
+		"<select id='${id}_targetSelect' name='targetSelect' data-dojo-type='dijit.form.Select'>",
+		"<option selected='selected' value='_self'>${currentWindow}</option>",
+		"<option value='_blank'>${newWindow}</option>",
+		"<option value='_top'>${topWindow}</option>",
+		"<option value='_parent'>${parentWindow}</option>",
+		"</select>",
+		"</td></tr><tr><td colspan='2'>",
+		"<button data-dojo-type='dijit.form.Button' type='submit' id='${id}_setButton'>${set}</button>",
+		"<button data-dojo-type='dijit.form.Button' type='button' id='${id}_cancelButton'>${buttonCancel}</button>",
+		"</td></tr></table>"
+	].join(""),
+
+	_initButton: function(){
+		this.inherited(arguments);
+
+		// Setup to lazy create TooltipDialog first time the button is clicked
+		this.button.loadDropDown = lang.hitch(this, "_loadDropDown");
+
+		this._connectTagEvents();
+	},
+	_loadDropDown: function(callback){
+		// Called the first time the button is pressed.  Initialize TooltipDialog.
+		require([
+			"dojo/i18n", // i18n.getLocalization
+			"../../TooltipDialog",
+			"../../registry", // registry.byId, registry.getUniqueId
+			"../../form/Button",	// used by template
+			"../../form/Select",	// used by template
+			"../../form/ValidationTextBox",	// used by template
+			"dojo/i18n!../../nls/common",
+			"dojo/i18n!../nls/LinkDialog"
+		], lang.hitch(this, function(i18n, TooltipDialog, registry){
+			var _this = this;
+			this.tag = this.command == 'insertImage' ? 'img' : 'a';
+			var messages = lang.delegate(i18n.getLocalization("dijit", "common", this.lang),
+				i18n.getLocalization("dijit._editor", "LinkDialog", this.lang));
+			var dropDown = (this.dropDown = this.button.dropDown = new TooltipDialog({
+				title: messages[this.command + "Title"],
+				ownerDocument: this.editor.ownerDocument,
+				dir: this.editor.dir,
+				execute: lang.hitch(this, "setValue"),
+				onOpen: function(){
+					_this._onOpenDialog();
+					TooltipDialog.prototype.onOpen.apply(this, arguments);
+				},
+				onCancel: function(){
+					setTimeout(lang.hitch(_this, "_onCloseDialog"),0);
+				}
+			}));
+			messages.urlRegExp = this.urlRegExp;
+			messages.id = registry.getUniqueId(this.editor.id);
+			this._uniqueId = messages.id;
+			this._setContent(dropDown.title +
+				"<div style='border-bottom: 1px black solid;padding-bottom:2pt;margin-bottom:4pt'></div>" +
+				string.substitute(this.linkDialogTemplate, messages));
+			dropDown.startup();
+			this._urlInput = registry.byId(this._uniqueId + "_urlInput");
+			this._textInput = registry.byId(this._uniqueId + "_textInput");
+			this._setButton = registry.byId(this._uniqueId + "_setButton");
+			this.connect(registry.byId(this._uniqueId + "_cancelButton"), "onClick", function(){
+				this.dropDown.onCancel();
+			});
+			if(this._urlInput){
+				this.connect(this._urlInput, "onChange", "_checkAndFixInput");
+			}
+			if(this._textInput){
+				this.connect(this._textInput, "onChange", "_checkAndFixInput");
+			}
+
+			// Build up the dual check for http/https/file:, and mailto formats.
+			this._urlRegExp = new RegExp("^" + this.urlRegExp + "$", "i");
+			this._emailRegExp = new RegExp("^" + this.emailRegExp + "$", "i");
+			this._urlInput.isValid = lang.hitch(this, function(){
+				// Function over-ride of isValid to test if the input matches a url or a mailto style link.
+				var value = this._urlInput.get("value");
+				return this._urlRegExp.test(value) || this._emailRegExp.test(value);
+			});
+
+			// Listen for enter and execute if valid.
+			this.connect(dropDown.domNode, "onkeypress", function(e){
+				if(e && e.charOrCode == keys.ENTER &&
+					!e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey){
+					if(!this._setButton.get("disabled")){
+						dropDown.onExecute();
+						dropDown.execute(dropDown.get('value'));
+					}
+				}
+			});
+
+			callback();
+		}));
+	},
+
+	_checkAndFixInput: function(){
+		// summary:
+		//		A function to listen for onChange events and test the input contents
+		//		for valid information, such as valid urls with http/https/ftp and if
+		//		not present, try and guess if the input url is relative or not, and if
+		//		not, append http:// to it.  Also validates other fields as determined by
+		//		the internal _isValid function.
+		var self = this;
+		var url = this._urlInput.get("value");
+		var fixupUrl = function(url){
+			var appendHttp = false;
+			var appendMailto = false;
+			if(url && url.length > 1){
+				url = lang.trim(url);
+				if(url.indexOf("mailto:") !== 0){
+					if(url.indexOf("/") > 0){
+						if(url.indexOf("://") === -1){
+							// Check that it doesn't start with /, ./, or ../, which would
+							// imply 'target server relativeness'
+							if(url.charAt(0) !== '/' && url.indexOf("./") && url.indexOf("../") !== 0){
+								if(self._hostRxp.test(url)){
+									appendHttp = true;
+								}
+							}
+						}
+					}else if(self._userAtRxp.test(url)){
+						// If it looks like a foo@, append a mailto.
+						appendMailto = true;
+					}
+				}
+			}
+			if(appendHttp){
+				self._urlInput.set("value", "http://" + url);
+			}
+			if(appendMailto){
+				self._urlInput.set("value", "mailto:" + url);
+			}
+			self._setButton.set("disabled", !self._isValid());
+		};
+		if(this._delayedCheck){
+			clearTimeout(this._delayedCheck);
+			this._delayedCheck = null;
+		}
+		this._delayedCheck = setTimeout(function(){
+			fixupUrl(url);
+		}, 250);
+	},
+
+	_connectTagEvents: function(){
+		// summary:
+		//		Over-ridable function that connects tag specific events.
+		this.editor.onLoadDeferred.then(lang.hitch(this, function(){
+			this.connect(this.editor.editNode, "ondblclick", this._onDblClick);
+		}));
+	},
+
+	_isValid: function(){
+		// summary:
+		//		Internal function to allow validating of the inputs
+		//		for a link to determine if set should be disabled or not
+		// tags:
+		//		protected
+		return this._urlInput.isValid() && this._textInput.isValid();
+	},
+
+	_setContent: function(staticPanel){
+		// summary:
+		//		Helper for _initButton above.   Not sure why it's a separate method.
+		this.dropDown.set({
+			parserScope: "dojo",		// make parser search for dojoType/data-dojo-type even if page is multi-version
+			content: staticPanel
+		});
+	},
+
+	_checkValues: function(args){
+		// summary:
+		//		Function to check the values in args and 'fix' them up as needed.
+		// args: Object
+		//		Content being set.
+		// tags:
+		//		protected
+		if(args && args.urlInput){
+			args.urlInput = args.urlInput.replace(/"/g, "&quot;");
+		}
+		return args;
+	},
+
+	setValue: function(args){
+		// summary:
+		//		Callback from the dialog when user presses "set" button.
+		// tags:
+		//		private
+		
+		// TODO: prevent closing popup if the text is empty
+		this._onCloseDialog();
+		if(has("ie") < 9){ //see #4151
+			var sel = rangeapi.getSelection(this.editor.window);
+			var range = sel.getRangeAt(0);
+			var a = range.endContainer;
+			if(a.nodeType === 3){
+				// Text node, may be the link contents, so check parent.
+				// This plugin doesn't really support nested HTML elements
+				// in the link, it assumes all link content is text.
+				a = a.parentNode;
+			}
+			if(a && (a.nodeName && a.nodeName.toLowerCase() !== this.tag)){
+				// Still nothing, one last thing to try on IE, as it might be 'img'
+				// and thus considered a control.
+				a = this.editor._sCall("getSelectedElement", [this.tag]);
+			}
+			if(a && (a.nodeName && a.nodeName.toLowerCase() === this.tag)){
+				// Okay, we do have a match.  IE, for some reason, sometimes pastes before
+				// instead of removing the targeted paste-over element, so we unlink the
+				// old one first.  If we do not the <a> tag remains, but it has no content,
+				// so isn't readily visible (but is wrong for the action).
+				if(this.editor.queryCommandEnabled("unlink")){
+					// Select all the link children, then unlink.  The following insert will
+					// then replace the selected text.
+					this.editor._sCall("selectElementChildren", [a]);
+					this.editor.execCommand("unlink");
+				}
+			}
+		}
+		// make sure values are properly escaped, etc.
+		args = this._checkValues(args);
+		this.editor.execCommand('inserthtml',
+			string.substitute(this.htmlTemplate, args));
+
+		// IE sometimes leaves a blank link, so we need to fix it up.
+		// Go ahead and do this for everyone just to avoid blank links
+		// in the page.
+		query("a", this.editor.document).forEach(function(a){
+			if(!a.innerHTML && !domAttr.has(a, "name")){
+				// Remove empty anchors that do not have "name" set.
+				// Empty ones with a name set could be a hidden hash
+				// anchor.
+				a.parentNode.removeChild(a);
+			}
+		}, this);
+	},
+
+	_onCloseDialog: function(){
+		// summary:
+		//		Handler for close event on the dialog
+		this.editor.focus();
+	},
+
+	_getCurrentValues: function(a){
+		// summary:
+		//		Over-ride for getting the values to set in the dropdown.
+		// a:
+		//		The anchor/link to process for data for the dropdown.
+		// tags:
+		//		protected
+		var url, text, target;
+		if(a && a.tagName.toLowerCase() === this.tag){
+			url = a.getAttribute('_djrealurl') || a.getAttribute('href');
+			target = a.getAttribute('target') || "_self";
+			text = a.textContent || a.innerText;
+			this.editor._sCall("selectElement", [a, true]);
+		}else{
+			text = this.editor._sCall("getSelectedText");
+		}
+		return {urlInput: url || '', textInput: text || '', targetSelect: target || ''}; //Object;
+	},
+
+	_onOpenDialog: function(){
+		// summary:
+		//		Handler for when the dialog is opened.
+		//		If the caret is currently in a URL then populate the URL's info into the dialog.
+		var a,b,fc;
+		if(has("ie")){
+			// IE, even IE10, is difficult to select the element in, using the range unified
+			// API seems to work reasonably well.
+			var sel = rangeapi.getSelection(this.editor.window);
+			if(sel.rangeCount){
+				var range = sel.getRangeAt(0);
+				a = range.endContainer;
+				if(a.nodeType === 3){
+					// Text node, may be the link contents, so check parent.
+					// This plugin doesn't really support nested HTML elements
+					// in the link, it assumes all link content is text.
+					a = a.parentNode;
+				}
+				if(a && (a.nodeName && a.nodeName.toLowerCase() !== this.tag)){
+					// Still nothing, one last thing to try on IE, as it might be 'img'
+					// and thus considered a control.
+					a = this.editor._sCall("getSelectedElement", [this.tag]);
+				}
+				if(!a || (a.nodeName && a.nodeName.toLowerCase() !== this.tag)){
+					// Try another lookup, IE's selection is just terrible.
+					b = this.editor._sCall("getAncestorElement", [this.tag]);
+					if(b && (b.nodeName && b.nodeName.toLowerCase() == this.tag)){
+						// Looks like we found an A tag, use it and make sure just it is
+						// selected.
+						a = b;
+						this.editor._sCall("selectElement", [a]);
+					}else if (range.startContainer === range.endContainer){
+						// STILL nothing.  Trying one more thing.  Lets look at the first child.
+						// It might be an anchor tag in a div by itself or the like.  If it is,
+						// we'll use it otherwise we give up.  The selection is not easily
+						// determinable to be on an existing anchor tag.
+						fc = range.startContainer.firstChild;
+						if(fc && (fc.nodeName && fc.nodeName.toLowerCase() == this.tag)){
+							a = fc;
+							this.editor._sCall("selectElement", [a]);
+						}
+					}
+				}
+			}
+		}else{
+			a = this.editor._sCall("getAncestorElement", [this.tag]);
+		}
+		this.dropDown.reset();
+		this._setButton.set("disabled", true);
+		this.dropDown.set("value", this._getCurrentValues(a));
+	},
+
+	_onDblClick: function(e){
+		// summary:
+		//		Function to define a behavior on double clicks on the element
+		//		type this dialog edits to select it and pop up the editor
+		//		dialog.
+		// e: Object
+		//		The double-click event.
+		// tags:
+		//		protected.
+		if(e && e.target){
+			var t = e.target;
+			var tg = t.tagName ? t.tagName.toLowerCase() : "";
+			if(tg === this.tag && domAttr.get(t,"href")){
+				var editor = this.editor;
+
+				this.editor._sCall("selectElement", [t]);
+				editor.onDisplayChanged();
+
+				// Call onNormalizedDisplayChange() now, rather than on timer.
+				// On IE, when focus goes to the first <input> in the TooltipDialog, the editor loses it's selection.
+				// Later if onNormalizedDisplayChange() gets called via the timer it will disable the LinkDialog button
+				// (actually, all the toolbar buttons), at which point clicking the <input> will close the dialog,
+				// since (for unknown reasons) focus.js ignores disabled controls.
+				if(editor._updateTimer){
+					editor._updateTimer.remove();
+					delete editor._updateTimer;
+				}
+				editor.onNormalizedDisplayChanged();
+
+				var button = this.button;
+				setTimeout(function(){
+					// Focus shift outside the event handler.
+					// IE doesn't like focus changes in event handles.
+					button.set("disabled", false);
+					button.loadAndOpenDropDown().then(function(){
+						if(button.dropDown.focus){
+							button.dropDown.focus();
+						}
+					});
+				}, 10);
+			}
+		}
+	}
+});
+
+var ImgLinkDialog = declare("dijit._editor.plugins.ImgLinkDialog", [LinkDialog], {
+	// summary:
+	//		This plugin extends LinkDialog and adds in a plugin for handling image links.
+	//		provides the image link dialog.
+	// description:
+	//		The command provided by this plugin is:
+	//
+	//		- insertImage
+
+	// linkDialogTemplate: [protected] String
+	//		Over-ride for template since img dialog doesn't need target that anchor tags may.
+	linkDialogTemplate: [
+		"<table role='presentation'><tr><td>",
+		"<label for='${id}_urlInput'>${url}</label>",
+		"</td><td>",
+		"<input dojoType='dijit.form.ValidationTextBox' regExp='${urlRegExp}' " +
+		"required='true' id='${id}_urlInput' name='urlInput' data-dojo-props='intermediateChanges:true'/>",
+		"</td></tr><tr><td>",
+		"<label for='${id}_textInput'>${text}</label>",
+		"</td><td>",
+		"<input data-dojo-type='dijit.form.ValidationTextBox' required='false' id='${id}_textInput' " +
+		"name='textInput' data-dojo-props='intermediateChanges:true'/>",
+		"</td></tr><tr><td>",
+		"</td><td>",
+		"</td></tr><tr><td colspan='2'>",
+		"<button data-dojo-type='dijit.form.Button' type='submit' id='${id}_setButton'>${set}</button>",
+		"<button data-dojo-type='dijit.form.Button' type='button' id='${id}_cancelButton'>${buttonCancel}</button>",
+		"</td></tr></table>"
+	].join(""),
+
+	// htmlTemplate: [protected] String
+	//		String used for templating the `<img>` HTML to insert at the desired point.
+	htmlTemplate: "<img src=\"${urlInput}\" _djrealurl=\"${urlInput}\" alt=\"${textInput}\" />",
+
+	// tag: [protected] String
+	//		Tag used for the link type (img).
+	tag: "img",
+
+	_getCurrentValues: function(img){
+		// summary:
+		//		Over-ride for getting the values to set in the dropdown.
+		// a:
+		//		The anchor/link to process for data for the dropdown.
+		// tags:
+		//		protected
+		var url, text;
+		if(img && img.tagName.toLowerCase() === this.tag){
+			url = img.getAttribute('_djrealurl') || img.getAttribute('src');
+			text = img.getAttribute('alt');
+			this.editor._sCall("selectElement", [img, true]);
+		}else{
+			text = this.editor._sCall("getSelectedText", []);
+		}
+		return {urlInput: url || '', textInput: text || ''}; //Object
+	},
+
+	_isValid: function(){
+		// summary:
+		//		Over-ride for images.  You can have alt text of blank, it is valid.
+		// tags:
+		//		protected
+		return this._urlInput.isValid();
+	},
+
+	_connectTagEvents: function(){
+		// summary:
+		//		Over-ridable function that connects tag specific events.
+		this.inherited(arguments);
+		this.editor.onLoadDeferred.then(lang.hitch(this, function(){
+			// Use onmousedown instead of onclick.  Seems that IE eats the first onclick
+			// to wrap it in a selector box, then the second one acts as onclick.  See #10420
+			this.connect(this.editor.editNode, "onmousedown", this._selectTag);
+		}));
+	},
+
+	_selectTag: function(e){
+		// summary:
+		//		A simple event handler that lets me select an image if it is clicked on.
+		//		makes it easier to select images in a standard way across browsers.  Otherwise
+		//		selecting an image for edit becomes difficult.
+		// e: Event
+		//		The mousedown event.
+		// tags:
+		//		private
+		if(e && e.target){
+			var t = e.target;
+			var tg = t.tagName? t.tagName.toLowerCase() : "";
+			if(tg === this.tag){
+				this.editor._sCall("selectElement", [t]);
+			}
+		}
+	},
+
+	_checkValues: function(args){
+		// summary:
+		//		Function to check the values in args and 'fix' them up as needed
+		//		(special characters in the url or alt text)
+		// args: Object
+		//		Content being set.
+		// tags:
+		//		protected
+		if(args && args.urlInput){
+			args.urlInput = args.urlInput.replace(/"/g, "&quot;");
+		}
+		if(args && args.textInput){
+			args.textInput = args.textInput.replace(/"/g, "&quot;");
+		}
+		return args;
+	},
+
+	_onDblClick: function(e){
+		// summary:
+		//		Function to define a behavior on double clicks on the element
+		//		type this dialog edits to select it and pop up the editor
+		//		dialog.
+		// e: Object
+		//		The double-click event.
+		// tags:
+		//		protected.
+		if(e && e.target){
+			var t = e.target;
+			var tg = t.tagName ? t.tagName.toLowerCase() : "";
+			if(tg === this.tag && domAttr.get(t,"src")){
+				var editor = this.editor;
+
+				this.editor._sCall("selectElement", [t]);
+				editor.onDisplayChanged();
+
+				// Call onNormalizedDisplayChange() now, rather than on timer.
+				// On IE, when focus goes to the first <input> in the TooltipDialog, the editor loses it's selection.
+				// Later if onNormalizedDisplayChange() gets called via the timer it will disable the LinkDialog button
+				// (actually, all the toolbar buttons), at which point clicking the <input> will close the dialog,
+				// since (for unknown reasons) focus.js ignores disabled controls.
+				if(editor._updateTimer){
+					editor._updateTimer.remove();
+					delete editor._updateTimer;
+				}
+				editor.onNormalizedDisplayChanged();
+
+				var button = this.button;
+				setTimeout(function(){
+					// Focus shift outside the event handler.
+					// IE doesn't like focus changes in event handles.
+					button.set("disabled", false);
+					button.loadAndOpenDropDown().then(function(){
+						if(button.dropDown.focus){
+							button.dropDown.focus();
+						}
+					});
+				}, 10);
+			}
+		}
+	}
+});
+
+// Register these plugins
+_Plugin.registry["createLink"] = function(){
+	return new LinkDialog({command: "createLink"});
+};
+_Plugin.registry["insertImage"] = function(){
+	return new ImgLinkDialog({command: "insertImage"});
+};
+
+
+// Export both LinkDialog and ImgLinkDialog
+// TODO for 2.0: either return both classes in a hash, or split this file into two separate files.
+// Then the documentation for the module can be applied to the hash, and will show up in the API doc.
+LinkDialog.ImgLinkDialog = ImgLinkDialog;
+return LinkDialog;
+});
+
+},
+'dijit/DropDownMenu':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/event", // event.stop
+	"dojo/keys", // keys
+	"dojo/text!./templates/Menu.html",
+	"./_OnDijitClickMixin",
+	"./_MenuBase"
+], function(declare, event, keys, template, _OnDijitClickMixin, _MenuBase){
+
+	// module:
+	//		dijit/DropDownMenu
+
+	return declare("dijit.DropDownMenu", [_MenuBase, _OnDijitClickMixin], {
+		// summary:
+		//		A menu, without features for context menu (Meaning, drop down menu)
+
+		templateString: template,
+
+		baseClass: "dijitMenu",
+
+		postCreate: function(){
+			this.inherited(arguments);
+			var l = this.isLeftToRight();
+			this._openSubMenuKey = l ? keys.RIGHT_ARROW : keys.LEFT_ARROW;
+			this._closeSubMenuKey = l ? keys.LEFT_ARROW : keys.RIGHT_ARROW;
+			this.connectKeyNavHandlers([keys.UP_ARROW], [keys.DOWN_ARROW]);
+		},
+
+		_onKeyPress: function(/*Event*/ evt){
+			// summary:
+			//		Handle keyboard based menu navigation.
+			// tags:
+			//		protected
+
+			if(evt.ctrlKey || evt.altKey){ return; }
+
+			switch(evt.charOrCode){
+				case this._openSubMenuKey:
+					this._moveToPopup(evt);
+					event.stop(evt);
+					break;
+				case this._closeSubMenuKey:
+					if(this.parentMenu){
+						if(this.parentMenu._isMenuBar){
+							this.parentMenu.focusPrev();
+						}else{
+							this.onCancel(false);
+						}
+					}else{
+						event.stop(evt);
+					}
+					break;
+			}
+		}
+	});
+});
+
+},
 'dijit/form/_FormMixin':function(){
 define([
 	"dojo/_base/array", // array.every array.filter array.forEach array.indexOf array.map
@@ -19112,675 +19803,6 @@ define([
 });
 
 },
-'dijit/_editor/plugins/LinkDialog':function(){
-define([
-	"require",
-	"dojo/_base/declare", // declare
-	"dojo/dom-attr", // domAttr.get
-	"dojo/keys", // keys.ENTER
-	"dojo/_base/lang", // lang.delegate lang.hitch lang.trim
-	"dojo/sniff", // has("ie")
-	"dojo/_base/query", // query
-	"dojo/string", // string.substitute
-	"../../_Widget",
-	"../_Plugin",
-	"../../form/DropDownButton",
-	"../range"
-], function(require, declare, domAttr, keys, lang, has, query, string,
-	_Widget, _Plugin, DropDownButton, rangeapi){
-
-
-// module:
-//		dijit/_editor/plugins/LinkDialog
-// summary:
-//		Editor plugins: LinkDialog (for inserting links) and ImgLinkDialog (for inserting images)
-
-
-var LinkDialog = declare("dijit._editor.plugins.LinkDialog", _Plugin, {
-	// summary:
-	//		This plugin provides the basis for an 'anchor' (link) dialog and an extension of it
-	//		provides the image link dialog.
-	// description:
-	//		The command provided by this plugin is:
-	//
-	//		- createLink
-
-	// Override _Plugin.buttonClass.   This plugin is controlled by a DropDownButton
-	// (which triggers a TooltipDialog).
-	buttonClass: DropDownButton,
-
-	// Override _Plugin.useDefaultCommand... processing is handled by this plugin, not by dijit/Editor.
-	useDefaultCommand: false,
-
-	// urlRegExp: [protected] String
-	//		Used for validating input as correct URL.  While file:// urls are not terribly
-	//		useful, they are technically valid.
-	urlRegExp: "((https?|ftps?|file)\\://|\./|\.\./|/|)(/[a-zA-Z]{1,1}:/|)(((?:(?:[\\da-zA-Z](?:[-\\da-zA-Z]{0,61}[\\da-zA-Z])?)\\.)*(?:[a-zA-Z](?:[-\\da-zA-Z]{0,80}[\\da-zA-Z])?)\\.?)|(((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])|(0[xX]0*[\\da-fA-F]?[\\da-fA-F]\\.){3}0[xX]0*[\\da-fA-F]?[\\da-fA-F]|(0+[0-3][0-7][0-7]\\.){3}0+[0-3][0-7][0-7]|(0|[1-9]\\d{0,8}|[1-3]\\d{9}|4[01]\\d{8}|42[0-8]\\d{7}|429[0-3]\\d{6}|4294[0-8]\\d{5}|42949[0-5]\\d{4}|429496[0-6]\\d{3}|4294967[01]\\d{2}|42949672[0-8]\\d|429496729[0-5])|0[xX]0*[\\da-fA-F]{1,8}|([\\da-fA-F]{1,4}\\:){7}[\\da-fA-F]{1,4}|([\\da-fA-F]{1,4}\\:){6}((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])))(\\:\\d+)?(/(?:[^?#\\s/]+/)*(?:[^?#\\s/]{0,}(?:\\?[^?#\\s/]*)?(?:#.*)?)?)?",
-
-	// emailRegExp: [protected] String
-	//		Used for validating input as correct email address.  Taken from dojox.validate
-	emailRegExp:  "<?(mailto\\:)([!#-'*+\\-\\/-9=?A-Z^-~]+[.])*[!#-'*+\\-\\/-9=?A-Z^-~]+" /*username*/ + "@" +
-        "((?:(?:[\\da-zA-Z](?:[-\\da-zA-Z]{0,61}[\\da-zA-Z])?)\\.)+(?:[a-zA-Z](?:[-\\da-zA-Z]{0,6}[\\da-zA-Z])?)\\.?)|localhost|^[^-][a-zA-Z0-9_-]*>?",	// host.
-
-	// htmlTemplate: [protected] String
-	//		String used for templating the HTML to insert at the desired point.
-	htmlTemplate: "<a href=\"${urlInput}\" _djrealurl=\"${urlInput}\"" +
-		" target=\"${targetSelect}\"" +
-		">${textInput}</a>",
-
-	// tag: [protected] String
-	//		Tag used for the link type.
-	tag: "a",
-
-	// _hostRxp [private] RegExp
-	//		Regular expression used to validate url fragments (ip address, hostname, etc)
-	_hostRxp: /^((([^\[:]+):)?([^@]+)@)?(\[([^\]]+)\]|([^\[:]*))(:([0-9]+))?$/,
-
-	// _userAtRxp [private] RegExp
-	//		Regular expression used to validate e-mail address fragment.
-	_userAtRxp: /^([!#-'*+\-\/-9=?A-Z^-~]+[.])*[!#-'*+\-\/-9=?A-Z^-~]+@/i,
-
-	// linkDialogTemplate: [protected] String
-	//		Template for contents of TooltipDialog to pick URL
-	linkDialogTemplate: [
-		"<table role='presentation'><tr><td>",
-		"<label for='${id}_urlInput'>${url}</label>",
-		"</td><td>",
-		"<input data-dojo-type='dijit.form.ValidationTextBox' required='true' " +
-		"id='${id}_urlInput' name='urlInput' data-dojo-props='intermediateChanges:true'/>",
-		"</td></tr><tr><td>",
-		"<label for='${id}_textInput'>${text}</label>",
-		"</td><td>",
-		"<input data-dojo-type='dijit.form.ValidationTextBox' required='true' id='${id}_textInput' " +
-		"name='textInput' data-dojo-props='intermediateChanges:true'/>",
-		"</td></tr><tr><td>",
-		"<label for='${id}_targetSelect'>${target}</label>",
-		"</td><td>",
-		"<select id='${id}_targetSelect' name='targetSelect' data-dojo-type='dijit.form.Select'>",
-		"<option selected='selected' value='_self'>${currentWindow}</option>",
-		"<option value='_blank'>${newWindow}</option>",
-		"<option value='_top'>${topWindow}</option>",
-		"<option value='_parent'>${parentWindow}</option>",
-		"</select>",
-		"</td></tr><tr><td colspan='2'>",
-		"<button data-dojo-type='dijit.form.Button' type='submit' id='${id}_setButton'>${set}</button>",
-		"<button data-dojo-type='dijit.form.Button' type='button' id='${id}_cancelButton'>${buttonCancel}</button>",
-		"</td></tr></table>"
-	].join(""),
-
-	_initButton: function(){
-		this.inherited(arguments);
-
-		// Setup to lazy create TooltipDialog first time the button is clicked
-		this.button.loadDropDown = lang.hitch(this, "_loadDropDown");
-
-		this._connectTagEvents();
-	},
-	_loadDropDown: function(callback){
-		// Called the first time the button is pressed.  Initialize TooltipDialog.
-		require([
-			"dojo/i18n", // i18n.getLocalization
-			"../../TooltipDialog",
-			"../../registry", // registry.byId, registry.getUniqueId
-			"../../form/Button",	// used by template
-			"../../form/Select",	// used by template
-			"../../form/ValidationTextBox",	// used by template
-			"dojo/i18n!../../nls/common",
-			"dojo/i18n!../nls/LinkDialog"
-		], lang.hitch(this, function(i18n, TooltipDialog, registry){
-			var _this = this;
-			this.tag = this.command == 'insertImage' ? 'img' : 'a';
-			var messages = lang.delegate(i18n.getLocalization("dijit", "common", this.lang),
-				i18n.getLocalization("dijit._editor", "LinkDialog", this.lang));
-			var dropDown = (this.dropDown = this.button.dropDown = new TooltipDialog({
-				title: messages[this.command + "Title"],
-				ownerDocument: this.editor.ownerDocument,
-				dir: this.editor.dir,
-				execute: lang.hitch(this, "setValue"),
-				onOpen: function(){
-					_this._onOpenDialog();
-					TooltipDialog.prototype.onOpen.apply(this, arguments);
-				},
-				onCancel: function(){
-					setTimeout(lang.hitch(_this, "_onCloseDialog"),0);
-				}
-			}));
-			messages.urlRegExp = this.urlRegExp;
-			messages.id = registry.getUniqueId(this.editor.id);
-			this._uniqueId = messages.id;
-			this._setContent(dropDown.title +
-				"<div style='border-bottom: 1px black solid;padding-bottom:2pt;margin-bottom:4pt'></div>" +
-				string.substitute(this.linkDialogTemplate, messages));
-			dropDown.startup();
-			this._urlInput = registry.byId(this._uniqueId + "_urlInput");
-			this._textInput = registry.byId(this._uniqueId + "_textInput");
-			this._setButton = registry.byId(this._uniqueId + "_setButton");
-			this.connect(registry.byId(this._uniqueId + "_cancelButton"), "onClick", function(){
-				this.dropDown.onCancel();
-			});
-			if(this._urlInput){
-				this.connect(this._urlInput, "onChange", "_checkAndFixInput");
-			}
-			if(this._textInput){
-				this.connect(this._textInput, "onChange", "_checkAndFixInput");
-			}
-
-			// Build up the dual check for http/https/file:, and mailto formats.
-			this._urlRegExp = new RegExp("^" + this.urlRegExp + "$", "i");
-			this._emailRegExp = new RegExp("^" + this.emailRegExp + "$", "i");
-			this._urlInput.isValid = lang.hitch(this, function(){
-				// Function over-ride of isValid to test if the input matches a url or a mailto style link.
-				var value = this._urlInput.get("value");
-				return this._urlRegExp.test(value) || this._emailRegExp.test(value);
-			});
-
-			// Listen for enter and execute if valid.
-			this.connect(dropDown.domNode, "onkeypress", function(e){
-				if(e && e.charOrCode == keys.ENTER &&
-					!e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey){
-					if(!this._setButton.get("disabled")){
-						dropDown.onExecute();
-						dropDown.execute(dropDown.get('value'));
-					}
-				}
-			});
-
-			callback();
-		}));
-	},
-
-	_checkAndFixInput: function(){
-		// summary:
-		//		A function to listen for onChange events and test the input contents
-		//		for valid information, such as valid urls with http/https/ftp and if
-		//		not present, try and guess if the input url is relative or not, and if
-		//		not, append http:// to it.  Also validates other fields as determined by
-		//		the internal _isValid function.
-		var self = this;
-		var url = this._urlInput.get("value");
-		var fixupUrl = function(url){
-			var appendHttp = false;
-			var appendMailto = false;
-			if(url && url.length > 1){
-				url = lang.trim(url);
-				if(url.indexOf("mailto:") !== 0){
-					if(url.indexOf("/") > 0){
-						if(url.indexOf("://") === -1){
-							// Check that it doesn't start with /, ./, or ../, which would
-							// imply 'target server relativeness'
-							if(url.charAt(0) !== '/' && url.indexOf("./") && url.indexOf("../") !== 0){
-								if(self._hostRxp.test(url)){
-									appendHttp = true;
-								}
-							}
-						}
-					}else if(self._userAtRxp.test(url)){
-						// If it looks like a foo@, append a mailto.
-						appendMailto = true;
-					}
-				}
-			}
-			if(appendHttp){
-				self._urlInput.set("value", "http://" + url);
-			}
-			if(appendMailto){
-				self._urlInput.set("value", "mailto:" + url);
-			}
-			self._setButton.set("disabled", !self._isValid());
-		};
-		if(this._delayedCheck){
-			clearTimeout(this._delayedCheck);
-			this._delayedCheck = null;
-		}
-		this._delayedCheck = setTimeout(function(){
-			fixupUrl(url);
-		}, 250);
-	},
-
-	_connectTagEvents: function(){
-		// summary:
-		//		Over-ridable function that connects tag specific events.
-		this.editor.onLoadDeferred.then(lang.hitch(this, function(){
-			this.connect(this.editor.editNode, "ondblclick", this._onDblClick);
-		}));
-	},
-
-	_isValid: function(){
-		// summary:
-		//		Internal function to allow validating of the inputs
-		//		for a link to determine if set should be disabled or not
-		// tags:
-		//		protected
-		return this._urlInput.isValid() && this._textInput.isValid();
-	},
-
-	_setContent: function(staticPanel){
-		// summary:
-		//		Helper for _initButton above.   Not sure why it's a separate method.
-		this.dropDown.set({
-			parserScope: "dojo",		// make parser search for dojoType/data-dojo-type even if page is multi-version
-			content: staticPanel
-		});
-	},
-
-	_checkValues: function(args){
-		// summary:
-		//		Function to check the values in args and 'fix' them up as needed.
-		// args: Object
-		//		Content being set.
-		// tags:
-		//		protected
-		if(args && args.urlInput){
-			args.urlInput = args.urlInput.replace(/"/g, "&quot;");
-		}
-		return args;
-	},
-
-	setValue: function(args){
-		// summary:
-		//		Callback from the dialog when user presses "set" button.
-		// tags:
-		//		private
-		
-		// TODO: prevent closing popup if the text is empty
-		this._onCloseDialog();
-		if(has("ie") < 9){ //see #4151
-			var sel = rangeapi.getSelection(this.editor.window);
-			var range = sel.getRangeAt(0);
-			var a = range.endContainer;
-			if(a.nodeType === 3){
-				// Text node, may be the link contents, so check parent.
-				// This plugin doesn't really support nested HTML elements
-				// in the link, it assumes all link content is text.
-				a = a.parentNode;
-			}
-			if(a && (a.nodeName && a.nodeName.toLowerCase() !== this.tag)){
-				// Still nothing, one last thing to try on IE, as it might be 'img'
-				// and thus considered a control.
-				a = this.editor._sCall("getSelectedElement", [this.tag]);
-			}
-			if(a && (a.nodeName && a.nodeName.toLowerCase() === this.tag)){
-				// Okay, we do have a match.  IE, for some reason, sometimes pastes before
-				// instead of removing the targeted paste-over element, so we unlink the
-				// old one first.  If we do not the <a> tag remains, but it has no content,
-				// so isn't readily visible (but is wrong for the action).
-				if(this.editor.queryCommandEnabled("unlink")){
-					// Select all the link children, then unlink.  The following insert will
-					// then replace the selected text.
-					this.editor._sCall("selectElementChildren", [a]);
-					this.editor.execCommand("unlink");
-				}
-			}
-		}
-		// make sure values are properly escaped, etc.
-		args = this._checkValues(args);
-		this.editor.execCommand('inserthtml',
-			string.substitute(this.htmlTemplate, args));
-
-		// IE sometimes leaves a blank link, so we need to fix it up.
-		// Go ahead and do this for everyone just to avoid blank links
-		// in the page.
-		query("a", this.editor.document).forEach(function(a){
-			if(!a.innerHTML && !domAttr.has(a, "name")){
-				// Remove empty anchors that do not have "name" set.
-				// Empty ones with a name set could be a hidden hash
-				// anchor.
-				a.parentNode.removeChild(a);
-			}
-		}, this);
-	},
-
-	_onCloseDialog: function(){
-		// summary:
-		//		Handler for close event on the dialog
-		this.editor.focus();
-	},
-
-	_getCurrentValues: function(a){
-		// summary:
-		//		Over-ride for getting the values to set in the dropdown.
-		// a:
-		//		The anchor/link to process for data for the dropdown.
-		// tags:
-		//		protected
-		var url, text, target;
-		if(a && a.tagName.toLowerCase() === this.tag){
-			url = a.getAttribute('_djrealurl') || a.getAttribute('href');
-			target = a.getAttribute('target') || "_self";
-			text = a.textContent || a.innerText;
-			this.editor._sCall("selectElement", [a, true]);
-		}else{
-			text = this.editor._sCall("getSelectedText");
-		}
-		return {urlInput: url || '', textInput: text || '', targetSelect: target || ''}; //Object;
-	},
-
-	_onOpenDialog: function(){
-		// summary:
-		//		Handler for when the dialog is opened.
-		//		If the caret is currently in a URL then populate the URL's info into the dialog.
-		var a,b,fc;
-		if(has("ie")){
-			// IE is difficult to select the element in, using the range unified
-			// API seems to work reasonably well.
-			var sel = rangeapi.getSelection(this.editor.window);
-			var range = sel.getRangeAt(0);
-			a = range.endContainer;
-			if(a.nodeType === 3){
-				// Text node, may be the link contents, so check parent.
-				// This plugin doesn't really support nested HTML elements
-				// in the link, it assumes all link content is text.
-				a = a.parentNode;
-			}
-			if(a && (a.nodeName && a.nodeName.toLowerCase() !== this.tag)){
-				// Still nothing, one last thing to try on IE, as it might be 'img'
-				// and thus considered a control.
-				a = this.editor._sCall("getSelectedElement", [this.tag]);
-			}
-			if(!a || (a.nodeName && a.nodeName.toLowerCase() !== this.tag)){
-				// Try another lookup, IE's selection is just terrible.
-				b = this.editor._sCall("getAncestorElement", [this.tag]);
-				if(b && (b.nodeName && b.nodeName.toLowerCase() == this.tag)){
-					// Looks like we found an A tag, use it and make sure just it is 
-					// selected.
-					a = b;
-					this.editor._sCall("selectElement", [a]);
-				}else if (range.startContainer === range.endContainer){
-					// STILL nothing.  Trying one more thing.  Lets look at the first child.  
-					// It might be an anchor tag in a div by itself or the like.  If it is, 
-					// we'll use it otherwise we give up.  The selection is not easily 
-					// determinable to be on an existing anchor tag.
-					fc = range.startContainer.firstChild;
-					if(fc && (fc.nodeName && fc.nodeName.toLowerCase() == this.tag)){
-						a = fc;
-						this.editor._sCall("selectElement", [a]);
-					}
-				}
-			}
-		}else{
-			a = this.editor._sCall("getAncestorElement", [this.tag]);
-		}
-		this.dropDown.reset();
-		this._setButton.set("disabled", true);
-		this.dropDown.set("value", this._getCurrentValues(a));
-	},
-
-	_onDblClick: function(e){
-		// summary:
-		//		Function to define a behavior on double clicks on the element
-		//		type this dialog edits to select it and pop up the editor
-		//		dialog.
-		// e: Object
-		//		The double-click event.
-		// tags:
-		//		protected.
-		if(e && e.target){
-			var t = e.target;
-			var tg = t.tagName ? t.tagName.toLowerCase() : "";
-			if(tg === this.tag && domAttr.get(t,"href")){
-				var editor = this.editor;
-
-				this.editor._sCall("selectElement", [t]);
-				editor.onDisplayChanged();
-
-				// Call onNormalizedDisplayChange() now, rather than on timer.
-				// On IE, when focus goes to the first <input> in the TooltipDialog, the editor loses it's selection.
-				// Later if onNormalizedDisplayChange() gets called via the timer it will disable the LinkDialog button
-				// (actually, all the toolbar buttons), at which point clicking the <input> will close the dialog,
-				// since (for unknown reasons) focus.js ignores disabled controls.
-				if(editor._updateTimer){
-					editor._updateTimer.remove();
-					delete editor._updateTimer;
-				}
-				editor.onNormalizedDisplayChanged();
-
-				var button = this.button;
-				setTimeout(function(){
-					// Focus shift outside the event handler.
-					// IE doesn't like focus changes in event handles.
-					button.set("disabled", false);
-					button.loadAndOpenDropDown().then(function(){
-						if(button.dropDown.focus){
-							button.dropDown.focus();
-						}
-					});
-				}, 10);
-			}
-		}
-	}
-});
-
-var ImgLinkDialog = declare("dijit._editor.plugins.ImgLinkDialog", [LinkDialog], {
-	// summary:
-	//		This plugin extends LinkDialog and adds in a plugin for handling image links.
-	//		provides the image link dialog.
-	// description:
-	//		The command provided by this plugin is:
-	//
-	//		- insertImage
-
-	// linkDialogTemplate: [protected] String
-	//		Over-ride for template since img dialog doesn't need target that anchor tags may.
-	linkDialogTemplate: [
-		"<table role='presentation'><tr><td>",
-		"<label for='${id}_urlInput'>${url}</label>",
-		"</td><td>",
-		"<input dojoType='dijit.form.ValidationTextBox' regExp='${urlRegExp}' " +
-		"required='true' id='${id}_urlInput' name='urlInput' data-dojo-props='intermediateChanges:true'/>",
-		"</td></tr><tr><td>",
-		"<label for='${id}_textInput'>${text}</label>",
-		"</td><td>",
-		"<input data-dojo-type='dijit.form.ValidationTextBox' required='false' id='${id}_textInput' " +
-		"name='textInput' data-dojo-props='intermediateChanges:true'/>",
-		"</td></tr><tr><td>",
-		"</td><td>",
-		"</td></tr><tr><td colspan='2'>",
-		"<button data-dojo-type='dijit.form.Button' type='submit' id='${id}_setButton'>${set}</button>",
-		"<button data-dojo-type='dijit.form.Button' type='button' id='${id}_cancelButton'>${buttonCancel}</button>",
-		"</td></tr></table>"
-	].join(""),
-
-	// htmlTemplate: [protected] String
-	//		String used for templating the `<img>` HTML to insert at the desired point.
-	htmlTemplate: "<img src=\"${urlInput}\" _djrealurl=\"${urlInput}\" alt=\"${textInput}\" />",
-
-	// tag: [protected] String
-	//		Tag used for the link type (img).
-	tag: "img",
-
-	_getCurrentValues: function(img){
-		// summary:
-		//		Over-ride for getting the values to set in the dropdown.
-		// a:
-		//		The anchor/link to process for data for the dropdown.
-		// tags:
-		//		protected
-		var url, text;
-		if(img && img.tagName.toLowerCase() === this.tag){
-			url = img.getAttribute('_djrealurl') || img.getAttribute('src');
-			text = img.getAttribute('alt');
-			this.editor._sCall("selectElement", [img, true]);
-		}else{
-			text = this.editor._sCall("getSelectedText", []);
-		}
-		return {urlInput: url || '', textInput: text || ''}; //Object
-	},
-
-	_isValid: function(){
-		// summary:
-		//		Over-ride for images.  You can have alt text of blank, it is valid.
-		// tags:
-		//		protected
-		return this._urlInput.isValid();
-	},
-
-	_connectTagEvents: function(){
-		// summary:
-		//		Over-ridable function that connects tag specific events.
-		this.inherited(arguments);
-		this.editor.onLoadDeferred.then(lang.hitch(this, function(){
-			// Use onmousedown instead of onclick.  Seems that IE eats the first onclick
-			// to wrap it in a selector box, then the second one acts as onclick.  See #10420
-			this.connect(this.editor.editNode, "onmousedown", this._selectTag);
-		}));
-	},
-
-	_selectTag: function(e){
-		// summary:
-		//		A simple event handler that lets me select an image if it is clicked on.
-		//		makes it easier to select images in a standard way across browsers.  Otherwise
-		//		selecting an image for edit becomes difficult.
-		// e: Event
-		//		The mousedown event.
-		// tags:
-		//		private
-		if(e && e.target){
-			var t = e.target;
-			var tg = t.tagName? t.tagName.toLowerCase() : "";
-			if(tg === this.tag){
-				this.editor._sCall("selectElement", [t]);
-			}
-		}
-	},
-
-	_checkValues: function(args){
-		// summary:
-		//		Function to check the values in args and 'fix' them up as needed
-		//		(special characters in the url or alt text)
-		// args: Object
-		//		Content being set.
-		// tags:
-		//		protected
-		if(args && args.urlInput){
-			args.urlInput = args.urlInput.replace(/"/g, "&quot;");
-		}
-		if(args && args.textInput){
-			args.textInput = args.textInput.replace(/"/g, "&quot;");
-		}
-		return args;
-	},
-
-	_onDblClick: function(e){
-		// summary:
-		//		Function to define a behavior on double clicks on the element
-		//		type this dialog edits to select it and pop up the editor
-		//		dialog.
-		// e: Object
-		//		The double-click event.
-		// tags:
-		//		protected.
-		if(e && e.target){
-			var t = e.target;
-			var tg = t.tagName ? t.tagName.toLowerCase() : "";
-			if(tg === this.tag && domAttr.get(t,"src")){
-				var editor = this.editor;
-
-				this.editor._sCall("selectElement", [t]);
-				editor.onDisplayChanged();
-
-				// Call onNormalizedDisplayChange() now, rather than on timer.
-				// On IE, when focus goes to the first <input> in the TooltipDialog, the editor loses it's selection.
-				// Later if onNormalizedDisplayChange() gets called via the timer it will disable the LinkDialog button
-				// (actually, all the toolbar buttons), at which point clicking the <input> will close the dialog,
-				// since (for unknown reasons) focus.js ignores disabled controls.
-				if(editor._updateTimer){
-					editor._updateTimer.remove();
-					delete editor._updateTimer;
-				}
-				editor.onNormalizedDisplayChanged();
-
-				var button = this.button;
-				setTimeout(function(){
-					// Focus shift outside the event handler.
-					// IE doesn't like focus changes in event handles.
-					button.set("disabled", false);
-					button.loadAndOpenDropDown().then(function(){
-						if(button.dropDown.focus){
-							button.dropDown.focus();
-						}
-					});
-				}, 10);
-			}
-		}
-	}
-});
-
-// Register these plugins
-_Plugin.registry["createLink"] = function(){
-	return new LinkDialog({command: "createLink"});
-};
-_Plugin.registry["insertImage"] = function(){
-	return new ImgLinkDialog({command: "insertImage"});
-};
-
-
-// Export both LinkDialog and ImgLinkDialog
-// TODO for 2.0: either return both classes in a hash, or split this file into two separate files.
-// Then the documentation for the module can be applied to the hash, and will show up in the API doc.
-LinkDialog.ImgLinkDialog = ImgLinkDialog;
-return LinkDialog;
-});
-
-},
-'dijit/DropDownMenu':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/_base/event", // event.stop
-	"dojo/keys", // keys
-	"dojo/text!./templates/Menu.html",
-	"./_OnDijitClickMixin",
-	"./_MenuBase"
-], function(declare, event, keys, template, _OnDijitClickMixin, _MenuBase){
-
-	// module:
-	//		dijit/DropDownMenu
-
-	return declare("dijit.DropDownMenu", [_MenuBase, _OnDijitClickMixin], {
-		// summary:
-		//		A menu, without features for context menu (Meaning, drop down menu)
-
-		templateString: template,
-
-		baseClass: "dijitMenu",
-
-		postCreate: function(){
-			this.inherited(arguments);
-			var l = this.isLeftToRight();
-			this._openSubMenuKey = l ? keys.RIGHT_ARROW : keys.LEFT_ARROW;
-			this._closeSubMenuKey = l ? keys.LEFT_ARROW : keys.RIGHT_ARROW;
-			this.connectKeyNavHandlers([keys.UP_ARROW], [keys.DOWN_ARROW]);
-		},
-
-		_onKeyPress: function(/*Event*/ evt){
-			// summary:
-			//		Handle keyboard based menu navigation.
-			// tags:
-			//		protected
-
-			if(evt.ctrlKey || evt.altKey){ return; }
-
-			switch(evt.charOrCode){
-				case this._openSubMenuKey:
-					this._moveToPopup(evt);
-					event.stop(evt);
-					break;
-				case this._closeSubMenuKey:
-					if(this.parentMenu){
-						if(this.parentMenu._isMenuBar){
-							this.parentMenu.focusPrev();
-						}else{
-							this.onCancel(false);
-						}
-					}else{
-						event.stop(evt);
-					}
-					break;
-			}
-		}
-	});
-});
-
-},
 'dijit/Menu':function(){
 define("dijit/Menu", [
 	"require",
@@ -19824,6 +19846,7 @@ return declare("dijit.Menu", DropDownMenu, {
 		// params: Object|null
 		//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 		//		and functions, typically callbacks like onClick.
+		//		The hash can contain any of the widget's properties, excluding read-only properties.
 		// srcNodeRef: DOMNode|String?
 		//		If a srcNodeRef (DOM node) is specified:
 		//
@@ -20175,7 +20198,6 @@ define([
 		_setReadOnlyAttr: function(/*Boolean*/ value){
 			this._set("readOnly", value);
 			domAttr.set(this.focusNode, 'readOnly', value);
-			this.focusNode.setAttribute("aria-readonly", value);
 		},
 
 		// Override dijit/form/Button._setLabelAttr() since we don't even have a containerNode.
@@ -20221,18 +20243,19 @@ define([
 	"../_Container",
 	"./_ContentPaneResizeMixin",
 	"dojo/string", // string.substitute
-	"dojo/html", // html._ContentSetter html._emptyNode
+	"dojo/html", // html._ContentSetter
 	"dojo/i18n!../nls/loading",
 	"dojo/_base/array", // array.forEach
 	"dojo/_base/declare", // declare
 	"dojo/_base/Deferred", // Deferred
 	"dojo/dom", // dom.byId
 	"dojo/dom-attr", // domAttr.attr
+	"dojo/dom-construct", // empty()
 	"dojo/_base/xhr", // xhr.get
 	"dojo/i18n", // i18n.getLocalization
 	"dojo/when"
 ], function(kernel, lang, _Widget, _Container, _ContentPaneResizeMixin, string, html, nlsLoading,
-	array, declare, Deferred, dom, domAttr, xhr, i18n, when){
+	array, declare, Deferred, dom, domAttr, domConstruct, xhr, i18n, when){
 
 // module:
 //		dijit/layout/ContentPane
@@ -20707,7 +20730,7 @@ return declare("dijit.layout.ContentPane", [_Widget, _Container, _ContentPaneRes
 
 		// And then clear away all the DOM nodes
 		if(!preserveDom){
-			html._emptyNode(this.containerNode);
+			domConstruct.empty(this.containerNode);
 		}
 
 		// Delete any state information we have about current contents
@@ -20862,6 +20885,7 @@ return declare("dijit.layout.ContentPane", [_Widget, _Container, _ContentPaneRes
 
 },
 'url:dijit/form/templates/ValidationTextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
+'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'dijit/_KeyNavContainer':function(){
 define([
 	"dojo/_base/kernel", // kernel.deprecated
@@ -21270,7 +21294,6 @@ define([
 });
 
 },
-'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'dijit/form/DataList':function(){
 define([
 	"dojo/_base/declare", // declare
@@ -21311,6 +21334,7 @@ define([
 			// params: Object|null
 			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
 			// srcNodeRef: DOMNode|String
 			//		Attach widget to this DOM node.
 
@@ -21343,7 +21367,124 @@ define([
 });
 
 },
-'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"header\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabIndex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n</div>\n",
+'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabIndex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n</div>\n",
+'dijit/form/CheckBox':function(){
+define([
+	"require",
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/has",		// has("dijit-legacy-requires")
+	"dojo/query", // query
+	"dojo/ready",
+	"./ToggleButton",
+	"./_CheckBoxMixin",
+	"dojo/text!./templates/CheckBox.html",
+	"dojo/NodeList-dom" // NodeList.addClass/removeClass
+], function(require, declare, domAttr, has, query, ready, ToggleButton, _CheckBoxMixin, template){
+
+	// module:
+	//		dijit/form/CheckBox
+
+	// Back compat w/1.6, remove for 2.0
+	if(has("dijit-legacy-requires")){
+		ready(0, function(){
+			var requires = ["dijit/form/RadioButton"];
+			require(requires);	// use indirection so modules not rolled into a build
+		});
+	}
+
+	return declare("dijit.form.CheckBox", [ToggleButton, _CheckBoxMixin], {
+		// summary:
+		//		Same as an HTML checkbox, but with fancy styling.
+		//
+		// description:
+		//		User interacts with real html inputs.
+		//		On onclick (which occurs by mouse click, space-bar, or
+		//		using the arrow keys to switch the selected radio button),
+		//		we update the state of the checkbox/radio.
+		//
+		//		There are two modes:
+		//
+		//		1. High contrast mode
+		//		2. Normal mode
+		//
+		//		In case 1, the regular html inputs are shown and used by the user.
+		//		In case 2, the regular html inputs are invisible but still used by
+		//		the user. They are turned quasi-invisible and overlay the background-image.
+
+		templateString: template,
+
+		baseClass: "dijitCheckBox",
+
+		_setValueAttr: function(/*String|Boolean*/ newValue, /*Boolean*/ priorityChange){
+			// summary:
+			//		Handler for value= attribute to constructor, and also calls to
+			//		set('value', val).
+			// description:
+			//		During initialization, just saves as attribute to the `<input type=checkbox>`.
+			//
+			//		After initialization,
+			//		when passed a boolean, controls whether or not the CheckBox is checked.
+			//		If passed a string, changes the value attribute of the CheckBox (the one
+			//		specified as "value" when the CheckBox was constructed
+			//		(ex: `<input data-dojo-type="dijit/CheckBox" value="chicken">`).
+			//
+			//		`widget.set('value', string)` will check the checkbox and change the value to the
+			//		specified string.
+			//
+			//		`widget.set('value', boolean)` will change the checked state.
+
+			if(typeof newValue == "string"){
+				this.inherited(arguments);
+				newValue = true;
+			}
+			if(this._created){
+				this.set('checked', newValue, priorityChange);
+			}
+		},
+		_getValueAttr: function(){
+			// summary:
+			//		Hook so get('value') works.
+			// description:
+			//		If the CheckBox is checked, returns the value attribute.
+			//		Otherwise returns false.
+			return (this.checked ? this.value : false);
+		},
+
+		// Override behavior from Button, since we don't have an iconNode
+		_setIconClassAttr: null,
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+
+			// Need to set initial checked state as part of template, so that form submit works.
+			// domAttr.set(node, "checked", bool) doesn't work on IE until node has been attached
+			// to <body>, see #8666
+			this.checkedAttrSetting = this.checked ? "checked" : "";
+		},
+
+		 _fillContent: function(){
+			// Override Button::_fillContent() since it doesn't make sense for CheckBox,
+			// since CheckBox doesn't even have a container
+		},
+
+		_onFocus: function(){
+			if(this.id){
+				query("label[for='"+this.id+"']").addClass("dijitFocusedLabel");
+			}
+			this.inherited(arguments);
+		},
+
+		_onBlur: function(){
+			if(this.id){
+				query("label[for='"+this.id+"']").removeClass("dijitFocusedLabel");
+			}
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
 'dijit/_editor/_Plugin':function(){
 define([
 	"dojo/_base/connect", // connect.connect
@@ -21649,123 +21790,6 @@ return _Plugin;
 });
 
 },
-'dijit/form/CheckBox':function(){
-define([
-	"require",
-	"dojo/_base/declare", // declare
-	"dojo/dom-attr", // domAttr.set
-	"dojo/has",		// has("dijit-legacy-requires")
-	"dojo/query", // query
-	"dojo/ready",
-	"./ToggleButton",
-	"./_CheckBoxMixin",
-	"dojo/text!./templates/CheckBox.html",
-	"dojo/NodeList-dom" // NodeList.addClass/removeClass
-], function(require, declare, domAttr, has, query, ready, ToggleButton, _CheckBoxMixin, template){
-
-	// module:
-	//		dijit/form/CheckBox
-
-	// Back compat w/1.6, remove for 2.0
-	if(has("dijit-legacy-requires")){
-		ready(0, function(){
-			var requires = ["dijit/form/RadioButton"];
-			require(requires);	// use indirection so modules not rolled into a build
-		});
-	}
-
-	return declare("dijit.form.CheckBox", [ToggleButton, _CheckBoxMixin], {
-		// summary:
-		//		Same as an HTML checkbox, but with fancy styling.
-		//
-		// description:
-		//		User interacts with real html inputs.
-		//		On onclick (which occurs by mouse click, space-bar, or
-		//		using the arrow keys to switch the selected radio button),
-		//		we update the state of the checkbox/radio.
-		//
-		//		There are two modes:
-		//
-		//		1. High contrast mode
-		//		2. Normal mode
-		//
-		//		In case 1, the regular html inputs are shown and used by the user.
-		//		In case 2, the regular html inputs are invisible but still used by
-		//		the user. They are turned quasi-invisible and overlay the background-image.
-
-		templateString: template,
-
-		baseClass: "dijitCheckBox",
-
-		_setValueAttr: function(/*String|Boolean*/ newValue, /*Boolean*/ priorityChange){
-			// summary:
-			//		Handler for value= attribute to constructor, and also calls to
-			//		set('value', val).
-			// description:
-			//		During initialization, just saves as attribute to the `<input type=checkbox>`.
-			//
-			//		After initialization,
-			//		when passed a boolean, controls whether or not the CheckBox is checked.
-			//		If passed a string, changes the value attribute of the CheckBox (the one
-			//		specified as "value" when the CheckBox was constructed
-			//		(ex: `<input data-dojo-type="dijit/CheckBox" value="chicken">`).
-			//
-			//		`widget.set('value', string)` will check the checkbox and change the value to the
-			//		specified string.
-			//
-			//		`widget.set('value', boolean)` will change the checked state.
-
-			if(typeof newValue == "string"){
-				this.inherited(arguments);
-				newValue = true;
-			}
-			if(this._created){
-				this.set('checked', newValue, priorityChange);
-			}
-		},
-		_getValueAttr: function(){
-			// summary:
-			//		Hook so get('value') works.
-			// description:
-			//		If the CheckBox is checked, returns the value attribute.
-			//		Otherwise returns false.
-			return (this.checked ? this.value : false);
-		},
-
-		// Override behavior from Button, since we don't have an iconNode
-		_setIconClassAttr: null,
-
-		postMixInProperties: function(){
-			this.inherited(arguments);
-
-			// Need to set initial checked state as part of template, so that form submit works.
-			// domAttr.set(node, "checked", bool) doesn't work on IE until node has been attached
-			// to <body>, see #8666
-			this.checkedAttrSetting = this.checked ? "checked" : "";
-		},
-
-		 _fillContent: function(){
-			// Override Button::_fillContent() since it doesn't make sense for CheckBox,
-			// since CheckBox doesn't even have a container
-		},
-
-		_onFocus: function(){
-			if(this.id){
-				query("label[for='"+this.id+"']").addClass("dijitFocusedLabel");
-			}
-			this.inherited(arguments);
-		},
-
-		_onBlur: function(){
-			if(this.id){
-				query("label[for='"+this.id+"']").removeClass("dijitFocusedLabel");
-			}
-			this.inherited(arguments);
-		}
-	});
-});
-
-},
 'url:dijit/templates/MenuBar.html':"<div class=\"dijitMenuBar dijitMenuPassive\" data-dojo-attach-point=\"containerNode\"  role=\"menubar\" tabIndex=\"${tabIndex}\" data-dojo-attach-event=\"onkeypress: _onKeyPress\"></div>\n",
 'dijit/tree/_dndSelector':function(){
 define([
@@ -21974,10 +21998,14 @@ define([
 			// ignore click on expando node
 			if(!this.current || this.tree.isExpandoNode(e.target, this.current)){ return; }
 
-			// ignore right-click
-			if(e.type != "touchstart" && !mouse.isLeft(e)){ return; }
-
-			e.preventDefault();
+			if(mouse.isLeft(e)){
+				// Prevent text selection while dragging on desktop, see #16328.   But don't call preventDefault()
+				// for mobile because it will break things completely, see #15838.
+				e.preventDefault();
+			}else if(e.type != "touchstart"){
+				// Ignore right click
+				return;
+			}
 
 			var treeNode = this.current,
 			  copy = connect.isCopyKey(e), id = treeNode.id;
@@ -22155,7 +22183,8 @@ define(["./_base/kernel", "./_base/lang", "./_base/array", "./_base/declare", ".
 	/*=====
 	 dojo.html._emptyNode = function(node){
 		 // summary:
-		 //		removes all child nodes from the given node
+		 //		Removes all child nodes from the given node.   Deprecated, should use dojo/dom-constuct.empty() directly
+		 //		instead.
 		 // node: DOMNode
 		 //		the parent element
 	 };
@@ -22334,7 +22363,7 @@ define(["./_base/kernel", "./_base/lang", "./_base/array", "./_base/declare", ".
 				}
 				// this is fast, but if you know its already empty or safe, you could
 				// override empty to skip this step
-				html._emptyNode(this.node);
+				domConstruct.empty(this.node);
 			},
 
 			onBegin: function(){
@@ -22841,7 +22870,7 @@ declare("dijit.Dye",
 });
 
 },
-'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"onclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<img src=\"${_blankGif}\" alt=\"\" data-dojo-attach-point=\"arrowNode\" class=\"dijitArrowNode\" role=\"presentation\"\n\t\t\t/><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
+'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"onclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\" id=\"${id}_titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<img src=\"${_blankGif}\" alt=\"\" data-dojo-attach-point=\"arrowNode\" class=\"dijitArrowNode\" role=\"presentation\"\n\t\t\t/><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\" aria-labelledby=\"${id}_titleBarNode\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
 'dijit/form/ValidationTextBox':function(){
 define([
 	"dojo/_base/declare", // declare
@@ -22911,7 +22940,7 @@ define([
 		// pattern: [extension protected] String|Function(constraints) returning a string.
 		//		This defines the regular expression used to validate the input.
 		//		Do not add leading ^ or $ characters since the widget adds these.
-		//		A function may used to generate a valid pattern when dependent on constraints or other runtime factors.
+		//		A function may be used to generate a valid pattern when dependent on constraints or other runtime factors.
 		//		set('pattern', String|Function).
 		pattern: ".*",
 
@@ -23017,7 +23046,7 @@ define([
 			if(isValid){ this._maskValidSubsetError = true; }
 			var isEmpty = this._isEmpty(this.textbox.value);
 			var isValidSubset = !isValid && isFocused && this._isValidSubset();
-			this._set("state", isValid ? "" : (((((!this._hasBeenBlurred || isFocused) && isEmpty) || isValidSubset) && this._maskValidSubsetError) ? "Incomplete" : "Error"));
+			this._set("state", isValid ? "" : (((((!this._hasBeenBlurred || isFocused) && isEmpty) || isValidSubset) && (this._maskValidSubsetError || (isValidSubset && !this._hasBeenBlurred && isFocused))) ? "Incomplete" : "Error"));
 			this.focusNode.setAttribute("aria-invalid", isValid ? "false" : "true");
 
 			if(this.state == "Error"){
@@ -23063,6 +23092,7 @@ define([
 			// params: Object|null
 			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
 			// srcNodeRef: DOMNode|String?
 			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree.
 
@@ -23081,6 +23111,10 @@ define([
 			}
 			this._set("constraints", constraints);
 			this._refreshState();
+		},
+
+		_setPatternAttr: function(/*String|Function*/ pattern){
+			this._set("pattern", pattern); // don't set on INPUT to avoid native HTML5 validation
 		},
 
 		_getPatternAttr: function(/*__Constraints*/ constraints){
@@ -23860,8 +23894,13 @@ if((0.9).toFixed() == 0){
 	var round = number.round;
 	number.round = function(v, p, m){
 		var d = Math.pow(10, -p || 0), a = Math.abs(v);
-		if(!v || a >= d || a * Math.pow(10, p + 1) < 5){
+		if(!v || a >= d){
 			d = 0;
+		}else{
+			a /= d;
+			if(a < 0.5 || a >= 0.95){
+				d = 0;
+			}
 		}
 		return round(v, p, m) + (v > 0 ? d : -d);
 	};
@@ -24271,74 +24310,6 @@ return number;
 });
 
 },
-'dijit/_WidgetsInTemplateMixin':function(){
-define([
-	"dojo/_base/array", // array.forEach
-	"dojo/_base/declare", // declare
-	"dojo/parser" // parser.parse
-], function(array, declare, parser){
-
-	// module:
-	//		dijit/_WidgetsInTemplateMixin
-
-	return declare("dijit._WidgetsInTemplateMixin", null, {
-		// summary:
-		//		Mixin to supplement _TemplatedMixin when template contains widgets
-
-		// _earlyTemplatedStartup: Boolean
-		//		A fallback to preserve the 1.0 - 1.3 behavior of children in
-		//		templates having their startup called before the parent widget
-		//		fires postCreate. Defaults to 'false', causing child widgets to
-		//		have their .startup() called immediately before a parent widget
-		//		.startup(), but always after the parent .postCreate(). Set to
-		//		'true' to re-enable to previous, arguably broken, behavior.
-		_earlyTemplatedStartup: false,
-
-		// widgetsInTemplate: [protected] Boolean
-		//		Should we parse the template to find widgets that might be
-		//		declared in markup inside it?  (Remove for 2.0 and assume true)
-		widgetsInTemplate: true,
-
-		_beforeFillContent: function(){
-			if(this.widgetsInTemplate){
-				// Before copying over content, instantiate widgets in template
-				var node = this.domNode;
-
-				var cw = (this._startupWidgets = parser.parse(node, {
-					noStart: !this._earlyTemplatedStartup,
-					template: true,
-					inherited: {dir: this.dir, lang: this.lang, textDir: this.textDir},
-					propsThis: this,	// so data-dojo-props of widgets in the template can reference "this" to refer to me
-					scope: "dojo"	// even in multi-version mode templates use dojoType/data-dojo-type
-				}));
-
-				if(!cw.isFulfilled()){
-					throw new Error(this.declaredClass + ": parser returned unfilled promise (probably waiting for module auto-load), " +
-						"unsupported by _WidgetsInTemplateMixin.   Must pre-load all supporting widgets before instantiation.");
-				}
-
-				// _WidgetBase::destroy() will destroy any supporting widgets under this.domNode.
-				// If we wanted to, we could call this.own() on anything in this._startupWidgets that was moved outside
-				// of this.domNode (like Dialog, which is moved to <body>).
-
-				this._attachTemplateNodes(cw, function(n,p){
-					return n[p];
-				});
-			}
-		},
-
-		startup: function(){
-			array.forEach(this._startupWidgets, function(w){
-				if(w && !w._started && w.startup){
-					w.startup();
-				}
-			});
-			this.inherited(arguments);
-		}
-	});
-});
-
-},
 'dojo/data/util/filter':function(){
 define(["../../_base/lang"], function(lang){
 	// module:
@@ -24416,6 +24387,74 @@ filter.patternToRegExp = function(/*String*/pattern, /*boolean?*/ ignoreCase){
 };
 
 return filter;
+});
+
+},
+'dijit/_WidgetsInTemplateMixin':function(){
+define([
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/parser" // parser.parse
+], function(array, declare, parser){
+
+	// module:
+	//		dijit/_WidgetsInTemplateMixin
+
+	return declare("dijit._WidgetsInTemplateMixin", null, {
+		// summary:
+		//		Mixin to supplement _TemplatedMixin when template contains widgets
+
+		// _earlyTemplatedStartup: Boolean
+		//		A fallback to preserve the 1.0 - 1.3 behavior of children in
+		//		templates having their startup called before the parent widget
+		//		fires postCreate. Defaults to 'false', causing child widgets to
+		//		have their .startup() called immediately before a parent widget
+		//		.startup(), but always after the parent .postCreate(). Set to
+		//		'true' to re-enable to previous, arguably broken, behavior.
+		_earlyTemplatedStartup: false,
+
+		// widgetsInTemplate: [protected] Boolean
+		//		Should we parse the template to find widgets that might be
+		//		declared in markup inside it?  (Remove for 2.0 and assume true)
+		widgetsInTemplate: true,
+
+		_beforeFillContent: function(){
+			if(this.widgetsInTemplate){
+				// Before copying over content, instantiate widgets in template
+				var node = this.domNode;
+
+				var cw = (this._startupWidgets = parser.parse(node, {
+					noStart: !this._earlyTemplatedStartup,
+					template: true,
+					inherited: {dir: this.dir, lang: this.lang, textDir: this.textDir},
+					propsThis: this,	// so data-dojo-props of widgets in the template can reference "this" to refer to me
+					scope: "dojo"	// even in multi-version mode templates use dojoType/data-dojo-type
+				}));
+
+				if(!cw.isFulfilled()){
+					throw new Error(this.declaredClass + ": parser returned unfilled promise (probably waiting for module auto-load), " +
+						"unsupported by _WidgetsInTemplateMixin.   Must pre-load all supporting widgets before instantiation.");
+				}
+
+				// _WidgetBase::destroy() will destroy any supporting widgets under this.domNode.
+				// If we wanted to, we could call this.own() on anything in this._startupWidgets that was moved outside
+				// of this.domNode (like Dialog, which is moved to <body>).
+
+				this._attachTemplateNodes(cw, function(n,p){
+					return n[p];
+				});
+			}
+		},
+
+		startup: function(){
+			array.forEach(this._startupWidgets, function(w){
+				if(w && !w._started && w.startup){
+					w.startup();
+				}
+			});
+			this.inherited(arguments);
+		}
+	});
 });
 
 },
@@ -25606,7 +25645,7 @@ exports.format = function(/*Date*/ dateObject, /*__FormatOptions?*/ options){
 		if(pattern){str.push(_processPattern(pattern, sauce));}
 	}
 
-	return str.length == 1 ? str[0] : bundle["dateTimeFormat-"+formatLength].replace(/\{(\d+)\}/g,
+	return str.length == 1 ? str[0] : bundle["dateTimeFormat-"+formatLength].replace(/\'/g,'').replace(/\{(\d+)\}/g,
 		function(match, key){ return str[key]; }); // String
 };
 
@@ -26636,6 +26675,7 @@ var _FormSelectWidget = declare("dijit.form._FormSelectWidget", _FormValueWidget
 		// params: Object|null
 		//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 		//		and functions, typically callbacks like onClick.
+		//		The hash can contain any of the widget's properties, excluding read-only properties.
 		// srcNodeRef: DOMNode|String?
 		//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
 
@@ -28050,10 +28090,14 @@ define(["../_base/connect", "../_base/kernel", "../_base/lang", "../dom"],
 // module:
 //		dojo/dnd/common
 
+var exports = lang.getObject("dojo.dnd", true);
+/*=====
+// TODO: for 2.0, replace line above with this code.
 var exports = {
 	// summary:
 	//		TODOC
 };
+=====*/
 
 exports.getCopyKeyState = connect.isCopyKey;
 
@@ -28079,9 +28123,6 @@ exports.isFormElement = function(/*Event*/ e){
 	}
 	return " button textarea input select option ".indexOf(" " + t.tagName.toLowerCase() + " ") >= 0;	// Boolean
 };
-
-// For back-compat, remove for 2.0.
-lang.mixin(lang.getObject("dojo.dnd", true), exports);
 
 return exports;
 });
@@ -28366,6 +28407,7 @@ define([
 			// params: Object|null
 			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
 			// srcNodeRef: DOMNode|String?
 			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
 
@@ -28846,7 +28888,7 @@ define([
 		// tags:
 		//		private
 
-		templateString: "<div class='dijitReset dijitMenu' data-dojo-attach-point='containerNode' style='overflow: auto; overflow-x: hidden;'>"
+		templateString: "<div class='dijitReset dijitMenu' data-dojo-attach-point='containerNode' style='overflow: auto; overflow-x: hidden;' role='listbox'>"
 				+"<div class='dijitMenuItem dijitMenuPreviousButton' data-dojo-attach-point='previousButton' role='option'></div>"
 				+"<div class='dijitMenuItem dijitMenuNextButton' data-dojo-attach-point='nextButton' role='option'></div>"
 				+"</div>",
@@ -28956,7 +28998,7 @@ define([
 'url:dijit/layout/templates/ScrollingTabController.html':"<div class=\"dijitTabListContainer-${tabPosition}\" style=\"visibility:hidden\">\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerMenuButton\"\n\t\t\tclass=\"tabStripButton-${tabPosition}\"\n\t\t\tid=\"${id}_menuBtn\"\n\t\t\tdata-dojo-props=\"containerId: '${containerId}', iconClass: 'dijitTabStripMenuIcon',\n\t\t\t\t\tdropDownPosition: ['below-alt', 'above-alt']\"\n\t\t\tdata-dojo-attach-point=\"_menuBtn\" showLabel=\"false\" title=\"\">&#9660;</div>\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerButton\"\n\t\t\tclass=\"tabStripButton-${tabPosition}\"\n\t\t\tid=\"${id}_leftBtn\"\n\t\t\tdata-dojo-props=\"iconClass:'dijitTabStripSlideLeftIcon', showLabel:false, title:''\"\n\t\t\tdata-dojo-attach-point=\"_leftBtn\" data-dojo-attach-event=\"onClick: doSlideLeft\">&#9664;</div>\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerButton\"\n\t\t\tclass=\"tabStripButton-${tabPosition}\"\n\t\t\tid=\"${id}_rightBtn\"\n\t\t\tdata-dojo-props=\"iconClass:'dijitTabStripSlideRightIcon', showLabel:false, title:''\"\n\t\t\tdata-dojo-attach-point=\"_rightBtn\" data-dojo-attach-event=\"onClick: doSlideRight\">&#9654;</div>\n\t<div class='dijitTabListWrapper' data-dojo-attach-point='tablistWrapper'>\n\t\t<div role='tablist' data-dojo-attach-event='onkeypress:onkeypress'\n\t\t\t\tdata-dojo-attach-point='containerNode' class='nowrapTabStrip'></div>\n\t</div>\n</div>",
 'dijit/Dialog':function(){
 require({cache:{
-'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"header\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabIndex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n</div>\n"}});
+'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabIndex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n</div>\n"}});
 define("dijit/Dialog", [
 	"require",
 	"dojo/_base/array", // array.forEach array.indexOf array.map
@@ -29074,15 +29116,15 @@ define("dijit/Dialog", [
 			this._set("draggable", val);
 		},
 
-		//aria-describedby: String
-		//		Allows the user to add an aria-describedby attribute onto the dialog.   The value should
+		// aria-describedby: String
+		//		Allows the user to add an aria-describedby attribute onto the dialog. The value should
 		//		be the id of the container element of text that describes the dialog purpose (usually
 		//		the first text in the dialog).
 		//	|	<div data-dojo-type="dijit/Dialog" aria-describedby="intro" .....>
 		//	|		<div id="intro">Introductory text</div>
 		//	|		<div>rest of dialog contents</div>
 		//	|	</div>
-		"aria-describedby":"",
+		"aria-describedby": "",
 
 		// maxRatio: Number
 		//		Maximum size to allow the dialog to expand to, relative to viewport size
@@ -29124,6 +29166,27 @@ define("dijit/Dialog", [
 				focus.focus(this._firstFocusItem);
 			}
 			this.inherited(arguments);
+		},
+
+		_onBlur: function(by){
+			this.inherited(arguments);
+
+			// If focus was accidentally removed from the dialog, such as if the user clicked a blank
+			// area of the screen, or clicked the browser's address bar and then tabbed into the page,
+			// then refocus.   Won't do anything if focus was removed because the Dialog was closed, or
+			// because a new Dialog popped up on top of the old one.
+			var refocus = lang.hitch(this, function(){
+				if(this.open && !this._destroyed && DialogLevelManager.isTop(this)){
+					this._getFocusItems(this.domNode);
+					focus.focus(this._firstFocusItem);
+				}
+			});
+			if(by == "mouse"){
+				// wait for mouse up, and then refocus dialog; otherwise doesn't work
+				on.once(this.ownerDocument, "mouseup", refocus);
+			}else{
+				refocus();
+			}
 		},
 
 		_endDrag: function(){
@@ -29189,7 +29252,7 @@ define("dijit/Dialog", [
 			var bb = domGeometry.position(this.domNode);
 
 			// Get viewport size but then reduce it by a bit; Dialog should always have some space around it
-			// to indicate that it's a popup.   This will also compensate for possible scrollbars on viewport.
+			// to indicate that it's a popup.  This will also compensate for possible scrollbars on viewport.
 			var viewport = winUtils.getBox(this.ownerDocument);
 			viewport.w *= this.maxRatio;
 			viewport.h *= this.maxRatio;
@@ -29857,6 +29920,7 @@ define([
 			// params: Object|null
 			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
 			// srcNodeRef: DOMNode|String?
 			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
 
@@ -30027,8 +30091,14 @@ return declare("dijit.form._ToggleButtonMixin", null, {
 
 	_setCheckedAttr: function(/*Boolean*/ value, /*Boolean?*/ priorityChange){
 		this._set("checked", value);
-		domAttr.set(this.focusNode || this.domNode, "checked", value);
-		(this.focusNode || this.domNode).setAttribute(this._aria_attr, value ? "true" : "false"); // aria values should be strings
+		var node = this.focusNode || this.domNode;
+		domAttr.set(node, "checked", !!value); // "mixed" -> true
+		if(value){
+			node.setAttribute("checked", "");
+		}else{
+			node.removeAttribute("checked");
+		}
+		node.setAttribute(this._aria_attr, String(value)); // aria values should be strings
 		this._handleOnChange(value, priorityChange);
 	},
 
@@ -32662,8 +32732,9 @@ var Tree = declare("dijit.Tree", [_Widget, _TemplatedMixin], {
 	isExpandoNode: function(node, widget){
 		// summary:
 		//		check whether a dom node is the expandoNode for a particular TreeNode widget
-		return dom.isDescendant(node, widget.expandoNode);
+		return dom.isDescendant(node, widget.expandoNode) || dom.isDescendant(node, widget.expandoNodeText);
 	},
+
 	_onClick: function(/*TreeNode*/ nodeWidget, /*Event*/ e){
 		// summary:
 		//		Translates click events into commands for the controller to process

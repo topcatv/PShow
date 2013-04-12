@@ -199,7 +199,7 @@ define("dojox/grid/_View", [
 
 		getColumnsWidth: function(){
 			var h = this.headerContentNode;
-			return h && h.firstChild ? h.firstChild.offsetWidth : 0; // Integer
+			return h && h.firstChild ? (h.firstChild.offsetWidth || html.style(h.firstChild, 'width')) : 0; // Integer
 		},
 
 		setColumnsWidth: function(width){

@@ -26,7 +26,6 @@ define("dijit/form/_FormValueMixin", [
 
 		_setReadOnlyAttr: function(/*Boolean*/ value){
 			domAttr.set(this.focusNode, 'readOnly', value);
-			this.focusNode.setAttribute("aria-readonly", value);
 			this._set("readOnly", value);
 		},
 

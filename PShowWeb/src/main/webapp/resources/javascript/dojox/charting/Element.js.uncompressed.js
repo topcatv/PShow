@@ -42,9 +42,10 @@ define("dojox/charting/Element", ["dojo/_base/lang", "dojo/_base/array", "dojo/d
 				this.group.removeShape();
 				var children = this.group.children;
 				for(var i = 0; i < children.length;++i){
-					shape.dispose(children[i]);
+					shape.dispose(children[i], true);
 				}
 				this.group.clear();
+				shape.dispose(this.group, true);
 				this.group = null;
 			}
 			this.dirty = true;
@@ -68,7 +69,7 @@ define("dojox/charting/Element", ["dojo/_base/lang", "dojo/_base/array", "dojo/d
 			if(this.group){
 				var children = this.group.children;
 				for(var i = 0; i < children.length;++i){
-					shape.dispose(children[i]);
+					shape.dispose(children[i], true);
 				}
 				this.group.clear();
 			}else{

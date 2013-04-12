@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2004-2011, The Dojo Foundation All Rights Reserved.
+	Copyright (c) 2004-2012, The Dojo Foundation All Rights Reserved.
 	Available via Academic Free License >= 2.1 OR the modified BSD license.
 	see: http://dojotoolkit.org/license for details
 */
@@ -130,9 +130,9 @@
 
 		// this will be the global require function; define it immediately so we can start hanging things off of it
 		req = function(
-			config,       //(object, optional) hash of configuration properties
+			config,		  //(object, optional) hash of configuration properties
 			dependencies, //(array of commonjs.moduleId, optional) list of modules to be loaded before applying callback
-			callback      //(function, optional) lamda expression to apply to module values implied by dependencies
+			callback	  //(function, optional) lamda expression to apply to module values implied by dependencies
 		){
 			return contextRequire(config, dependencies, callback, 0, req);
 		},
@@ -407,14 +407,14 @@
 			// Modules go through several phases in creation:
 			//
 			// 1. Requested: some other module's definition or a require application contained the requested module in
-			//    its dependency vector or executing code explicitly demands a module via req.require.
+			//	  its dependency vector or executing code explicitly demands a module via req.require.
 			//
 			// 2. Injected: a script element has been appended to the insert-point element demanding the resource implied by the URL
 			//
 			// 3. Loaded: the resource injected in [2] has been evalated.
 			//
 			// 4. Defined: the resource contained a define statement that advised the loader about the module. Notice that some
-			//    resources may just contain a bundle of code and never formally define a module via define
+			//	  resources may just contain a bundle of code and never formally define a module via define
 			//
 			// 5. Evaluated: the module was defined via define and the loader has evaluated the factory and computed a result.
 			= {},
@@ -523,6 +523,14 @@
 				packs[name] = packageInfo;
 			},
 
+			delayedModuleConfig
+				// module config cannot be consummed until the loader is completely initialized; therefore, all
+				// module config detected during booting is memorized and applied at the end of loader initialization
+				// TODO: this is a bit of a kludge; all config should be moved to end of loader initialization, but
+				// we'll delay this chore and do it with a final loader 1.x cleanup after the 2.x loader prototyping is complete
+				= [],
+
+
 			config = function(config, booting, referenceModule){
 				for(var p in config){
 					if(p=="waitSeconds"){
@@ -591,7 +599,7 @@
 				forEach(mapProgs, function(item){
 					item[1] = computeMapProg(item[1], []);
 					if(item[0]=="*"){
-						mapProgs.star = item[1];
+						mapProgs.star = item;
 					}
 				});
 
@@ -606,9 +614,13 @@
 					aliases.push(pair);
 				});
 
-				for(p in config.config){
-					var module = getModule(p, referenceModule);
-					module.config = mix(module.config || {}, config.config[p]);
+				if(booting){
+					delayedModuleConfig.push({config:config.config});
+				}else{
+					for(p in config.config){
+						var module = getModule(p, referenceModule);
+						module.config = mix(module.config || {}, config.config[p]);
+					}
 				}
 
 				// push in any new cache values
@@ -942,6 +954,7 @@
 				}
 				mapItem = mapItem || mapProgs.star;
 				mapItem = mapItem && runMapProg(mid, mapItem[1]);
+
 				if(mapItem){
 					mid = mapItem[1] + mid.substring(mapItem[3]);
 					}
@@ -1168,9 +1181,9 @@
 				}
 			}
 			// delete references to synthetic modules
-	        if (/^require\*/.test(module.mid)) {
-	            delete modules[module.mid];
-	        }
+			if (/^require\*/.test(module.mid)) {
+				delete modules[module.mid];
+			}
 		},
 
 		circleTrace = [],
@@ -1886,7 +1899,8 @@
 	}
 
 	if( 1 ){
-		var bootDeps = dojoSniffConfig.deps ||  userConfig.deps || defaultConfig.deps,
+		forEach(delayedModuleConfig, function(c){ config(c); });
+		var bootDeps = dojoSniffConfig.deps ||	userConfig.deps || defaultConfig.deps,
 			bootCallback = dojoSniffConfig.callback || userConfig.callback || defaultConfig.callback;
 		req.boot = (bootDeps || bootCallback) ? [bootDeps || [], bootCallback] : 0;
 	}
@@ -3881,7 +3895,7 @@ define(["../has", "./config", "require", "module"], function(has, config, requir
 	dojo.isAsync = ! 1  || require.async;
 	dojo.locale = config.locale;
 
-	var rev = "$Rev: 29458 $".match(/\d+/);
+	var rev = "$Rev: 30226 $".match(/\d+/);
 	dojo.version = {
 		// summary:
 		//		Version number of the Dojo Toolkit
@@ -3894,7 +3908,7 @@ define(["../has", "./config", "require", "module"], function(has, config, requir
 		//		- flag: String: Descriptor flag. If total version is "1.2.0beta1", will be "beta1"
 		//		- revision: Number: The SVN rev from which dojo was pulled
 
-		major: 1, minor: 8, patch: 0, flag: "",
+		major: 1, minor: 8, patch: 3, flag: "",
 		revision: rev ? +rev[0] : NaN,
 		toString: function(){
 			var v = dojo.version;
@@ -6733,7 +6747,54 @@ define(["./has"], function(has){
 	var hasJSON = typeof JSON != "undefined";
 	has.add("json-parse", hasJSON); // all the parsers work fine
 		// Firefox 3.5/Gecko 1.9 fails to use replacer in stringify properly https://bugzilla.mozilla.org/show_bug.cgi?id=509184
-	has.add("json-stringify", hasJSON && JSON.stringify({a:0}, function(k,v){return v||1;}) == '{"a":1}'); 
+	has.add("json-stringify", hasJSON && JSON.stringify({a:0}, function(k,v){return v||1;}) == '{"a":1}');
+
+	/*=====
+	return {
+		// summary:
+		//		Functions to parse and serialize JSON
+
+		parse: function(str, strict){
+			// summary:
+			//		Parses a [JSON](http://json.org) string to return a JavaScript object.
+			// description:
+			//		This function follows [native JSON API](https://developer.mozilla.org/en/JSON)
+			//		Throws for invalid JSON strings. This delegates to eval() if native JSON
+			//		support is not available. By default this will evaluate any valid JS expression.
+			//		With the strict parameter set to true, the parser will ensure that only
+			//		valid JSON strings are parsed (otherwise throwing an error). Without the strict
+			//		parameter, the content passed to this method must come
+			//		from a trusted source.
+			// str:
+			//		a string literal of a JSON item, for instance:
+			//		`'{ "foo": [ "bar", 1, { "baz": "thud" } ] }'`
+			// strict:
+			//		When set to true, this will ensure that only valid, secure JSON is ever parsed.
+			//		Make sure this is set to true for untrusted content. Note that on browsers/engines
+			//		without native JSON support, setting this to true will run slower.
+		},
+		stringify: function(value, replacer, spacer){
+			// summary:
+			//		Returns a [JSON](http://json.org) serialization of an object.
+			// description:
+			//		Returns a [JSON](http://json.org) serialization of an object.
+			//		This function follows [native JSON API](https://developer.mozilla.org/en/JSON)
+			//		Note that this doesn't check for infinite recursion, so don't do that!
+			// value:
+			//		A value to be serialized.
+			// replacer:
+			//		A replacer function that is called for each value and can return a replacement
+			// spacer:
+			//		A spacer string to be used for pretty printing of JSON
+			// example:
+			//		simple serialization of a trivial object
+			//	|	define(["dojo/json"], function(JSON){
+			// 	|		var jsonStr = JSON.stringify({ howdy: "stranger!", isStrange: true });
+			//	|		doh.is('{"howdy":"stranger!","isStrange":true}', jsonStr);
+		}
+	};
+	=====*/
+
 	if(has("json-stringify")){
 		return JSON;
 	}else{
@@ -6747,50 +6808,13 @@ define(["./has"], function(has){
 				replace(/[\t]/g, "\\t").replace(/[\r]/g, "\\r"); // string
 		};
 		return {
-			// summary:
-			//		Functions to parse and serialize JSON
-
 			parse: has("json-parse") ? JSON.parse : function(str, strict){
-				// summary:
-				//		Parses a [JSON](http://json.org) string to return a JavaScript object.
-				// description:
-				//		This function follows [native JSON API](https://developer.mozilla.org/en/JSON)
-				//		Throws for invalid JSON strings. This delegates to eval() if native JSON
-				//		support is not available. By default this will evaluate any valid JS expression.
-				//		With the strict parameter set to true, the parser will ensure that only
-				//		valid JSON strings are parsed (otherwise throwing an error). Without the strict
-				//		parameter, the content passed to this method must come
-				//		from a trusted source.
-				// str:
-				//		a string literal of a JSON item, for instance:
-				//		`'{ "foo": [ "bar", 1, { "baz": "thud" } ] }'`
-				// strict:
-				//		When set to true, this will ensure that only valid, secure JSON is ever parsed.
-				//		Make sure this is set to true for untrusted content. Note that on browsers/engines
-				//		without native JSON support, setting this to true will run slower.
 				if(strict && !/^([\s\[\{]*(?:"(?:\\.|[^"])+"|-?\d[\d\.]*(?:[Ee][+-]?\d+)?|null|true|false|)[\s\]\}]*(?:,|:|$))+$/.test(str)){
 					throw new SyntaxError("Invalid characters in JSON");
 				}
 				return eval('(' + str + ')');
 			},
 			stringify: function(value, replacer, spacer){
-				// summary:
-				//		Returns a [JSON](http://json.org) serialization of an object.
-				// description:
-				//		Returns a [JSON](http://json.org) serialization of an object.
-				//		This function follows [native JSON API](https://developer.mozilla.org/en/JSON)
-				//		Note that this doesn't check for infinite recursion, so don't do that!
-				// value:
-				//		A value to be serialized. 
-				// replacer:
-				//		A replacer function that is called for each value and can return a replacement
-				// spacer:
-				//		A spacer string to be used for pretty printing of JSON
-				// example:
-				//		simple serialization of a trivial object
-				//	|	define(["dojo/json"], function(JSON){
-				// 	|		var jsonStr = JSON.stringify({ howdy: "stranger!", isStrange: true });
-				//	|		doh.is('{"howdy":"stranger!","isStrange":true}', jsonStr);
 				var undef;
 				if(typeof replacer == "string"){
 					spacer = replacer;
@@ -7931,8 +7955,8 @@ define(["./kernel", "../has", "./lang"], function(dojo, has, lang){
 
 },
 'dojo/dom':function(){
-define(["./sniff", "./_base/lang", "./_base/window"],
-		function(has, lang, win){
+define(["./sniff", "./_base/window"],
+		function(has, win){
 	// module:
 	//		dojo/dom
 
@@ -8045,9 +8069,34 @@ define(["./sniff", "./_base/lang", "./_base/window"],
 	};
 
 
-			// TODO: do we need this function in the base?
+	// TODO: do we need setSelectable in the base?
 
-	dom.setSelectable = function(/*DOMNode|String*/ node, /*Boolean*/ selectable){
+	// Add feature test for user-select CSS property
+	// (currently known to work in all but IE < 10 and Opera)
+	has.add("css-user-select", function(global, doc, element){
+		// Avoid exception when dom.js is loaded in non-browser environments
+		if(!element){ return false; }
+		
+		var style = element.style;
+		var prefixes = ["Khtml", "O", "ms", "Moz", "Webkit"],
+			i = prefixes.length,
+			name = "userSelect",
+			prefix;
+
+		// Iterate prefixes from most to least likely
+		do{
+			if(typeof style[name] !== "undefined"){
+				// Supported; return property name
+				return name;
+			}
+		}while(i-- && (name = prefixes[i] + "UserSelect"));
+
+		// Not supported if we didn't return before now
+		return false;
+	});
+
+	/*=====
+	dom.setSelectable = function(node, selectable){
 		// summary:
 		//		Enable or disable selection on a node
 		// node: DOMNode|String
@@ -8061,20 +8110,32 @@ define(["./sniff", "./_base/lang", "./_base/window"],
 		// example:
 		//		Make the node id="bar" selectable
 		//	|	dojo.setSelectable("bar", true);
+	};
+	=====*/
 
+	var cssUserSelect = has("css-user-select");
+	dom.setSelectable = cssUserSelect ? function(node, selectable){
+		// css-user-select returns a (possibly vendor-prefixed) CSS property name
+		dom.byId(node).style[cssUserSelect] = selectable ? "" : "none";
+	} : function(node, selectable){
 		node = dom.byId(node);
-		if(has("mozilla")){
-			node.style.MozUserSelect = selectable ? "" : "none";
-		}else if(has("khtml") || has("webkit")){
-			node.style.KhtmlUserSelect = selectable ? "auto" : "none";
-		}else if(has("ie")){
-			var v = (node.unselectable = selectable ? "" : "on"),
-				cs = node.getElementsByTagName("*"), i = 0, l = cs.length;
-			for(; i < l; ++i){
-				cs.item(i).unselectable = v;
+
+		// (IE < 10 / Opera) Fall back to setting/removing the
+		// unselectable attribute on the element and all its children
+		var nodes = node.getElementsByTagName("*"),
+			i = nodes.length;
+
+		if(selectable){
+			node.removeAttribute("unselectable");
+			while(i--){
+				nodes[i].removeAttribute("unselectable");
+			}
+		}else{
+			node.setAttribute("unselectable", "on");
+			while(i--){
+				nodes[i].setAttribute("unselectable", "on");
 			}
 		}
-		//FIXME: else?  Opera?
 	};
 
 	return dom;
@@ -8799,7 +8860,7 @@ define([
 		}
 	};
 
-	var defaultGetter = (has("ie") && (has("ie") < 9 || has("quirks"))) ? function(cond){
+	var defaultGetter = (has("ie") < 9 || has("ie") == 9 && has("quirks")) ? function(cond){
 		var clc = cond.toLowerCase();
 		if(clc == "class"){ cond = "className"; }
 		return function(elem){
@@ -9626,6 +9687,315 @@ define("dojo/errors/RequestTimeoutError", ['./create', './RequestError'], functi
 });
 
 },
+'dojo/dom-style':function(){
+define("dojo/dom-style", ["./sniff", "./dom"], function(has, dom){
+	// module:
+	//		dojo/dom-style
+
+	// =============================
+	// Style Functions
+	// =============================
+
+	// getComputedStyle drives most of the style code.
+	// Wherever possible, reuse the returned object.
+	//
+	// API functions below that need to access computed styles accept an
+	// optional computedStyle parameter.
+	// If this parameter is omitted, the functions will call getComputedStyle themselves.
+	// This way, calling code can access computedStyle once, and then pass the reference to
+	// multiple API functions.
+
+	// Although we normally eschew argument validation at this
+	// level, here we test argument 'node' for (duck)type,
+	// by testing nodeType, ecause 'document' is the 'parentNode' of 'body'
+	// it is frequently sent to this function even
+	// though it is not Element.
+	var getComputedStyle, style = {
+		// summary:
+		//		This module defines the core dojo DOM style API.
+	};
+	if(has("webkit")){
+		getComputedStyle = function(/*DomNode*/ node){
+			var s;
+			if(node.nodeType == 1){
+				var dv = node.ownerDocument.defaultView;
+				s = dv.getComputedStyle(node, null);
+				if(!s && node.style){
+					node.style.display = "";
+					s = dv.getComputedStyle(node, null);
+				}
+			}
+			return s || {};
+		};
+	}else if(has("ie") && (has("ie") < 9 || has("quirks"))){
+		getComputedStyle = function(node){
+			// IE (as of 7) doesn't expose Element like sane browsers
+			// currentStyle can be null on IE8!
+			return node.nodeType == 1 /* ELEMENT_NODE*/ && node.currentStyle ? node.currentStyle : {};
+		};
+	}else{
+		getComputedStyle = function(node){
+			return node.nodeType == 1 /* ELEMENT_NODE*/ ?
+				node.ownerDocument.defaultView.getComputedStyle(node, null) : {};
+		};
+	}
+	style.getComputedStyle = getComputedStyle;
+	/*=====
+	style.getComputedStyle = function(node){
+		// summary:
+		//		Returns a "computed style" object.
+		//
+		// description:
+		//		Gets a "computed style" object which can be used to gather
+		//		information about the current state of the rendered node.
+		//
+		//		Note that this may behave differently on different browsers.
+		//		Values may have different formats and value encodings across
+		//		browsers.
+		//
+		//		Note also that this method is expensive.  Wherever possible,
+		//		reuse the returned object.
+		//
+		//		Use the dojo.style() method for more consistent (pixelized)
+		//		return values.
+		//
+		// node: DOMNode
+		//		A reference to a DOM node. Does NOT support taking an
+		//		ID string for speed reasons.
+		// example:
+		//	|	dojo.getComputedStyle(dojo.byId('foo')).borderWidth;
+		//
+		// example:
+		//		Reusing the returned object, avoiding multiple lookups:
+		//	|	var cs = dojo.getComputedStyle(dojo.byId("someNode"));
+		//	|	var w = cs.width, h = cs.height;
+		return; // CSS2Properties
+	};
+	=====*/
+
+	var toPixel;
+	if(!has("ie")){
+		toPixel = function(element, value){
+			// style values can be floats, client code may want
+			// to round for integer pixels.
+			return parseFloat(value) || 0;
+		};
+	}else{
+		toPixel = function(element, avalue){
+			if(!avalue){ return 0; }
+			// on IE7, medium is usually 4 pixels
+			if(avalue == "medium"){ return 4; }
+			// style values can be floats, client code may
+			// want to round this value for integer pixels.
+			if(avalue.slice && avalue.slice(-2) == 'px'){ return parseFloat(avalue); }
+			var s = element.style, rs = element.runtimeStyle, cs = element.currentStyle,
+				sLeft = s.left, rsLeft = rs.left;
+			rs.left = cs.left;
+			try{
+				// 'avalue' may be incompatible with style.left, which can cause IE to throw
+				// this has been observed for border widths using "thin", "medium", "thick" constants
+				// those particular constants could be trapped by a lookup
+				// but perhaps there are more
+				s.left = avalue;
+				avalue = s.pixelLeft;
+			}catch(e){
+				avalue = 0;
+			}
+			s.left = sLeft;
+			rs.left = rsLeft;
+			return avalue;
+		};
+	}
+	style.toPixelValue = toPixel;
+	/*=====
+	style.toPixelValue = function(node, value){
+		// summary:
+		//		converts style value to pixels on IE or return a numeric value.
+		// node: DOMNode
+		// value: String
+		// returns: Number
+	};
+	=====*/
+
+	// FIXME: there opacity quirks on FF that we haven't ported over. Hrm.
+
+	var astr = "DXImageTransform.Microsoft.Alpha";
+	var af = function(n, f){
+		try{
+			return n.filters.item(astr);
+		}catch(e){
+			return f ? {} : null;
+		}
+	};
+
+	var _getOpacity =
+		has("ie") < 9 || (has("ie") < 10 && has("quirks")) ? function(node){
+			try{
+				return af(node).Opacity / 100; // Number
+			}catch(e){
+				return 1; // Number
+			}
+		} :
+		function(node){
+			return getComputedStyle(node).opacity;
+		};
+
+	var _setOpacity =
+		has("ie") < 9 || (has("ie") < 10 && has("quirks")) ? function(/*DomNode*/ node, /*Number*/ opacity){
+			var ov = opacity * 100, opaque = opacity == 1;
+			node.style.zoom = opaque ? "" : 1;
+
+			if(!af(node)){
+				if(opaque){
+					return opacity;
+				}
+				node.style.filter += " progid:" + astr + "(Opacity=" + ov + ")";
+			}else{
+				af(node, 1).Opacity = ov;
+			}
+
+			// on IE7 Alpha(Filter opacity=100) makes text look fuzzy so disable it altogether (bug #2661),
+			//but still update the opacity value so we can get a correct reading if it is read later.
+			af(node, 1).Enabled = !opaque;
+
+			if(node.tagName.toLowerCase() == "tr"){
+				for(var td = node.firstChild; td; td = td.nextSibling){
+					if(td.tagName.toLowerCase() == "td"){
+						_setOpacity(td, opacity);
+					}
+				}
+			}
+			return opacity;
+		} :
+		function(node, opacity){
+			return node.style.opacity = opacity;
+		};
+
+	var _pixelNamesCache = {
+		left: true, top: true
+	};
+	var _pixelRegExp = /margin|padding|width|height|max|min|offset/; // |border
+	function _toStyleValue(node, type, value){
+		//TODO: should we really be doing string case conversion here? Should we cache it? Need to profile!
+		type = type.toLowerCase();
+		if(has("ie")){
+			if(value == "auto"){
+				if(type == "height"){ return node.offsetHeight; }
+				if(type == "width"){ return node.offsetWidth; }
+			}
+			if(type == "fontweight"){
+				switch(value){
+					case 700: return "bold";
+					case 400:
+					default: return "normal";
+				}
+			}
+		}
+		if(!(type in _pixelNamesCache)){
+			_pixelNamesCache[type] = _pixelRegExp.test(type);
+		}
+		return _pixelNamesCache[type] ? toPixel(node, value) : value;
+	}
+
+	var _floatStyle = has("ie") ? "styleFloat" : "cssFloat",
+		_floatAliases = {"cssFloat": _floatStyle, "styleFloat": _floatStyle, "float": _floatStyle};
+
+	// public API
+
+	style.get = function getStyle(/*DOMNode|String*/ node, /*String?*/ name){
+		// summary:
+		//		Accesses styles on a node.
+		// description:
+		//		Getting the style value uses the computed style for the node, so the value
+		//		will be a calculated value, not just the immediate node.style value.
+		//		Also when getting values, use specific style names,
+		//		like "borderBottomWidth" instead of "border" since compound values like
+		//		"border" are not necessarily reflected as expected.
+		//		If you want to get node dimensions, use `dojo.marginBox()`,
+		//		`dojo.contentBox()` or `dojo.position()`.
+		// node: DOMNode|String
+		//		id or reference to node to get style for
+		// name: String?
+		//		the style property to get
+		// example:
+		//		Passing only an ID or node returns the computed style object of
+		//		the node:
+		//	|	dojo.getStyle("thinger");
+		// example:
+		//		Passing a node and a style property returns the current
+		//		normalized, computed value for that property:
+		//	|	dojo.getStyle("thinger", "opacity"); // 1 by default
+
+		var n = dom.byId(node), l = arguments.length, op = (name == "opacity");
+		if(l == 2 && op){
+			return _getOpacity(n);
+		}
+		name = _floatAliases[name] || name;
+		var s = style.getComputedStyle(n);
+		return (l == 1) ? s : _toStyleValue(n, name, s[name] || n.style[name]); /* CSS2Properties||String||Number */
+	};
+
+	style.set = function setStyle(/*DOMNode|String*/ node, /*String|Object*/ name, /*String?*/ value){
+		// summary:
+		//		Sets styles on a node.
+		// node: DOMNode|String
+		//		id or reference to node to set style for
+		// name: String|Object
+		//		the style property to set in DOM-accessor format
+		//		("borderWidth", not "border-width") or an object with key/value
+		//		pairs suitable for setting each property.
+		// value: String?
+		//		If passed, sets value on the node for style, handling
+		//		cross-browser concerns.  When setting a pixel value,
+		//		be sure to include "px" in the value. For instance, top: "200px".
+		//		Otherwise, in some cases, some browsers will not apply the style.
+		//
+		// example:
+		//		Passing a node, a style property, and a value changes the
+		//		current display of the node and returns the new computed value
+		//	|	dojo.setStyle("thinger", "opacity", 0.5); // == 0.5
+		//
+		// example:
+		//		Passing a node, an object-style style property sets each of the values in turn and returns the computed style object of the node:
+		//	|	dojo.setStyle("thinger", {
+		//	|		"opacity": 0.5,
+		//	|		"border": "3px solid black",
+		//	|		"height": "300px"
+		//	|	});
+		//
+		// example:
+		//		When the CSS style property is hyphenated, the JavaScript property is camelCased.
+		//		font-size becomes fontSize, and so on.
+		//	|	dojo.setStyle("thinger",{
+		//	|		fontSize:"14pt",
+		//	|		letterSpacing:"1.2em"
+		//	|	});
+		//
+		// example:
+		//		dojo/NodeList implements .style() using the same syntax, omitting the "node" parameter, calling
+		//		dojo.style() on every element of the list. See: `dojo.query()` and `dojo/NodeList`
+		//	|	dojo.query(".someClassName").style("visibility","hidden");
+		//	|	// or
+		//	|	dojo.query("#baz > div").style({
+		//	|		opacity:0.75,
+		//	|		fontSize:"13pt"
+		//	|	});
+
+		var n = dom.byId(node), l = arguments.length, op = (name == "opacity");
+		name = _floatAliases[name] || name;
+		if(l == 3){
+			return op ? _setOpacity(n, value) : n.style[name] = value; // Number
+		}
+		for(var x in name){
+			style.set(node, x, name[x]);
+		}
+		return style.getComputedStyle(n);
+	};
+
+	return style;
+});
+
+},
 'dojo/dom-geometry':function(){
 define(["./sniff", "./_base/window","./dom", "./dom-style"],
 		function(has, win, dom, style){
@@ -10158,8 +10528,8 @@ define(["./sniff", "./_base/window","./dom", "./dom-style"],
 			ret = node.getBoundingClientRect();
 		ret = {x: ret.left, y: ret.top, w: ret.right - ret.left, h: ret.bottom - ret.top};
 
-		if(has("ie")){
-			// On IE there's a 2px offset that we need to adjust for, see dojo.getIeDocumentElementOffset()
+		if(has("ie") < 9){
+			// On IE<9 there's a 2px offset that we need to adjust for, see dojo.getIeDocumentElementOffset()
 			var offset = geom.getIeDocumentElementOffset(node.ownerDocument);
 
 			// fixes the position in IE, quirks mode
@@ -10231,315 +10601,6 @@ define(["./sniff", "./_base/window","./dom", "./dom-style"],
 	// TODO: evaluate separate getters/setters for position and sizes?
 
 	return geom;
-});
-
-},
-'dojo/dom-style':function(){
-define("dojo/dom-style", ["./sniff", "./dom"], function(has, dom){
-	// module:
-	//		dojo/dom-style
-
-	// =============================
-	// Style Functions
-	// =============================
-
-	// getComputedStyle drives most of the style code.
-	// Wherever possible, reuse the returned object.
-	//
-	// API functions below that need to access computed styles accept an
-	// optional computedStyle parameter.
-	// If this parameter is omitted, the functions will call getComputedStyle themselves.
-	// This way, calling code can access computedStyle once, and then pass the reference to
-	// multiple API functions.
-
-	// Although we normally eschew argument validation at this
-	// level, here we test argument 'node' for (duck)type,
-	// by testing nodeType, ecause 'document' is the 'parentNode' of 'body'
-	// it is frequently sent to this function even
-	// though it is not Element.
-	var getComputedStyle, style = {
-		// summary:
-		//		This module defines the core dojo DOM style API.
-	};
-	if(has("webkit")){
-		getComputedStyle = function(/*DomNode*/ node){
-			var s;
-			if(node.nodeType == 1){
-				var dv = node.ownerDocument.defaultView;
-				s = dv.getComputedStyle(node, null);
-				if(!s && node.style){
-					node.style.display = "";
-					s = dv.getComputedStyle(node, null);
-				}
-			}
-			return s || {};
-		};
-	}else if(has("ie") && (has("ie") < 9 || has("quirks"))){
-		getComputedStyle = function(node){
-			// IE (as of 7) doesn't expose Element like sane browsers
-			// currentStyle can be null on IE8!
-			return node.nodeType == 1 /* ELEMENT_NODE*/ && node.currentStyle ? node.currentStyle : {};
-		};
-	}else{
-		getComputedStyle = function(node){
-			return node.nodeType == 1 /* ELEMENT_NODE*/ ?
-				node.ownerDocument.defaultView.getComputedStyle(node, null) : {};
-		};
-	}
-	style.getComputedStyle = getComputedStyle;
-	/*=====
-	style.getComputedStyle = function(node){
-		// summary:
-		//		Returns a "computed style" object.
-		//
-		// description:
-		//		Gets a "computed style" object which can be used to gather
-		//		information about the current state of the rendered node.
-		//
-		//		Note that this may behave differently on different browsers.
-		//		Values may have different formats and value encodings across
-		//		browsers.
-		//
-		//		Note also that this method is expensive.  Wherever possible,
-		//		reuse the returned object.
-		//
-		//		Use the dojo.style() method for more consistent (pixelized)
-		//		return values.
-		//
-		// node: DOMNode
-		//		A reference to a DOM node. Does NOT support taking an
-		//		ID string for speed reasons.
-		// example:
-		//	|	dojo.getComputedStyle(dojo.byId('foo')).borderWidth;
-		//
-		// example:
-		//		Reusing the returned object, avoiding multiple lookups:
-		//	|	var cs = dojo.getComputedStyle(dojo.byId("someNode"));
-		//	|	var w = cs.width, h = cs.height;
-		return; // CSS2Properties
-	};
-	=====*/
-
-	var toPixel;
-	if(!has("ie")){
-		toPixel = function(element, value){
-			// style values can be floats, client code may want
-			// to round for integer pixels.
-			return parseFloat(value) || 0;
-		};
-	}else{
-		toPixel = function(element, avalue){
-			if(!avalue){ return 0; }
-			// on IE7, medium is usually 4 pixels
-			if(avalue == "medium"){ return 4; }
-			// style values can be floats, client code may
-			// want to round this value for integer pixels.
-			if(avalue.slice && avalue.slice(-2) == 'px'){ return parseFloat(avalue); }
-			var s = element.style, rs = element.runtimeStyle, cs = element.currentStyle,
-				sLeft = s.left, rsLeft = rs.left;
-			rs.left = cs.left;
-			try{
-				// 'avalue' may be incompatible with style.left, which can cause IE to throw
-				// this has been observed for border widths using "thin", "medium", "thick" constants
-				// those particular constants could be trapped by a lookup
-				// but perhaps there are more
-				s.left = avalue;
-				avalue = s.pixelLeft;
-			}catch(e){
-				avalue = 0;
-			}
-			s.left = sLeft;
-			rs.left = rsLeft;
-			return avalue;
-		};
-	}
-	style.toPixelValue = toPixel;
-	/*=====
-	style.toPixelValue = function(node, value){
-		// summary:
-		//		converts style value to pixels on IE or return a numeric value.
-		// node: DOMNode
-		// value: String
-		// returns: Number
-	};
-	=====*/
-
-	// FIXME: there opacity quirks on FF that we haven't ported over. Hrm.
-
-	var astr = "DXImageTransform.Microsoft.Alpha";
-	var af = function(n, f){
-		try{
-			return n.filters.item(astr);
-		}catch(e){
-			return f ? {} : null;
-		}
-	};
-
-	var _getOpacity =
-		has("ie") < 9 || (has("ie") && has("quirks")) ? function(node){
-			try{
-				return af(node).Opacity / 100; // Number
-			}catch(e){
-				return 1; // Number
-			}
-		} :
-		function(node){
-			return getComputedStyle(node).opacity;
-		};
-
-	var _setOpacity =
-		has("ie") < 9 || (has("ie") && has("quirks")) ? function(/*DomNode*/ node, /*Number*/ opacity){
-			var ov = opacity * 100, opaque = opacity == 1;
-			node.style.zoom = opaque ? "" : 1;
-
-			if(!af(node)){
-				if(opaque){
-					return opacity;
-				}
-				node.style.filter += " progid:" + astr + "(Opacity=" + ov + ")";
-			}else{
-				af(node, 1).Opacity = ov;
-			}
-
-			// on IE7 Alpha(Filter opacity=100) makes text look fuzzy so disable it altogether (bug #2661),
-			//but still update the opacity value so we can get a correct reading if it is read later.
-			af(node, 1).Enabled = !opaque;
-
-			if(node.tagName.toLowerCase() == "tr"){
-				for(var td = node.firstChild; td; td = td.nextSibling){
-					if(td.tagName.toLowerCase() == "td"){
-						_setOpacity(td, opacity);
-					}
-				}
-			}
-			return opacity;
-		} :
-		function(node, opacity){
-			return node.style.opacity = opacity;
-		};
-
-	var _pixelNamesCache = {
-		left: true, top: true
-	};
-	var _pixelRegExp = /margin|padding|width|height|max|min|offset/; // |border
-	function _toStyleValue(node, type, value){
-		//TODO: should we really be doing string case conversion here? Should we cache it? Need to profile!
-		type = type.toLowerCase();
-		if(has("ie")){
-			if(value == "auto"){
-				if(type == "height"){ return node.offsetHeight; }
-				if(type == "width"){ return node.offsetWidth; }
-			}
-			if(type == "fontweight"){
-				switch(value){
-					case 700: return "bold";
-					case 400:
-					default: return "normal";
-				}
-			}
-		}
-		if(!(type in _pixelNamesCache)){
-			_pixelNamesCache[type] = _pixelRegExp.test(type);
-		}
-		return _pixelNamesCache[type] ? toPixel(node, value) : value;
-	}
-
-	var _floatStyle = has("ie") ? "styleFloat" : "cssFloat",
-		_floatAliases = {"cssFloat": _floatStyle, "styleFloat": _floatStyle, "float": _floatStyle};
-
-	// public API
-
-	style.get = function getStyle(/*DOMNode|String*/ node, /*String?*/ name){
-		// summary:
-		//		Accesses styles on a node.
-		// description:
-		//		Getting the style value uses the computed style for the node, so the value
-		//		will be a calculated value, not just the immediate node.style value.
-		//		Also when getting values, use specific style names,
-		//		like "borderBottomWidth" instead of "border" since compound values like
-		//		"border" are not necessarily reflected as expected.
-		//		If you want to get node dimensions, use `dojo.marginBox()`,
-		//		`dojo.contentBox()` or `dojo.position()`.
-		// node: DOMNode|String
-		//		id or reference to node to get style for
-		// name: String?
-		//		the style property to get
-		// example:
-		//		Passing only an ID or node returns the computed style object of
-		//		the node:
-		//	|	dojo.getStyle("thinger");
-		// example:
-		//		Passing a node and a style property returns the current
-		//		normalized, computed value for that property:
-		//	|	dojo.getStyle("thinger", "opacity"); // 1 by default
-
-		var n = dom.byId(node), l = arguments.length, op = (name == "opacity");
-		if(l == 2 && op){
-			return _getOpacity(n);
-		}
-		name = _floatAliases[name] || name;
-		var s = style.getComputedStyle(n);
-		return (l == 1) ? s : _toStyleValue(n, name, s[name] || n.style[name]); /* CSS2Properties||String||Number */
-	};
-
-	style.set = function setStyle(/*DOMNode|String*/ node, /*String|Object*/ name, /*String?*/ value){
-		// summary:
-		//		Sets styles on a node.
-		// node: DOMNode|String
-		//		id or reference to node to set style for
-		// name: String|Object
-		//		the style property to set in DOM-accessor format
-		//		("borderWidth", not "border-width") or an object with key/value
-		//		pairs suitable for setting each property.
-		// value: String?
-		//		If passed, sets value on the node for style, handling
-		//		cross-browser concerns.  When setting a pixel value,
-		//		be sure to include "px" in the value. For instance, top: "200px".
-		//		Otherwise, in some cases, some browsers will not apply the style.
-		//
-		// example:
-		//		Passing a node, a style property, and a value changes the
-		//		current display of the node and returns the new computed value
-		//	|	dojo.setStyle("thinger", "opacity", 0.5); // == 0.5
-		//
-		// example:
-		//		Passing a node, an object-style style property sets each of the values in turn and returns the computed style object of the node:
-		//	|	dojo.setStyle("thinger", {
-		//	|		"opacity": 0.5,
-		//	|		"border": "3px solid black",
-		//	|		"height": "300px"
-		//	|	});
-		//
-		// example:
-		//		When the CSS style property is hyphenated, the JavaScript property is camelCased.
-		//		font-size becomes fontSize, and so on.
-		//	|	dojo.setStyle("thinger",{
-		//	|		fontSize:"14pt",
-		//	|		letterSpacing:"1.2em"
-		//	|	});
-		//
-		// example:
-		//		dojo/NodeList implements .style() using the same syntax, omitting the "node" parameter, calling
-		//		dojo.style() on every element of the list. See: `dojo.query()` and `dojo/NodeList`
-		//	|	dojo.query(".someClassName").style("visibility","hidden");
-		//	|	// or
-		//	|	dojo.query("#baz > div").style({
-		//	|		opacity:0.75,
-		//	|		fontSize:"13pt"
-		//	|	});
-
-		var n = dom.byId(node), l = arguments.length, op = (name == "opacity");
-		name = _floatAliases[name] || name;
-		if(l == 3){
-			return op ? _setOpacity(n, value) : n.style[name] = value; // Number
-		}
-		for(var x in name){
-			style.set(node, x, name[x]);
-		}
-		return style.getComputedStyle(n);
-	};
-
-	return style;
 });
 
 },
@@ -11069,12 +11130,6 @@ define(["exports", "./_base/kernel", "./sniff", "./_base/window", "./dom", "./do
 		}
 	}
 
-	var _destroyContainer = null,
-		_destroyDoc;
-	on(window, "unload", function(){
-		_destroyContainer = null; //prevent IE leak
-	});
-
 	exports.toDom = function toDom(frag, doc){
 		// summary:
 		//		instantiates an HTML fragment returning the corresponding DOM.
@@ -11121,7 +11176,7 @@ define(["exports", "./_base/kernel", "./sniff", "./_base/window", "./dom", "./do
 
 		// return multiple nodes as a document fragment
 		df = doc.createDocumentFragment();
-		while(fc = master.firstChild){ // intentional assignment
+		while((fc = master.firstChild)){ // intentional assignment
 			df.appendChild(fc);
 		}
 		return df; // DocumentFragment
@@ -11280,18 +11335,21 @@ define(["exports", "./_base/kernel", "./sniff", "./_base/window", "./dom", "./do
 		return tag; // DomNode
 	};
 
-	exports.empty =
-		has("ie") ? function(node){
-			node = dom.byId(node);
-			for(var c; c = node.lastChild;){ // intentional assignment
-				exports.destroy(c);
+	var _empty = has("ie") ?
+		function(/*DomNode*/ node){
+			try{
+				node.innerHTML = ""; // really fast when it works
+			}catch(e){ // IE can generate Unknown Error
+				for(var c; c = node.lastChild;){ // intentional assignment
+					_destroy(c, node); // destroy is better than removeChild so TABLE elements are removed in proper order
+				}
 			}
 		} :
-		function(node){
-			dom.byId(node).innerHTML = "";
+		function(/*DomNode*/ node){
+			node.innerHTML = "";
 		};
-	/*=====
-	 exports.empty = function(node){
+
+	exports.empty = function empty(/*DOMNode|String*/ node){
 		 // summary:
 		 //		safely removes all children of the node.
 		 // node: DOMNode|String
@@ -11303,9 +11361,19 @@ define(["exports", "./_base/kernel", "./sniff", "./_base/window", "./dom", "./do
 		 // example:
 		 //		Destroy all nodes' children in a list by reference:
 		 //	|	dojo.query(".someNode").forEach(dojo.empty);
-	 };
-	 =====*/
 
+		_empty(dom.byId(node));
+	};
+
+
+	function _destroy(/*DomNode*/ node, /*DomNode*/ parent){
+		if(node.firstChild){
+			_empty(node);
+		}
+		if(parent){
+			parent.removeChild(node);
+		}
+	}
 	exports.destroy = function destroy(/*DOMNode|String*/ node){
 		// summary:
 		//		Removes a node from its parent, clobbering it and all of its
@@ -11327,19 +11395,8 @@ define(["exports", "./_base/kernel", "./sniff", "./_base/window", "./dom", "./do
 		//	|	dojo.query(".someNode").forEach(dojo.destroy);
 
 		node = dom.byId(node);
-		try{
-			var doc = node.ownerDocument;
-			// cannot use _destroyContainer.ownerDocument since this can throw an exception on IE
-			if(!_destroyContainer || _destroyDoc != doc){
-				_destroyContainer = doc.createElement("div");
-				_destroyDoc = doc;
-			}
-			_destroyContainer.appendChild(node.parentNode ? node.parentNode.removeChild(node) : node);
-			// NOTE: see http://trac.dojotoolkit.org/ticket/2931. This may be a bug and not a feature
-			_destroyContainer.innerHTML = "";
-		}catch(e){
-			/* squelch */
-		}
+		if(!node){ return; }
+		_destroy(node, node.parentNode);
 	};
 });
 
@@ -11475,16 +11532,6 @@ define("dojo/request/xhr", [
 			}
 		};
 	function xhr(url, options, returnDeferred){
-		// summary:
-		//		Sends a request using XMLHttpRequest with the given URL and options.
-		// url: String
-		//		URL to request
-		// options: dojo/request/xhr.__Options?
-		//		Options for the request.
-		// returnDeferred: Boolean
-		//		Return a dojo/Deferred rather than a dojo/promise/Promise
-		// returns: dojo/promise/Promise|dojo/Deferred
-
 		var response = util.parseArgs(
 			url,
 			util.deepCreate(defaultOptions, options),
@@ -11572,6 +11619,15 @@ define("dojo/request/xhr", [
 	}
 
 	/*=====
+	xhr = function(url, options){
+		// summary:
+		//		Sends a request using XMLHttpRequest with the given URL and options.
+		// url: String
+		//		URL to request
+		// options: dojo/request/xhr.__Options?
+		//		Options for the request.
+		// returns: dojo/request.__Promise
+	};
 	xhr.__BaseOptions = declare(request.__BaseOptions, {
 		// sync: Boolean?
 		//		Whether to make a synchronous request or not. Default
@@ -11603,7 +11659,7 @@ define("dojo/request/xhr", [
 		//		URL to request
 		// options: dojo/request/xhr.__BaseOptions?
 		//		Options for the request.
-		// returns: dojo/promise/Promise
+		// returns: dojo/request.__Promise
 	};
 	xhr.post = function(url, options){
 		// summary:
@@ -11612,7 +11668,7 @@ define("dojo/request/xhr", [
 		//		URL to request
 		// options: dojo/request/xhr.__BaseOptions?
 		//		Options for the request.
-		// returns: dojo/promise/Promise
+		// returns: dojo/request.__Promise
 	};
 	xhr.put = function(url, options){
 		// summary:
@@ -11621,7 +11677,7 @@ define("dojo/request/xhr", [
 		//		URL to request
 		// options: dojo/request/xhr.__BaseOptions?
 		//		Options for the request.
-		// returns: dojo/promise/Promise
+		// returns: dojo/request.__Promise
 	};
 	xhr.del = function(url, options){
 		// summary:
@@ -11630,7 +11686,7 @@ define("dojo/request/xhr", [
 		//		URL to request
 		// options: dojo/request/xhr.__BaseOptions?
 		//		Options for the request.
-		// returns: dojo/promise/Promise
+		// returns: dojo/request.__Promise
 	};
 	=====*/
 	xhr._create = function(){
@@ -12866,7 +12922,7 @@ define("dojo/mouse", ["./_base/kernel", "./on", "./has", "./dom", "./_base/windo
 	has.add("events-mousewheel", win.doc && 'onmousewheel' in win.doc);
 
 	var mouseButtons;
-	if(has("dom-quirks") || !has("dom-addeventlistener")){
+	if((has("dom-quirks") && has("ie")) || !has("dom-addeventlistener")){
 		mouseButtons = {
 			LEFT:   1,
 			MIDDLE: 4,
@@ -13025,6 +13081,47 @@ define("dojo/mouse", ["./_base/kernel", "./on", "./has", "./dom", "./_base/windo
 			 //		Test an event object (from a mousedown event) to see if the right button was pressed.
 		 }
 		 =====*/
+	};
+});
+
+},
+'dojo/topic':function(){
+define("dojo/topic", ["./Evented"], function(Evented){
+
+	// module:
+	//		dojo/topic
+
+	var hub = new Evented;
+	return {
+		// summary:
+		//		Pubsub hub.
+		// example:
+		//		| 	topic.subscribe("some/topic", function(event){
+		//		|	... do something with event
+		//		|	});
+		//		|	topic.publish("some/topic", {name:"some event", ...});
+
+		publish: function(topic, event){
+			// summary:
+			//		Publishes a message to a topic on the pub/sub hub. All arguments after
+			//		the first will be passed to the subscribers, so any number of arguments
+			//		can be provided (not just event).
+			// topic: String
+			//		The name of the topic to publish to
+			// event: Object
+			//		An event to distribute to the topic listeners
+			return hub.emit.apply(hub, arguments);
+		},
+
+		subscribe: function(topic, listener){
+			// summary:
+			//		Subscribes to a topic on the pub/sub hub
+			// topic: String
+			//		The topic to subscribe to
+			// listener: Function
+			//		A function to call when a message is published to the given topic
+			return hub.on.apply(hub, arguments);
+		}
 	};
 });
 
@@ -13651,6 +13748,11 @@ define("dojo/_base/xhr", [
 			dfd.resolve(dfd);
 		}).otherwise(function(error){
 			ioArgs.error = error;
+			if(error.response){
+				error.status = error.response.status;
+				error.responseText = error.response.text;
+				error.xhr = error.response.xhr;
+			}
 			dfd.reject(error);
 		});
 		return dfd; // dojo/_base/Deferred
@@ -13734,47 +13836,6 @@ define("dojo/_base/xhr", [
 	});
 
 	return dojo.xhr;
-});
-
-},
-'dojo/topic':function(){
-define("dojo/topic", ["./Evented"], function(Evented){
-
-	// module:
-	//		dojo/topic
-
-	var hub = new Evented;
-	return {
-		// summary:
-		//		Pubsub hub.
-		// example:
-		//		| 	topic.subscribe("some/topic", function(event){
-		//		|	... do something with event
-		//		|	});
-		//		|	topic.publish("some/topic", {name:"some event", ...});
-
-		publish: function(topic, event){
-			// summary:
-			//		Publishes a message to a topic on the pub/sub hub. All arguments after
-			//		the first will be passed to the subscribers, so any number of arguments
-			//		can be provided (not just event).
-			// topic: String
-			//		The name of the topic to publish to
-			// event: Object
-			//		An event to distribute to the topic listeners
-			return hub.emit.apply(hub, arguments);
-		},
-
-		subscribe: function(topic, listener){
-			// summary:
-			//		Subscribes to a topic on the pub/sub hub
-			// topic: String
-			//		The topic to subscribe to
-			// listener: Function
-			//		A function to call when a message is published to the given topic
-			return hub.on.apply(hub, arguments);
-		}
-	};
 });
 
 },
@@ -13911,16 +13972,22 @@ define([
 		if(func){
 			try{
 				var newResult = func(result);
-				if(newResult && typeof newResult.then === "function"){
-					listener.cancel = newResult.cancel;
-					newResult.then(
-							// Only make resolvers if they're actually going to be used
-							makeDeferredSignaler(deferred, RESOLVED),
-							makeDeferredSignaler(deferred, REJECTED),
-							makeDeferredSignaler(deferred, PROGRESS));
-					return;
+				if(type === PROGRESS){
+					if(typeof newResult !== "undefined"){
+						signalDeferred(deferred, type, newResult);
+					}
+				}else{
+					if(newResult && typeof newResult.then === "function"){
+						listener.cancel = newResult.cancel;
+						newResult.then(
+								// Only make resolvers if they're actually going to be used
+								makeDeferredSignaler(deferred, RESOLVED),
+								makeDeferredSignaler(deferred, REJECTED),
+								makeDeferredSignaler(deferred, PROGRESS));
+						return;
+					}
+					signalDeferred(deferred, RESOLVED, newResult);
 				}
-				signalDeferred(deferred, RESOLVED, newResult);
 			}catch(error){
 				signalDeferred(deferred, REJECTED, error);
 			}
@@ -14585,6 +14652,8 @@ define([
 
 		if(errors.length){
 			activeTimeout = setTimeout(logRejected, errors[0].timestamp + unhandledWait - now);
+		}else{
+			activeTimeout = false;
 		}
 	}
 
@@ -14849,7 +14918,7 @@ define([
 				if(dfd.startTime + (options.timeout || 0) < now){
 					_inFlight.splice(i--, 1);
 					// Cancel the request so the io module can do appropriate cleanup.
-					dfd.cancel(new RequestTimeoutError(response));
+					dfd.cancel(new RequestTimeoutError('Timeout exceeded', response));
 					watch._onAction && watch._onAction();
 				}
 			}
@@ -14966,7 +15035,7 @@ define(["./has!dom-addeventlistener?:./aspect", "./_base/kernel", "./has"], func
 		//		|	obj.onfoo({key:"value"});
 		//		If you use on.emit on a DOM node, it will use native event dispatching when possible.
 
-		if(target.on && typeof type != "function"){ 
+		if(typeof target.on == "function" && typeof type != "function"){
 			// delegate to the target's on() method, so it can handle it's own listening if it wants
 			return target.on(type, listener);
 		}
@@ -15224,9 +15293,6 @@ define(["./has!dom-addeventlistener?:./aspect", "./_base/kernel", "./has"], func
 			focusin: "focus",
 			focusout: "blur"
 		};
-		if(has("opera")){
-			captures.keydown = "keypress"; // this one needs to be transformed because Opera doesn't support repeating keys on keydown (and keypress works because it incorrectly fires on all keydown events)
-		}
 
 		// emiter that works with native event handling
 		on.emit = function(target, type, event){
@@ -16991,11 +17057,8 @@ define("dojo/aspect", [], function(){
 		if(previous && !around){
 			if(type == "after"){
 				// add the listener to the end of the list
-				var next = previous;
-				while(next){
-					previous = next;
-					next = next.next;
-				}
+				// note that we had to change this loop a little bit to workaround a bizarre IE10 JIT bug 
+				while(previous.next && (previous = previous.next)){}
 				previous.next = signal;
 				signal.previous = previous;
 			}else if(type == "before"){

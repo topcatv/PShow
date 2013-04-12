@@ -144,7 +144,6 @@ define("dojox/dgauges/MultiLinearScaler", ["dojo/_base/declare", "dojo/Stateful"
 					continue;
 				}
 			}
-			return res;
 		}
 	});
 });

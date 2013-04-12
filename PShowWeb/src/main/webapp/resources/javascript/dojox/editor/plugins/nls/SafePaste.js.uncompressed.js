@@ -24,6 +24,7 @@ define("dojox/editor/plugins/nls/SafePaste", { root:
 "it": true,
 "hu": true,
 "hr": true,
+"he": true,
 "fr": true,
 "fi": true,
 "es": true,

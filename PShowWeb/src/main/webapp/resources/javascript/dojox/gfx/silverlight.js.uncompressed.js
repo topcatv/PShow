@@ -622,6 +622,7 @@ define("dojox/gfx/silverlight", ["dojo/_base/kernel", "dojo/_base/lang", "dojo/_
 			gs.Container._init.call(this);
 		},
 		destroy: function(){
+			this.clear(true);
 			window[this._onLoadName] = nullFunc;
 			delete surfaces[this._nodeName];
 			this.inherited(arguments);

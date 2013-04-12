@@ -32,13 +32,7 @@ define(["./dom-geometry", "./_base/lang", "./ready", "./sniff", "./_base/window"
 		boxModel = geometry.boxModel.replace(/-/,''),
 
 		classes = {
-			"dj_ie": ie,
-			"dj_ie6": maj(ie) == 6,
-			"dj_ie7": maj(ie) == 7,
-			"dj_ie8": maj(ie) == 8,
-			"dj_ie9": maj(ie) == 9,
 			"dj_quirks": has("quirks"),
-			"dj_iequirks": ie && has("quirks"),
 
 			// NOTE: Opera not supported by dijit
 			"dj_opera": opera,
@@ -49,9 +43,17 @@ define(["./dom-geometry", "./_base/lang", "./ready", "./sniff", "./_base/window"
 			"dj_safari": has("safari"),
 			"dj_chrome": has("chrome"),
 
-			"dj_gecko": has("mozilla"),
-			"dj_ff3": maj(ff) == 3
+			"dj_gecko": has("mozilla")
 		}; // no dojo unsupported browsers
+
+	if(ie){
+		classes["dj_ie"] = true;
+		classes["dj_ie" + maj(ie)] = true;
+		classes["dj_iequirks"] = has("quirks");
+	}
+	if(ff){
+		classes["dj_ff" + maj(ff)] = true;
+	}
 
 	classes["dj_" + boxModel] = true;
 
@@ -816,170 +818,6 @@ define([
 
 
 },
-'dojox/mobile/ToolBarButton':function(){
-define("dojox/mobile/ToolBarButton", [
-	"dojo/_base/declare",
-	"dojo/_base/lang",
-	"dojo/_base/window",
-	"dojo/dom-class",
-	"dojo/dom-construct",
-	"dojo/dom-style",
-	"./sniff",
-	"./_ItemBase"
-], function(declare, lang, win, domClass, domConstruct, domStyle, has, ItemBase){
-
-	// module:
-	//		dojox/mobile/ToolBarButton
-
-	return declare("dojox.mobile.ToolBarButton", ItemBase, {
-		// summary:
-		//		A button widget which is placed in the Heading widget.
-		// description:
-		//		ToolBarButton is a button which is typically placed in the
-		//		Heading widget. It is a subclass of dojox/mobile/_ItemBase just
-		//		like ListItem or IconItem. So, unlike Button, it has basically
-		//		the same capability as ListItem or IconItem, such as icon
-		//		support, transition, etc.
-
-		// selected: Boolean
-		//		If true, the button is in the selected state.
-		selected: false,
-
-		// arrow: String
-		//		Specifies "right" or "left" to be an arrow button.
-		arrow: "",
-
-		// light: Boolean
-		//		If true, this widget produces only a single `<span>` node when it
-		//		has only an icon or only a label, and has no arrow. In that
-		//		case, you cannot have both icon and label, or arrow even if you
-		//		try to set them.
-		light: true,
-
-		// defaultColor: String
-		//		CSS class for the default color.
-		//		Note: If this button has an arrow (typically back buttons on iOS),
-		//		the class selector used for it is the value of defaultColor + "45".
-		//		For example, by default the arrow selector is "mblColorDefault45".
-		defaultColor: "mblColorDefault",
-
-		// selColor: String
-		//		CSS class for the selected color.
-		//		Note: If this button has an arrow (typically back buttons on iOS),
-		//		the class selector used for it is the value of selColor + "45".
-		//		For example, by default the selected arrow selector is "mblColorDefaultSel45".
-		selColor: "mblColorDefaultSel",
-
-		/* internal properties */
-		baseClass: "mblToolBarButton",
-
-		_selStartMethod: "touch",
-		_selEndMethod: "touch",
-
-		buildRendering: function(){
-			if(!this.label && this.srcNodeRef){
-				this.label = this.srcNodeRef.innerHTML;
-			}
-			this.label = lang.trim(this.label);
-			this.domNode = (this.srcNodeRef && this.srcNodeRef.tagName === "SPAN") ?
-				this.srcNodeRef : domConstruct.create("span");
-			this.inherited(arguments);
-
-			if(this.light && !this.arrow && (!this.icon || !this.label)){
-				this.labelNode = this.tableNode = this.bodyNode = this.iconParentNode = this.domNode;
-				domClass.add(this.domNode, this.defaultColor + " mblToolBarButtonBody" +
-							 (this.icon ? " mblToolBarButtonLightIcon" : " mblToolBarButtonLightText"));
-				return;
-			}
-
-			this.domNode.innerHTML = "";
-			if(this.arrow === "left" || this.arrow === "right"){
-				this.arrowNode = domConstruct.create("span", {
-					className: "mblToolBarButtonArrow mblToolBarButton" +
-					(this.arrow === "left" ? "Left" : "Right") + "Arrow " +
-					(has("ie") ? "" : (this.defaultColor + " " + this.defaultColor + "45"))
-				}, this.domNode);
-				domClass.add(this.domNode, "mblToolBarButtonHas" +
-					(this.arrow === "left" ? "Left" : "Right") + "Arrow");
-			}
-			this.bodyNode = domConstruct.create("span", {className:"mblToolBarButtonBody"}, this.domNode);
-			this.tableNode = domConstruct.create("table", {cellPadding:"0",cellSpacing:"0",border:"0"}, this.bodyNode);
-
-			var row = this.tableNode.insertRow(-1);
-			this.iconParentNode = row.insertCell(-1);
-			this.labelNode = row.insertCell(-1);
-			this.iconParentNode.className = "mblToolBarButtonIcon";
-			this.labelNode.className = "mblToolBarButtonLabel";
-
-			if(this.icon && this.icon !== "none" && this.label){
-				domClass.add(this.domNode, "mblToolBarButtonHasIcon");
-				domClass.add(this.bodyNode, "mblToolBarButtonLabeledIcon");
-			}
-
-			domClass.add(this.bodyNode, this.defaultColor);
-		},
-
-		startup: function(){
-			if(this._started){ return; }
-
-			this._keydownHandle = this.connect(this.domNode, "onkeydown", "_onClick"); // for desktop browsers
-
-			this.inherited(arguments);
-			if(!this._isOnLine){
-				this._isOnLine = true;
-				this.set("icon", this.icon); // retry applying the attribute
-			}
-		},
-
-		_onClick: function(e){
-			// summary:
-			//		Internal handler for click events.
-			// tags:
-			//		private
-			if(e && e.type === "keydown" && e.keyCode !== 13){ return; }
-			if(this.onClick(e) === false){ return; } // user's click action
-			this.defaultClickAction(e);
-		},
-
-		onClick: function(/*Event*/ /*===== e =====*/){
-			// summary:
-			//		User defined function to handle clicks
-			// tags:
-			//		callback
-		},
-
-		_setLabelAttr: function(/*String*/text){
-			// summary:
-			//		Sets the button label text.
-			this.inherited(arguments);
-			domClass.toggle(this.tableNode, "mblToolBarButtonText", text);
-		},
-
-		_setSelectedAttr: function(/*Boolean*/selected){
-			// summary:
-			//		Makes this widget in the selected or unselected state.
-			var replace = function(node, a, b){
-				domClass.replace(node, a + " " + a + "45", b + " " + b + "45");
-			}
-			this.inherited(arguments);
-			if(selected){
-				domClass.replace(this.bodyNode, this.selColor, this.defaultColor);
-				if(!has("ie") && this.arrowNode){
-					replace(this.arrowNode, this.selColor, this.defaultColor);
-				}
-			}else{
-				domClass.replace(this.bodyNode, this.defaultColor, this.selColor);
-				if(!has("ie") && this.arrowNode){
-					replace(this.arrowNode, this.defaultColor, this.selColor);
-				}
-			}
-			domClass.toggle(this.domNode, "mblToolBarButtonSelected", selected);
-			domClass.toggle(this.bodyNode, "mblToolBarButtonBodySelected", selected);
-		}
-	});
-});
-
-},
 'dojox/mobile/_ItemBase':function(){
 define("dojox/mobile/_ItemBase", [
 	"dojo/_base/array",
@@ -993,8 +831,9 @@ define("dojox/mobile/_ItemBase", [
 	"dijit/_Container",
 	"dijit/_WidgetBase",
 	"./TransitionEvent",
-	"./iconUtils"
-], function(array, declare, lang, win, domClass, touch, registry, Contained, Container, WidgetBase, TransitionEvent, iconUtils){
+	"./iconUtils",
+	"./sniff"
+], function(array, declare, lang, win, domClass, touch, registry, Contained, Container, WidgetBase, TransitionEvent, iconUtils, has){
 
 	// module:
 	//		dojox/mobile/_ItemBase
@@ -1223,6 +1062,13 @@ define("dojox/mobile/_ItemBase", [
 		handleSelection: function(/*Event*/e){
 			// summary:
 			//		Handles this items selection state.
+
+			// Before transitioning, we want the visual effect of selecting the item.
+			// To ensure this effect happens even if _delayedSelection is true:
+			if(this._delayedSelection){
+			  this.set("selected", true);
+			} // the item will be deselected after transition.
+
 			if(this._onTouchEndHandle){
 				this.disconnect(this._onTouchEndHandle);
 				this._onTouchEndHandle = null;
@@ -1276,7 +1122,7 @@ define("dojox/mobile/_ItemBase", [
 			// summary:
 			//		Subclasses may want to implement it.
 		},
-
+		
 		_onTouchStart: function(e){
 			// tags:
 			//		private
@@ -1383,7 +1229,11 @@ define("dojox/mobile/_ItemBase", [
 		_setIconAttr: function(icon){
 			// tags:
 			//		private
-			if(!this._isOnLine){ return; } // icon may be invalid because inheritParams is not called yet
+			if(!this._isOnLine){
+				// record the value to be able to reapply it (see the code in the startup method)
+				this._pendingIcon = icon;  
+				return; 
+			} // icon may be invalid because inheritParams is not called yet
 			this._set("icon", icon);
 			this.iconNode = iconUtils.setIcon(icon, this.iconPos, this.iconNode, this.alt, this.iconParentNode, this.refNode, this.position);
 		},
@@ -1421,29 +1271,171 @@ define("dojox/mobile/_ItemBase", [
 });
 
 },
-'dijit/hccss':function(){
-define("dijit/hccss", ["dojo/dom-class", "dojo/hccss", "dojo/ready", "dojo/_base/window"], function(domClass, has, ready, win){
+'dojox/mobile/ToolBarButton':function(){
+define("dojox/mobile/ToolBarButton", [
+	"dojo/_base/declare",
+	"dojo/_base/lang",
+	"dojo/_base/window",
+	"dojo/dom-class",
+	"dojo/dom-construct",
+	"dojo/dom-style",
+	"./sniff",
+	"./_ItemBase"
+], function(declare, lang, win, domClass, domConstruct, domStyle, has, ItemBase){
 
 	// module:
-	//		dijit/hccss
+	//		dojox/mobile/ToolBarButton
 
-	/*=====
-	return function(){
+	return declare("dojox.mobile.ToolBarButton", ItemBase, {
 		// summary:
-		//		Test if computer is in high contrast mode, and sets `dijit_a11y` flag on `<body>` if it is.
-		//		Deprecated, use ``dojo/hccss`` instead.
-	};
-	=====*/
+		//		A button widget which is placed in the Heading widget.
+		// description:
+		//		ToolBarButton is a button which is typically placed in the
+		//		Heading widget. It is a subclass of dojox/mobile/_ItemBase just
+		//		like ListItem or IconItem. So, unlike Button, it has basically
+		//		the same capability as ListItem or IconItem, such as icon
+		//		support, transition, etc.
 
-	// Priority is 90 to run ahead of parser priority of 100.   For 2.0, remove the ready() call and instead
-	// change this module to depend on dojo/domReady!
-	ready(90, function(){
-		if(has("highcontrast")){
-			domClass.add(win.body(), "dijit_a11y");
+		// selected: Boolean
+		//		If true, the button is in the selected state.
+		selected: false,
+
+		// arrow: String
+		//		Specifies "right" or "left" to be an arrow button.
+		arrow: "",
+
+		// light: Boolean
+		//		If true, this widget produces only a single `<span>` node when it
+		//		has only an icon or only a label, and has no arrow. In that
+		//		case, you cannot have both icon and label, or arrow even if you
+		//		try to set them.
+		light: true,
+
+		// defaultColor: String
+		//		CSS class for the default color.
+		//		Note: If this button has an arrow (typically back buttons on iOS),
+		//		the class selector used for it is the value of defaultColor + "45".
+		//		For example, by default the arrow selector is "mblColorDefault45".
+		defaultColor: "mblColorDefault",
+
+		// selColor: String
+		//		CSS class for the selected color.
+		//		Note: If this button has an arrow (typically back buttons on iOS),
+		//		the class selector used for it is the value of selColor + "45".
+		//		For example, by default the selected arrow selector is "mblColorDefaultSel45".
+		selColor: "mblColorDefaultSel",
+
+		/* internal properties */
+		baseClass: "mblToolBarButton",
+
+		_selStartMethod: "touch",
+		_selEndMethod: "touch",
+
+		buildRendering: function(){
+			if(!this.label && this.srcNodeRef){
+				this.label = this.srcNodeRef.innerHTML;
+			}
+			this.label = lang.trim(this.label);
+			this.domNode = (this.srcNodeRef && this.srcNodeRef.tagName === "SPAN") ?
+				this.srcNodeRef : domConstruct.create("span");
+			this.inherited(arguments);
+
+			if(this.light && !this.arrow && (!this.icon || !this.label)){
+				this.labelNode = this.tableNode = this.bodyNode = this.iconParentNode = this.domNode;
+				domClass.add(this.domNode, this.defaultColor + " mblToolBarButtonBody" +
+							 (this.icon ? " mblToolBarButtonLightIcon" : " mblToolBarButtonLightText"));
+				return;
+			}
+
+			this.domNode.innerHTML = "";
+			if(this.arrow === "left" || this.arrow === "right"){
+				this.arrowNode = domConstruct.create("span", {
+					className: "mblToolBarButtonArrow mblToolBarButton" +
+					(this.arrow === "left" ? "Left" : "Right") + "Arrow " +
+					(has("ie") ? "" : (this.defaultColor + " " + this.defaultColor + "45"))
+				}, this.domNode);
+				domClass.add(this.domNode, "mblToolBarButtonHas" +
+					(this.arrow === "left" ? "Left" : "Right") + "Arrow");
+			}
+			this.bodyNode = domConstruct.create("span", {className:"mblToolBarButtonBody"}, this.domNode);
+			this.tableNode = domConstruct.create("table", {cellPadding:"0",cellSpacing:"0",border:"0"}, this.bodyNode);
+
+			var row = this.tableNode.insertRow(-1);
+			this.iconParentNode = row.insertCell(-1);
+			this.labelNode = row.insertCell(-1);
+			this.iconParentNode.className = "mblToolBarButtonIcon";
+			this.labelNode.className = "mblToolBarButtonLabel";
+
+			if(this.icon && this.icon !== "none" && this.label){
+				domClass.add(this.domNode, "mblToolBarButtonHasIcon");
+				domClass.add(this.bodyNode, "mblToolBarButtonLabeledIcon");
+			}
+
+			domClass.add(this.bodyNode, this.defaultColor);
+		},
+
+		startup: function(){
+			if(this._started){ return; }
+
+			this._keydownHandle = this.connect(this.domNode, "onkeydown", "_onClick"); // for desktop browsers
+
+			this.inherited(arguments);
+			if(!this._isOnLine){
+				this._isOnLine = true;
+				// retry applying the attribute for which the custom setter delays the actual 
+				// work until _isOnLine is true. 
+				this.set("icon", this._pendingIcon !== undefined ? this._pendingIcon : this.icon);
+				// Not needed anymore (this code executes only once per life cycle):
+				delete this._pendingIcon; 
+			}
+		},
+
+		_onClick: function(e){
+			// summary:
+			//		Internal handler for click events.
+			// tags:
+			//		private
+			if(e && e.type === "keydown" && e.keyCode !== 13){ return; }
+			if(this.onClick(e) === false){ return; } // user's click action
+			this.defaultClickAction(e);
+		},
+
+		onClick: function(/*Event*/ /*===== e =====*/){
+			// summary:
+			//		User defined function to handle clicks
+			// tags:
+			//		callback
+		},
+
+		_setLabelAttr: function(/*String*/text){
+			// summary:
+			//		Sets the button label text.
+			this.inherited(arguments);
+			domClass.toggle(this.tableNode, "mblToolBarButtonText", text);
+		},
+
+		_setSelectedAttr: function(/*Boolean*/selected){
+			// summary:
+			//		Makes this widget in the selected or unselected state.
+			var replace = function(node, a, b){
+				domClass.replace(node, a + " " + a + "45", b + " " + b + "45");
+			}
+			this.inherited(arguments);
+			if(selected){
+				domClass.replace(this.bodyNode, this.selColor, this.defaultColor);
+				if(!has("ie") && this.arrowNode){
+					replace(this.arrowNode, this.selColor, this.defaultColor);
+				}
+			}else{
+				domClass.replace(this.bodyNode, this.defaultColor, this.selColor);
+				if(!has("ie") && this.arrowNode){
+					replace(this.arrowNode, this.defaultColor, this.selColor);
+				}
+			}
+			domClass.toggle(this.domNode, "mblToolBarButtonSelected", selected);
+			domClass.toggle(this.bodyNode, "mblToolBarButtonBodySelected", selected);
 		}
 	});
-
-	return has;
 });
 
 },
@@ -1468,6 +1460,32 @@ define("dojox/mobile/Container", [
 		//		The name of the CSS class of this widget.
 		baseClass: "mblContainer"
 	});
+});
+
+},
+'dijit/hccss':function(){
+define("dijit/hccss", ["dojo/dom-class", "dojo/hccss", "dojo/ready", "dojo/_base/window"], function(domClass, has, ready, win){
+
+	// module:
+	//		dijit/hccss
+
+	/*=====
+	return function(){
+		// summary:
+		//		Test if computer is in high contrast mode, and sets `dijit_a11y` flag on `<body>` if it is.
+		//		Deprecated, use ``dojo/hccss`` instead.
+	};
+	=====*/
+
+	// Priority is 90 to run ahead of parser priority of 100.   For 2.0, remove the ready() call and instead
+	// change this module to depend on dojo/domReady!
+	ready(90, function(){
+		if(has("highcontrast")){
+			domClass.add(win.body(), "dijit_a11y");
+		}
+	});
+
+	return has;
 });
 
 },
@@ -3174,7 +3192,7 @@ define("dojox/mobile/sniff", [
 	var ua = navigator.userAgent;
 
 	// BlackBerry (OS 6 or later only)
-	has.add('bb', ua.indexOf("BlackBerry") >= 0 && parseFloat(ua.split("Version/")[1]) || undefined, undefined, true);
+	has.add('bb', (ua.indexOf("BlackBerry") >= 0 || ua.indexOf("BB10")) && parseFloat(ua.split("Version/")[1]) || undefined, undefined, true);
 
 	// Android
 	has.add('android', parseFloat(ua.split("Android ")[1]) || undefined, undefined, true);
@@ -3357,6 +3375,13 @@ define([
 				}
 				this.spinnerNode.style.display = "";
 			}
+		},
+
+		destroy: function(){
+			this.inherited(arguments);
+			if(this === cls._instance){
+				cls._instance = null;
+			}
 		}
 	});
 
@@ -3415,6 +3440,10 @@ return declare("dijit.form._FormWidgetMixin", null, {
 	// type: [const] String
 	//		Corresponds to the native HTML `<input>` element's attribute.
 	type: "text",
+
+	// type: String
+	//		Apply aria-label in markup to the widget's focusNode
+	"aria-label": "focusNode",
 
 	// tabIndex: String
 	//		Order fields are traversed when user hits the tab key
@@ -3758,7 +3787,6 @@ define("dijit/form/_FormValueMixin", [
 
 		_setReadOnlyAttr: function(/*Boolean*/ value){
 			domAttr.set(this.focusNode, 'readOnly', value);
-			this.focusNode.setAttribute("aria-readonly", value);
 			this._set("readOnly", value);
 		},
 
@@ -4055,7 +4083,9 @@ define("dojox/mobile/common", [
 				f = dm.hideAddressBar;
 			}
 		}
-		if(has('android') && win.global.onorientationchange !== undefined){
+
+		var ios6 = has('iphone') >= 6; // Full-screen support for iOS6 or later 
+		if((has('android') || ios6) && win.global.onorientationchange !== undefined){
 			var _f = f;
 			f = function(evt){
 				var _conn = connect.connect(null, "onresize", null, function(e){
@@ -4064,18 +4094,68 @@ define("dojox/mobile/common", [
 				});
 			};
 			var curSize = dm.getScreenSize();
-			// Watch for resize events when the virtual keyboard is shown/hidden,
-			// the heuristic to detect this is that the screen width does not change
+			var heightChangeThreshold = ios6 ? 20 : 100;
+			var lastKeyUpTime = null;
+			var isFormElement = null;
+			if(ios6){
+				// Surprisingly, on iOS 6, Mobile Safari fires a resize event when entering
+				// characters using the virtual keyboard. Hence, to avoid inappropriately reacting 
+				// on these resize events (see #16202), let's keep track of the time point of
+				// the keyup events (the resize event is fired after it).
+				connect.connect(null, "onkeyup", null, function(e){
+					lastKeyUpTime = (new Date()).getTime();
+				});
+				isFormElement = function(/*DOMNode*/node){ // returns true if the given node is a form control
+					if(node && node.nodeType !== 1){ node = node.parentNode; }
+					if(!node || node.nodeType !== 1){ return false; }
+					var t = node.tagName;
+					return (t === "SELECT" || t === "INPUT" || t === "TEXTAREA" || t === "BUTTON");
+				};
+			}
+			// Android: Watch for resize events when the virtual keyboard is shown/hidden.
+			// The heuristic to detect this is that the screen width does not change
 			// and the height changes by more than 100 pixels.
+			//
+			// iOS >= 6: Watch for resize events when entering or existing the new iOS6 
+			// full-screen mode. The heuristic to detect this is that the screen width does not
+			// change and the height changes by more than 20 pixels (the actual value depends on
+			// whether the address bar is hidden or shown). Note that there are 2 resize events 
+			// when entering the full-screen mode; the height is already changed when we get
+			// the first event; no further height change at the second event (that we skip 
+			// thanks to the height change test). Differently, there is only one resize event
+			// when exiting the full-screen mode. (Tested on iPhone 4S under iOS 6.0.)
 			connect.connect(null, "onresize", null, function(e){
 				var newSize = dm.getScreenSize();
-				if(newSize.w == curSize.w && Math.abs(newSize.h - curSize.h) >= 100){
-					// keyboard has been shown/hidden
-					_f(e);
+				if(newSize.w == curSize.w && Math.abs(newSize.h - curSize.h) >= heightChangeThreshold &&
+					!(ios6 && 
+						// do not react on resize events fired shortly after a keyup event (#16202)
+						((lastKeyUpTime && ((new Date()).getTime() - lastKeyUpTime) < 400) ||
+						// do not react on resize events fired while a form element is active (#16361)
+						isFormElement(win.doc.activeElement)))){
+					// keyboard has been shown/hidden (Android), or full-screen mode has
+					// been entered/exited (iOS6+).
+					if(ios6 && pageYOffset > 1){
+						// On iOS6, besides the resize events fired when entering a character using
+						// the virtual keyboard, there are sometimes resize events fired when editing 
+						// input fields even long after a key event, or without any key having been touched. 
+						// This situation sometimes occurs when repeatedly switching the focus back and forth
+						// from one input field to another (the virtual keyboard being shown). 
+						// Thus, to prevent the unexpected browser scroll due to the address bar hiding that 
+						// the "_f" function may do, we call directly "resizeAll" if the browser vertical scroll 
+						// is greater than 1, which is an indication that the virtual keyboard may be open. 
+						// In this case, we do not want to interfer with the browser scroll done for placing 
+						// the focused input field in the center of the visible area. Otherwise, we call
+						// "resizeAll" such that the address bar hiding is performed (if appropriate), 
+						// this being useful on both Android's case and for the iOS6 full-screen mode.
+						dm.resizeAll();	
+					}else{
+						_f(e);
+					}
 				}
 				curSize = newSize;
 			});
 		}
+		
 		connect.connect(null, win.global.onorientationchange !== undefined
 			? "onorientationchange" : "onresize", null, f);
 		win.body().style.visibility = "visible";
@@ -4096,225 +4176,6 @@ define("dojox/mobile/common", [
 	};
 	=====*/
 	return dm;
-});
-
-},
-'dojox/mobile/Heading':function(){
-define([
-	"dojo/_base/array",
-	"dojo/_base/connect",
-	"dojo/_base/declare",
-	"dojo/_base/lang",
-	"dojo/_base/window",
-	"dojo/dom",
-	"dojo/dom-class",
-	"dojo/dom-construct",
-	"dojo/dom-style",
-	"dijit/registry",
-	"dijit/_Contained",
-	"dijit/_Container",
-	"dijit/_WidgetBase",
-	"./ProgressIndicator",
-	"./ToolBarButton",
-	"./View"
-], function(array, connect, declare, lang, win, dom, domClass, domConstruct, domStyle, registry, Contained, Container, WidgetBase, ProgressIndicator, ToolBarButton, View){
-
-	// module:
-	//		dojox/mobile/Heading
-
-	var dm = lang.getObject("dojox.mobile", true);
-
-	return declare("dojox.mobile.Heading", [WidgetBase, Container, Contained],{
-		// summary:
-		//		A widget that represents a navigation bar.
-		// description:
-		//		Heading is a widget that represents a navigation bar, which
-		//		usually appears at the top of an application. It usually
-		//		displays the title of the current view and can contain a
-		//		navigational control. If you use it with
-		//		dojox/mobile/ScrollableView, it can also be used as a fixed
-		//		header bar or a fixed footer bar. In such cases, specify the
-		//		fixed="top" attribute to be a fixed header bar or the
-		//		fixed="bottom" attribute to be a fixed footer bar. Heading can
-		//		have one or more ToolBarButton widgets as its children.
-
-		// back: String
-		//		A label for the navigational control to return to the previous View.
-		back: "",
-
-		// href: String
-		//		A URL to open when the navigational control is pressed.
-		href: "",
-
-		// moveTo: String
-		//		The id of the transition destination of the navigation control.
-		//		If the value has a hash sign ('#') before the id (e.g. #view1)
-		//		and the dojox/mobile/bookmarkable module is loaded by the user application,
-		//		the view transition updates the hash in the browser URL so that the
-		//		user can bookmark the destination view. In this case, the user
-		//		can also use the browser's back/forward button to navigate
-		//		through the views in the browser history.
-		//
-		//		If null, transitions to a blank view.
-		//		If '#', returns immediately without transition.
-		moveTo: "",
-
-		// transition: String
-		//		A type of animated transition effect. You can choose from the
-		//		standard transition types, "slide", "fade", "flip", or from the
-		//		extended transition types, "cover", "coverv", "dissolve",
-		//		"reveal", "revealv", "scaleIn", "scaleOut", "slidev",
-		//		"swirl", "zoomIn", "zoomOut", "cube", and "swap". If "none" is
-		//		specified, transition occurs immediately without animation.
-		transition: "slide",
-
-		// label: String
-		//		A title text of the heading. If the label is not specified, the
-		//		innerHTML of the node is used as a label.
-		label: "",
-
-		// iconBase: String
-		//		The default icon path for child items.
-		iconBase: "",
-
-		// tag: String
-		//		A name of HTML tag to create as domNode.
-		tag: "h1",
-
-		// busy: Boolean
-		//		If true, a progress indicator spins on this widget.
-		busy: false,
-
-		// progStyle: String
-		//		A css class name to add to the progress indicator.
-		progStyle: "mblProgWhite",
-
-		/* internal properties */
-		
-		// baseClass: String
-		//		The name of the CSS class of this widget.	
-		baseClass: "mblHeading",
-
-		buildRendering: function(){
-			this.domNode = this.containerNode = this.srcNodeRef || win.doc.createElement(this.tag);
-			this.inherited(arguments);
-			if(!this.label){
-				array.forEach(this.domNode.childNodes, function(n){
-					if(n.nodeType == 3){
-						var v = lang.trim(n.nodeValue);
-						if(v){
-							this.label = v;
-							this.labelNode = domConstruct.create("span", {innerHTML:v}, n, "replace");
-						}
-					}
-				}, this);
-			}
-			if(!this.labelNode){
-				this.labelNode = domConstruct.create("span", null, this.domNode);
-			}
-			this.labelNode.className = "mblHeadingSpanTitle";
-			this.labelDivNode = domConstruct.create("div", {
-				className: "mblHeadingDivTitle",
-				innerHTML: this.labelNode.innerHTML
-			}, this.domNode);
-
-			dom.setSelectable(this.domNode, false);
-		},
-
-		startup: function(){
-			if(this._started){ return; }
-			var parent = this.getParent && this.getParent();
-			if(!parent || !parent.resize){ // top level widget
-				var _this = this;
-				setTimeout(function(){ // necessary to render correctly
-					_this.resize();
-				}, 0);
-			}
-			this.inherited(arguments);
-		},
-
-		resize: function(){
-			if(this.labelNode){
-				// find the rightmost left button (B), and leftmost right button (C)
-				// +-----------------------------+
-				// | |A| |B|             |C| |D| |
-				// +-----------------------------+
-				var leftBtn, rightBtn;
-				var children = this.containerNode.childNodes;
-				for(var i = children.length - 1; i >= 0; i--){
-					var c = children[i];
-					if(c.nodeType === 1 && domStyle.get(c, "display") !== "none"){
-						if(!rightBtn && domStyle.get(c, "float") === "right"){
-							rightBtn = c;
-						}
-						if(!leftBtn && domStyle.get(c, "float") === "left"){
-							leftBtn = c;
-						}
-					}
-				}
-
-				if(!this.labelNodeLen && this.label){
-					this.labelNode.style.display = "inline";
-					this.labelNodeLen = this.labelNode.offsetWidth;
-					this.labelNode.style.display = "";
-				}
-
-				var bw = this.domNode.offsetWidth; // bar width
-				var rw = rightBtn ? bw - rightBtn.offsetLeft + 5 : 0; // rightBtn width
-				var lw = leftBtn ? leftBtn.offsetLeft + leftBtn.offsetWidth + 5 : 0; // leftBtn width
-				var tw = this.labelNodeLen || 0; // title width
-				domClass[bw - Math.max(rw,lw)*2 > tw ? "add" : "remove"](this.domNode, "mblHeadingCenterTitle");
-			}
-			array.forEach(this.getChildren(), function(child){
-				if(child.resize){ child.resize(); }
-			});
-		},
-
-		_setBackAttr: function(/*String*/back){
-			// tags:
-			//		private
-			this._set("back", back);
-			if(!this.backButton){
-				this.backButton = new ToolBarButton({
-					arrow: "left",
-					label: back,
-					moveTo: this.moveTo,
-					back: !this.moveTo,
-					href: this.href,
-					transition: this.transition,
-					transitionDir: -1
-				});
-				this.backButton.placeAt(this.domNode, "first");
-			}else{
-				this.backButton.set("label", back);
-			}
-			this.resize();
-		},
-
-		_setLabelAttr: function(/*String*/label){
-			// tags:
-			//		private
-			this._set("label", label);
-			this.labelNode.innerHTML = this.labelDivNode.innerHTML = this._cv ? this._cv(label) : label;
-		},
-
-		_setBusyAttr: function(/*Boolean*/busy){
-			// tags:
-			//		private
-			var prog = this._prog;
-			if(busy){
-				if(!prog){
-					prog = this._prog = new ProgressIndicator({size:30, center:false});
-					domClass.add(prog.domNode, this.progStyle);
-				}
-				domConstruct.place(prog.domNode, this.domNode, "first");
-				prog.start();
-			}else{
-				prog.stop();
-			}
-			this._set("busy", busy);
-		}	
-	});
 });
 
 },
@@ -4559,6 +4420,234 @@ define([
 });
 
 },
+'dojox/mobile/Heading':function(){
+define([
+	"dojo/_base/array",
+	"dojo/_base/connect",
+	"dojo/_base/declare",
+	"dojo/_base/lang",
+	"dojo/_base/window",
+	"dojo/dom",
+	"dojo/dom-class",
+	"dojo/dom-construct",
+	"dojo/dom-style",
+	"dijit/registry",
+	"dijit/_Contained",
+	"dijit/_Container",
+	"dijit/_WidgetBase",
+	"./ProgressIndicator",
+	"./ToolBarButton",
+	"./View"
+], function(array, connect, declare, lang, win, dom, domClass, domConstruct, domStyle, registry, Contained, Container, WidgetBase, ProgressIndicator, ToolBarButton, View){
+
+	// module:
+	//		dojox/mobile/Heading
+
+	var dm = lang.getObject("dojox.mobile", true);
+
+	return declare("dojox.mobile.Heading", [WidgetBase, Container, Contained],{
+		// summary:
+		//		A widget that represents a navigation bar.
+		// description:
+		//		Heading is a widget that represents a navigation bar, which
+		//		usually appears at the top of an application. It usually
+		//		displays the title of the current view and can contain a
+		//		navigational control. If you use it with
+		//		dojox/mobile/ScrollableView, it can also be used as a fixed
+		//		header bar or a fixed footer bar. In such cases, specify the
+		//		fixed="top" attribute to be a fixed header bar or the
+		//		fixed="bottom" attribute to be a fixed footer bar. Heading can
+		//		have one or more ToolBarButton widgets as its children.
+
+		// back: String
+		//		A label for the navigational control to return to the previous View.
+		back: "",
+
+		// href: String
+		//		A URL to open when the navigational control is pressed.
+		href: "",
+
+		// moveTo: String
+		//		The id of the transition destination of the navigation control.
+		//		If the value has a hash sign ('#') before the id (e.g. #view1)
+		//		and the dojox/mobile/bookmarkable module is loaded by the user application,
+		//		the view transition updates the hash in the browser URL so that the
+		//		user can bookmark the destination view. In this case, the user
+		//		can also use the browser's back/forward button to navigate
+		//		through the views in the browser history.
+		//
+		//		If null, transitions to a blank view.
+		//		If '#', returns immediately without transition.
+		moveTo: "",
+
+		// transition: String
+		//		A type of animated transition effect. You can choose from the
+		//		standard transition types, "slide", "fade", "flip", or from the
+		//		extended transition types, "cover", "coverv", "dissolve",
+		//		"reveal", "revealv", "scaleIn", "scaleOut", "slidev",
+		//		"swirl", "zoomIn", "zoomOut", "cube", and "swap". If "none" is
+		//		specified, transition occurs immediately without animation.
+		transition: "slide",
+
+		// label: String
+		//		A title text of the heading. If the label is not specified, the
+		//		innerHTML of the node is used as a label.
+		label: "",
+
+		// iconBase: String
+		//		The default icon path for child items.
+		iconBase: "",
+
+		// tag: String
+		//		A name of HTML tag to create as domNode.
+		tag: "h1",
+
+		// busy: Boolean
+		//		If true, a progress indicator spins on this widget.
+		busy: false,
+
+		// progStyle: String
+		//		A css class name to add to the progress indicator.
+		progStyle: "mblProgWhite",
+
+		/* internal properties */
+		
+		// baseClass: String
+		//		The name of the CSS class of this widget.	
+		baseClass: "mblHeading",
+
+		buildRendering: function(){
+			this.domNode = this.containerNode = this.srcNodeRef || win.doc.createElement(this.tag);
+			this.inherited(arguments);
+			if(!this.label){
+				array.forEach(this.domNode.childNodes, function(n){
+					if(n.nodeType == 3){
+						var v = lang.trim(n.nodeValue);
+						if(v){
+							this.label = v;
+							this.labelNode = domConstruct.create("span", {innerHTML:v}, n, "replace");
+						}
+					}
+				}, this);
+			}
+			if(!this.labelNode){
+				this.labelNode = domConstruct.create("span", null, this.domNode);
+			}
+			this.labelNode.className = "mblHeadingSpanTitle";
+			this.labelDivNode = domConstruct.create("div", {
+				className: "mblHeadingDivTitle",
+				innerHTML: this.labelNode.innerHTML
+			}, this.domNode);
+
+			dom.setSelectable(this.domNode, false);
+		},
+
+		startup: function(){
+			if(this._started){ return; }
+			var parent = this.getParent && this.getParent();
+			if(!parent || !parent.resize){ // top level widget
+				var _this = this;
+				setTimeout(function(){ // necessary to render correctly
+					_this.resize();
+				}, 0);
+			}
+			this.inherited(arguments);
+		},
+
+		resize: function(){
+			if(this.labelNode){
+				// find the rightmost left button (B), and leftmost right button (C)
+				// +-----------------------------+
+				// | |A| |B|             |C| |D| |
+				// +-----------------------------+
+				var leftBtn, rightBtn;
+				var children = this.containerNode.childNodes;
+				for(var i = children.length - 1; i >= 0; i--){
+					var c = children[i];
+					if(c.nodeType === 1 && domStyle.get(c, "display") !== "none"){
+						if(!rightBtn && domStyle.get(c, "float") === "right"){
+							rightBtn = c;
+						}
+						if(!leftBtn && domStyle.get(c, "float") === "left"){
+							leftBtn = c;
+						}
+					}
+				}
+
+				if(!this.labelNodeLen && this.label){
+					this.labelNode.style.display = "inline";
+					this.labelNodeLen = this.labelNode.offsetWidth;
+					this.labelNode.style.display = "";
+				}
+
+				var bw = this.domNode.offsetWidth; // bar width
+				var rw = rightBtn ? bw - rightBtn.offsetLeft + 5 : 0; // rightBtn width
+				var lw = leftBtn ? leftBtn.offsetLeft + leftBtn.offsetWidth + 5 : 0; // leftBtn width
+				var tw = this.labelNodeLen || 0; // title width
+				domClass[bw - Math.max(rw,lw)*2 > tw ? "add" : "remove"](this.domNode, "mblHeadingCenterTitle");
+			}
+			array.forEach(this.getChildren(), function(child){
+				if(child.resize){ child.resize(); }
+			});
+		},
+
+		_setBackAttr: function(/*String*/back){
+			// tags:
+			//		private
+			this._set("back", back);
+			if(!this.backButton){
+				this.backButton = new ToolBarButton({
+					arrow: "left",
+					label: back,
+					moveTo: this.moveTo,
+					back: !this.moveTo,
+					href: this.href,
+					transition: this.transition,
+					transitionDir: -1
+				});
+				this.backButton.placeAt(this.domNode, "first");
+			}else{
+				this.backButton.set("label", back);
+			}
+			this.resize();
+		},
+		
+		_setMoveToAttr: function(/*String*/moveTo){
+			// tags:
+			//		private
+			this._set("moveTo", moveTo);
+			if(this.backButton){
+				this.backButton.set("moveTo", moveTo);
+			}
+		},
+
+		_setLabelAttr: function(/*String*/label){
+			// tags:
+			//		private
+			this._set("label", label);
+			this.labelNode.innerHTML = this.labelDivNode.innerHTML = this._cv ? this._cv(label) : label;
+		},
+
+		_setBusyAttr: function(/*Boolean*/busy){
+			// tags:
+			//		private
+			var prog = this._prog;
+			if(busy){
+				if(!prog){
+					prog = this._prog = new ProgressIndicator({size:30, center:false});
+					domClass.add(prog.domNode, this.progStyle);
+				}
+				domConstruct.place(prog.domNode, this.domNode, "first");
+				prog.start();
+			}else{
+				prog.stop();
+			}
+			this._set("busy", busy);
+		}	
+	});
+});
+
+},
 'dojox/main':function(){
 define("dojox/main", ["dojo/_base/kernel"], function(dojo) {
 	// module:
@@ -4652,7 +4741,7 @@ define("dojox/mobile/RoundRectList", [
 		postCreate: function(){
 			if(this.editable){
 				require([this.editableMixinClass], lang.hitch(this, function(module){
-					lang.mixin(this, new module());
+					declare.safeMixin(this, new module());
 				}));
 			}
 			this.connect(this.domNode, "onselectstart", event.stop);
@@ -5028,209 +5117,6 @@ define([
 	return viewRegistry;
 });
 
-},
-'dojo/touch':function(){
-define(["./_base/kernel", "./_base/lang", "./aspect", "./dom", "./on", "./has", "./mouse", "./ready", "./_base/window"],
-function(dojo, lang, aspect, dom, on, has, mouse, ready, win){
-
-	// module:
-	//		dojo/touch
-
-	var hasTouch = has("touch");
-
-	var touchmove, hoveredNode;
-
-	if(hasTouch){
-		ready(function(){
-			// Keep track of currently hovered node
-			hoveredNode = win.body();	// currently hovered node
-
-			win.doc.addEventListener("touchstart", function(evt){
-				// Precede touchstart event with touch.over event.  DnD depends on this.
-				// Use addEventListener(cb, true) to run cb before any touchstart handlers on node run,
-				// and to ensure this code runs even if the listener on the node does event.stop().
-				var oldNode = hoveredNode;
-				hoveredNode = evt.target;
-				on.emit(oldNode, "dojotouchout", {
-					target: oldNode,
-					relatedTarget: hoveredNode,
-					bubbles: true
-				});
-				on.emit(hoveredNode, "dojotouchover", {
-					target: hoveredNode,
-					relatedTarget: oldNode,
-					bubbles: true
-				});
-			}, true);
-
-			// Fire synthetic touchover and touchout events on nodes since the browser won't do it natively.
-			on(win.doc, "touchmove", function(evt){
-				var newNode = win.doc.elementFromPoint(
-					evt.pageX - win.global.pageXOffset,
-					evt.pageY - win.global.pageYOffset
-				);
-				if(newNode && hoveredNode !== newNode){
-					// touch out on the old node
-					on.emit(hoveredNode, "dojotouchout", {
-						target: hoveredNode,
-						relatedTarget: newNode,
-						bubbles: true
-					});
-
-					// touchover on the new node
-					on.emit(newNode, "dojotouchover", {
-						target: newNode,
-						relatedTarget: hoveredNode,
-						bubbles: true
-					});
-
-					hoveredNode = newNode;
-				}
-			});
-		});
-
-		// Define synthetic touchmove event that unlike the native touchmove, fires for the node the finger is
-		// currently dragging over rather than the node where the touch started.
-		touchmove = function(node, listener){
-			return on(win.doc, "touchmove", function(evt){
-				if(node === win.doc || dom.isDescendant(hoveredNode, node)){
-					listener.call(this, lang.mixin({}, evt, {
-						target: hoveredNode
-					}));
-				}
-			});
-		};
-	}
-
-
-	function _handle(type){
-		// type: String
-		//		press | move | release | cancel
-
-		return function(node, listener){//called by on(), see dojo.on
-			return on(node, type, listener);
-		};
-	}
-
-	//device neutral events - touch.press|move|release|cancel/over/out
-	var touch = {
-		press: _handle(hasTouch ? "touchstart": "mousedown"),
-		move: hasTouch ? touchmove :_handle("mousemove"),
-		release: _handle(hasTouch ? "touchend": "mouseup"),
-		cancel: hasTouch ? _handle("touchcancel") : mouse.leave,
-		over: _handle(hasTouch ? "dojotouchover": "mouseover"),
-		out: _handle(hasTouch ? "dojotouchout": "mouseout"),
-		enter: mouse._eventHandler(hasTouch ? "dojotouchover" : "mouseover"),
-		leave: mouse._eventHandler(hasTouch ? "dojotouchout" : "mouseout")
-	};
-	/*=====
-	touch = {
-		// summary:
-		//		This module provides unified touch event handlers by exporting
-		//		press, move, release and cancel which can also run well on desktop.
-		//		Based on http://dvcs.w3.org/hg/webevents/raw-file/tip/touchevents.html
-		//
-		// example:
-		//		Used with dojo.on
-		//		|	define(["dojo/on", "dojo/touch"], function(on, touch){
-		//		|		on(node, touch.press, function(e){});
-		//		|		on(node, touch.move, function(e){});
-		//		|		on(node, touch.release, function(e){});
-		//		|		on(node, touch.cancel, function(e){});
-		// example:
-		//		Used with touch.* directly
-		//		|	touch.press(node, function(e){});
-		//		|	touch.move(node, function(e){});
-		//		|	touch.release(node, function(e){});
-		//		|	touch.cancel(node, function(e){});
-
-		press: function(node, listener){
-			// summary:
-			//		Register a listener to 'touchstart'|'mousedown' for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		},
-		move: function(node, listener){
-			// summary:
-			//		Register a listener to 'touchmove'|'mousemove' for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		},
-		release: function(node, listener){
-			// summary:
-			//		Register a listener to 'touchend'|'mouseup' for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		},
-		cancel: function(node, listener){
-			// summary:
-			//		Register a listener to 'touchcancel'|'mouseleave' for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		},
-		over: function(node, listener){
-			// summary:
-			//		Register a listener to 'mouseover' or touch equivalent for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		},
-		out: function(node, listener){
-			// summary:
-			//		Register a listener to 'mouseout' or touch equivalent for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		},
-		enter: function(node, listener){
-			// summary:
-			//		Register a listener to mouse.enter or touch equivalent for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		},
-		leave: function(node, listener){
-			// summary:
-			//		Register a listener to mouse.leave or touch equivalent for the given node
-			// node: Dom
-			//		Target node to listen to
-			// listener: Function
-			//		Callback function
-			// returns:
-			//		A handle which will be used to remove the listener by handle.remove()
-		}
-	};
-	=====*/
-
-	 1  && (dojo.touch = touch);
-
-	return touch;
-});
 },
 'dojox/mobile/app/List':function(){
 // wrapped by build app
@@ -5882,6 +5768,218 @@ dojo.require("dijit._WidgetBase");
 });
 
 },
+'dojo/touch':function(){
+define(["./_base/kernel", "./aspect", "./dom", "./on", "./has", "./mouse", "./ready", "./_base/window"],
+function(dojo, aspect, dom, on, has, mouse, ready, win){
+
+	// module:
+	//		dojo/touch
+
+	var hasTouch = has("touch");
+
+	// TODO: get iOS version from dojo/sniff after #15827 is fixed
+	var ios4 = false;
+	if(has("ios")){
+		var ua = navigator.userAgent;
+		var v = ua.match(/OS ([\d_]+)/) ? RegExp.$1 : "1";
+		var os = parseFloat(v.replace(/_/, '.').replace(/_/g, ''));
+		ios4 = os < 5;
+	}
+
+	var touchmove, hoveredNode;
+
+	if(hasTouch){
+		ready(function(){
+			// Keep track of currently hovered node
+			hoveredNode = win.body();	// currently hovered node
+
+			win.doc.addEventListener("touchstart", function(evt){
+				// Precede touchstart event with touch.over event.  DnD depends on this.
+				// Use addEventListener(cb, true) to run cb before any touchstart handlers on node run,
+				// and to ensure this code runs even if the listener on the node does event.stop().
+				var oldNode = hoveredNode;
+				hoveredNode = evt.target;
+				on.emit(oldNode, "dojotouchout", {
+					target: oldNode,
+					relatedTarget: hoveredNode,
+					bubbles: true
+				});
+				on.emit(hoveredNode, "dojotouchover", {
+					target: hoveredNode,
+					relatedTarget: oldNode,
+					bubbles: true
+				});
+			}, true);
+
+			// Fire synthetic touchover and touchout events on nodes since the browser won't do it natively.
+			on(win.doc, "touchmove", function(evt){
+				var newNode = win.doc.elementFromPoint(
+					evt.pageX - (ios4 ? 0 : win.global.pageXOffset), // iOS 4 expects page coords
+					evt.pageY - (ios4 ? 0 : win.global.pageYOffset)
+				);
+				if(newNode && hoveredNode !== newNode){
+					// touch out on the old node
+					on.emit(hoveredNode, "dojotouchout", {
+						target: hoveredNode,
+						relatedTarget: newNode,
+						bubbles: true
+					});
+
+					// touchover on the new node
+					on.emit(newNode, "dojotouchover", {
+						target: newNode,
+						relatedTarget: hoveredNode,
+						bubbles: true
+					});
+
+					hoveredNode = newNode;
+				}
+			});
+		});
+
+		// Define synthetic touch.move event that unlike the native touchmove, fires for the node the finger is
+		// currently dragging over rather than the node where the touch started.
+		touchmove = function(node, listener){
+			return on(win.doc, "touchmove", function(evt){
+				if(node === win.doc || dom.isDescendant(hoveredNode, node)){
+					evt.target = hoveredNode;
+					listener.call(this, evt);
+				}
+			});
+		};
+	}
+
+
+	function _handle(type){
+		// type: String
+		//		press | move | release | cancel
+
+		return function(node, listener){//called by on(), see dojo.on
+			return on(node, type, listener);
+		};
+	}
+
+	//device neutral events - touch.press|move|release|cancel/over/out
+	var touch = {
+		press: _handle(hasTouch ? "touchstart": "mousedown"),
+		move: hasTouch ? touchmove :_handle("mousemove"),
+		release: _handle(hasTouch ? "touchend": "mouseup"),
+		cancel: hasTouch ? _handle("touchcancel") : mouse.leave,
+		over: _handle(hasTouch ? "dojotouchover": "mouseover"),
+		out: _handle(hasTouch ? "dojotouchout": "mouseout"),
+		enter: mouse._eventHandler(hasTouch ? "dojotouchover" : "mouseover"),
+		leave: mouse._eventHandler(hasTouch ? "dojotouchout" : "mouseout")
+	};
+	/*=====
+	touch = {
+		// summary:
+		//		This module provides unified touch event handlers by exporting
+		//		press, move, release and cancel which can also run well on desktop.
+		//		Based on http://dvcs.w3.org/hg/webevents/raw-file/tip/touchevents.html
+		//
+		// example:
+		//		Used with dojo.on
+		//		|	define(["dojo/on", "dojo/touch"], function(on, touch){
+		//		|		on(node, touch.press, function(e){});
+		//		|		on(node, touch.move, function(e){});
+		//		|		on(node, touch.release, function(e){});
+		//		|		on(node, touch.cancel, function(e){});
+		// example:
+		//		Used with touch.* directly
+		//		|	touch.press(node, function(e){});
+		//		|	touch.move(node, function(e){});
+		//		|	touch.release(node, function(e){});
+		//		|	touch.cancel(node, function(e){});
+
+		press: function(node, listener){
+			// summary:
+			//		Register a listener to 'touchstart'|'mousedown' for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		},
+		move: function(node, listener){
+			// summary:
+			//		Register a listener to 'touchmove'|'mousemove' for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		},
+		release: function(node, listener){
+			// summary:
+			//		Register a listener to 'touchend'|'mouseup' for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		},
+		cancel: function(node, listener){
+			// summary:
+			//		Register a listener to 'touchcancel'|'mouseleave' for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		},
+		over: function(node, listener){
+			// summary:
+			//		Register a listener to 'mouseover' or touch equivalent for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		},
+		out: function(node, listener){
+			// summary:
+			//		Register a listener to 'mouseout' or touch equivalent for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		},
+		enter: function(node, listener){
+			// summary:
+			//		Register a listener to mouse.enter or touch equivalent for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		},
+		leave: function(node, listener){
+			// summary:
+			//		Register a listener to mouse.leave or touch equivalent for the given node
+			// node: Dom
+			//		Target node to listen to
+			// listener: Function
+			//		Callback function
+			// returns:
+			//		A handle which will be used to remove the listener by handle.remove()
+		}
+	};
+	=====*/
+
+	 1  && (dojo.touch = touch);
+
+	return touch;
+});
+
+},
 'dojo/require':function(){
 define(["./_base/loader"], function(loader){
 	return {
@@ -6122,12 +6220,11 @@ define([
 	"require",			// require.toUrl
 	"./_base/config", // config.blankGif
 	"./dom-class", // domClass.add
-	"./dom-construct", // domConstruct.destroy
 	"./dom-style", // domStyle.getComputedStyle
 	"./has",
 	"./ready", // ready
 	"./_base/window" // win.body
-], function(require, config, domClass, domConstruct, domStyle, has, ready, win){
+], function(require, config, domClass, domStyle, has, ready, win){
 
 	// module:
 	//		dojo/hccss
@@ -6154,7 +6251,11 @@ define([
 			hc = (cs.borderTopColor == cs.borderRightColor) ||
 				(bkImg && (bkImg == "none" || bkImg == "url(invalid-url:)" ));
 
-		domConstruct.destroy(div);
+		if(has("ie") <= 8){
+			div.outerHTML = "";		// prevent mixed-content warning, see http://support.microsoft.com/kb/925014
+		}else{
+			win.body().removeChild(div);
+		}
 
 		return hc;
 	});
@@ -6378,6 +6479,7 @@ define([
 		// Map widget attributes to DOMNode attributes.
 		_setPlaceHolderAttr: function(/*String*/value){
 			value = this._cv ? this._cv(value) : value;
+			this._set("placeHolder", value);
 			this.textbox.setAttribute("placeholder", value);
 		},
 
@@ -6547,7 +6649,7 @@ define("dijit/registry", [
 			//		Returns the widget whose DOM tree contains the specified DOMNode, or null if
 			//		the node is not contained within the DOM tree of any widget
 			while(node){
-				var id = node.getAttribute && node.getAttribute("widgetId");
+				var id = node.nodeType == 1 && node.getAttribute("widgetId");
 				if(id){
 					return hash[id];
 				}
@@ -6607,19 +6709,19 @@ return declare("dijit.Destroyable", null, {
 				"destroy" in handle ? "destroy" :
 				"remove";
 
-			// When this is destroyed, destroy handle.  Since I'm using aspect.before(),
+			// When this.destroy() is called, destroy handle.  Since I'm using aspect.before(),
 			// the handle will be destroyed before a subclass's destroy() method starts running, before it calls
 			// this.inherited() or even if it doesn't call this.inherited() at all.  If that's an issue, make an
 			// onDestroy() method and connect to that instead.
-			handle._odh = aspect.before(this, "destroy", function(preserveDom){
-				handle._odh.remove();
+			var odh = aspect.before(this, "destroy", function(preserveDom){
 				handle[destroyMethodName](preserveDom);
 			});
 
-			// If handle is destroyed manually before this is destroyed, then remove the listener set directly above.
-			aspect.after(handle, destroyMethodName, function(){
-				handle._odh.remove();
-			});
+			// If handle is destroyed manually before this.destroy() is called, remove the listener set directly above.
+			var hdh = aspect.after(handle, destroyMethodName, function(){
+				odh.remove();
+				hdh.remove();
+			}, true);
 		}, this);
 
 		return arguments;		// handle
@@ -6916,8 +7018,12 @@ define([
 				// correctly initialized.
 				this.show(true, true);
 
-				this.onStartView();
-				connect.publish("/dojox/mobile/startView", [this]);
+				// Defer firing events to let user connect to events just after creation
+				// TODO: revisit this for 2.0
+				this.defer(function(){
+					this.onStartView();
+					connect.publish("/dojox/mobile/startView", [this]);
+				});
 			}
 
 			if(this.domNode.style.visibility != "visible"){ // this check is to avoid screen flickers
@@ -7072,6 +7178,8 @@ define([
 			//		Transition forward to a blank view, and then open another page.
 			//	|	performTransition(null, 1, "slide", null, function(){location.href = href;});
 
+			if(this._detail){ return; } // transition is in progress
+			
 			// normalize the arg
 			var detail, optArgs;
 			if(moveTo && typeof(moveTo) === "object"){
@@ -7342,17 +7450,19 @@ define([
 			}
 
 			var c = this._detail.context, m = this._detail.method;
-			if(!c && !m){ return; }
-			if(!m){
-				m = c;
-				c = null;
+			if(c || m){
+				if(!m){
+					m = c;
+					c = null;
+				}
+				c = c || win.global;
+				if(typeof(m) == "string"){
+					c[m].apply(c, this._optArgs);
+				}else if(typeof(m) == "function"){
+					m.apply(c, this._optArgs);
+				}
 			}
-			c = c || win.global;
-			if(typeof(m) == "string"){
-				c[m].apply(c, this._optArgs);
-			}else if(typeof(m) == "function"){
-				m.apply(c, this._optArgs);
-			}
+			this._detail = this._optArgs = this._arguments = undefined;
 		},
 
 		isVisible: function(/*Boolean?*/checkAncestors){
@@ -8080,7 +8190,7 @@ define("dijit/a11y", [
 			for(var child = parent.firstChild; child; child = child.nextSibling){
 				// Skip text elements, hidden elements, and also non-HTML elements (those in custom namespaces) in IE,
 				// since show() invokes getAttribute("type"), which crash on VML nodes in IE.
-				if(child.nodeType != 1 || (has("ie") && child.scopeName !== "HTML") || !shown(child)){
+				if(child.nodeType != 1 || (has("ie") <= 9 && child.scopeName !== "HTML") || !shown(child)){
 					continue;
 				}
 
@@ -9597,15 +9707,28 @@ define("dojox/mobile/ListItem", [
 
 			if(!this._isOnLine){
 				this._isOnLine = true;
-				this.set({ // retry applying the attribute
-					icon: this.icon,
-					deleteIcon: this.deleteIcon,
-					rightIcon: this.rightIcon,
-					rightIcon2: this.rightIcon2
+				this.set({ 
+					// retry applying the attributes for which the custom setter delays the actual 
+					// work until _isOnLine is true
+					icon: this._pending_icon !== undefined ? this._pending_icon : this.icon,
+					deleteIcon: this._pending_deleteIcon !== undefined ? this._pending_deleteIcon : this.deleteIcon,
+					rightIcon: this._pending_rightIcon !== undefined ? this._pending_rightIcon : this.rightIcon,
+					rightIcon2: this._pending_rightIcon2 !== undefined ? this._pending_rightIcon2 : this.rightIcon2,
+					uncheckIcon: this._pending_uncheckIcon !== undefined ? this._pending_uncheckIcon : this.uncheckIcon 
 				});
+				// Not needed anymore (this code executes only once per life cycle):
+				delete this._pending_icon;
+				delete this._pending_deleteIcon;
+				delete this._pending_rightIcon;
+				delete this._pending_rightIcon2;
+				delete this._pending_uncheckIcon;
 			}
 			if(parent && parent.select){
-				this.set("checked", this.checked); // retry applying the attribute
+				// retry applying the attributes for which the custom setter delays the actual 
+				// work until _isOnLine is true. 
+				this.set("checked", this._pendingChecked !== undefined ? this._pendingChecked : this.checked);
+				// Not needed anymore (this code executes only once per life cycle):
+				delete this._pendingChecked; 
 			}
 			this.setArrow();
 			this.layoutChildren();
@@ -9752,11 +9875,15 @@ define("dojox/mobile/ListItem", [
 			}
 			return this.domNode.firstChild;
 		},
-
+		
 		_setIcon: function(/*String*/icon, /*String*/type){
 			// tags:
 			//		private
-			if(!this._isOnLine){ return; } // icon may be invalid because inheritParams is not called yet
+			if(!this._isOnLine){
+				// record the value to be able to reapply it (see the code in the startup method)
+				this["_pending_" + type] = icon;
+				return; 
+			} // icon may be invalid because inheritParams is not called yet
 			this._set(type, icon);
 			this[type + "Node"] = iconUtils.setIcon(icon, this[type + "Pos"],
 				this[type + "Node"], this[type + "Title"] || this.alt, this.domNode, this._findRef(type), "before");
@@ -9813,7 +9940,11 @@ define("dojox/mobile/ListItem", [
 		_setCheckedAttr: function(/*Boolean*/checked){
 			// tags:
 			//		private
-			if(!this._isOnLine){ return; } // icon may be invalid because inheritParams is not called yet
+			if(!this._isOnLine){
+				// record the value to be able to reapply it (see the code in the startup method)
+				this._pendingChecked = checked; 
+				return; 
+			} // icon may be invalid because inheritParams is not called yet
 			var parent = this.getParent();
 			if(parent && parent.select === "single" && checked){
 				array.forEach(parent.getChildren(), function(child){
@@ -10873,7 +11004,11 @@ define("dojox/mobile/Switch", [
 			array.forEach(this._conn, connect.disconnect);
 			this._conn = null;
 			if(this.innerStartX == this.inner.offsetLeft){
-				if(has('touch')){
+				// #15936 The reason we send this synthetic click event is that we assume that the OS
+				// will not send the click because we stopped the touchstart.
+				// However, this does not seem true any more in Android 4.1 where the click is
+				// actually sent by the OS. So we must not send it a second time.
+				if(has('touch') && !(has("android") >= 4.1)){
 					var ev = win.doc.createEvent("MouseEvents");
 					ev.initEvent("click", true, true);
 					this.inner.dispatchEvent(ev);
@@ -11504,6 +11639,18 @@ define("dijit/_base/typematic", ["../typematic"], function(){
 });
 
 },
+'dojox/mobile/app/TextBox':function(){
+// wrapped by build app
+define("dojox/mobile/app/TextBox", ["dijit","dojo","dojox","dojo/require!dojox/mobile/TextBox"], function(dijit,dojo,dojox){
+dojo.provide("dojox.mobile.app.TextBox");
+dojo.deprecated("dojox.mobile.app.TextBox is deprecated", "dojox.mobile.app.TextBox moved to dojox.mobile.TextBox", 1.8);
+
+dojo.require("dojox.mobile.TextBox");
+
+dojox.mobile.app.TextBox = dojox.mobile.TextBox;
+});
+
+},
 'dojox/mobile/RoundRectCategory':function(){
 define([
 	"dojo/_base/declare",
@@ -11553,18 +11700,6 @@ define([
 			this.domNode.innerHTML = this._cv ? this._cv(label) : label;
 		}
 	});
-});
-
-},
-'dojox/mobile/app/TextBox':function(){
-// wrapped by build app
-define("dojox/mobile/app/TextBox", ["dijit","dojo","dojox","dojo/require!dojox/mobile/TextBox"], function(dijit,dojo,dojox){
-dojo.provide("dojox.mobile.app.TextBox");
-dojo.deprecated("dojox.mobile.app.TextBox is deprecated", "dojox.mobile.app.TextBox moved to dojox.mobile.TextBox", 1.8);
-
-dojo.require("dojox.mobile.TextBox");
-
-dojox.mobile.app.TextBox = dojox.mobile.TextBox;
 });
 
 },
@@ -12685,7 +12820,8 @@ return declare("dijit._WidgetBase", [Stateful, Destroyable], {
 		// params: Object|null
 		//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 		//		and functions, typically callbacks like onClick.
-		// srcNodeRef: DOMNode|String?
+	 	//		The hash can contain any of the widget's properties, excluding read-only properties.
+	 	// srcNodeRef: DOMNode|String?
 		//		If a srcNodeRef (DOM node) is specified:
 		//
 		//		- use srcNodeRef.innerHTML as my contents
@@ -12715,6 +12851,7 @@ return declare("dijit._WidgetBase", [Stateful, Destroyable], {
 		// params: Object|null
 		//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
 		//		and functions, typically callbacks like onClick.
+		//		The hash can contain any of the widget's properties, excluding read-only properties.
 		// srcNodeRef: DOMNode|String?
 		//		If a srcNodeRef (DOM node) is specified:
 		//
@@ -12809,7 +12946,7 @@ return declare("dijit._WidgetBase", [Stateful, Destroyable], {
 		// Get list of attributes where this.set(name, value) will do something beyond
 		// setting this[name] = value.  Specifically, attributes that have:
 		//		- associated _setXXXAttr() method/hash/string/array
-		//		- entries in attributeMap.
+		//		- entries in attributeMap (remove this for 2.0);
 		var ctor = this.constructor,
 			list = ctor._setterAttrs;
 		if(!list){
@@ -12828,20 +12965,32 @@ return declare("dijit._WidgetBase", [Stateful, Destroyable], {
 			}
 		}
 
-		// Call this.set() for each attribute that was either specified as parameter to constructor,
-		// or was found above and has a default non-null value.	For correlated attributes like value and displayedValue, the one
-		// specified as a parameter should take precedence, so apply attributes in this.params last.
+		// Call this.set() for each property that was either specified as parameter to constructor,
+		// or is in the list found above.	For correlated properties like value and displayedValue, the one
+		// specified as a parameter should take precedence.
 		// Particularly important for new DateTextBox({displayedValue: ...}) since DateTextBox's default value is
 		// NaN and thus is not ignored like a default value of "".
+
+		// Step 1: Save the current values of the widget properties that were specified as parameters to the constructor.
+		// Generally this.foo == this.params.foo, except if postMixInProperties() changed the value of this.foo.
+		var params = {};
+		for(var key in this.params || {}){
+			params[key] = this[key];
+		}
+
+		// Step 2: Call set() for each property that wasn't passed as a parameter to the constructor
 		array.forEach(list, function(attr){
-			if(this.params && attr in this.params){
+			if(attr in params){
 				// skip this one, do it below
 			}else if(this[attr]){
 				this.set(attr, this[attr]);
 			}
 		}, this);
-		for(var param in this.params){
-			this.set(param, this.params[param]);
+
+		// Step 3: Call set() for each property that was specified as parameter to constructor.
+		// Use params hash created above to ignore side effects from step #2 above.
+		for(key in params){
+			this.set(key, params[key]);
 		}
 	},
 
