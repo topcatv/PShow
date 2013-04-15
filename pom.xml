@@ -507,7 +507,8 @@
 	</build>
 
 	<modules>
-		<module>pshow_web</module>
+		
 		<module>pshow_repository</module>
+		<module>PShowWeb</module>
 	</modules>
 </project>

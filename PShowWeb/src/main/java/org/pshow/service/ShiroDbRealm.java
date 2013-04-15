@@ -69,7 +69,7 @@ public class ShiroDbRealm extends AuthorizingRealm {
 		User user = accountService.findUserByLoginName(shiroUser.loginName);
 
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-		for (Role role : user.getRoleList()) {
+		for (Role role : accountService.getRolesByUser(user)) {
 			// 基于Role的权限信息
 			info.addRole(role.getName());
 			// 基于Permission的权限信息

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pshow.entity.Security">
+	<resultMap id="userResultMap" type="org.pshow.entity.User">
+		<result property="id" column="id" />
+		<result property="loginName" column="login_name" />
+		<result property="password" column="password" />
+		<result property="salt" column="salt" />
+		<result property="name" column="name" />
+		<result property="email" column="email" />
+	</resultMap>
+	<resultMap id="roleResultMap" type="org.pshow.entity.Role">
+		<result property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="permissions" column="permissions" />
+	</resultMap>
+	
+	<select id="role_findAll" resultMap="roleResultMap">
+		select * from ps_role
+	</select>
+	
+	<select id="role_getRolesByUser" parameterType="long" resultMap="roleResultMap">
+		select a.* from ps_role a left join ps_user_role b on a.id = b.user_id where a.id=#{value}
+	</select>
+	
+	<select id="user_findByName" resultMap="userResultMap" parameterType="string">
+		select * from ps_user where name=#{value}
+	</select>
+	
+	<select id="user_findByLoginName" resultMap="userResultMap" parameterType="string">
+		select * from ps_user where login_name=#{value}
+	</select>
+	
+	<select id="user_findAll" resultMap="userResultMap">
+		select * from ps_user
+	</select>
+	
+	<select id="user_findOne" resultMap="userResultMap" parameterType="long">
+		select * from ps_user where id=#{value}
+	</select>
+	
+	<select id="user_count" resultType="long">
+		select count(1) from ps_user
+	</select>
+	
+	<insert id="user_save" parameterType="org.pshow.entity.User">
+		insert into ps_user(login_name,name,password,salt,email,status) values(#{loginName},#{name},#{password},#{salt},#{email},#{status})
+	</insert>
+	
+</mapper>

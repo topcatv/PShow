@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd" default-lazy-init="true">
+
+	<description>核心服务配置</description>
+
+	<!-- 启动时加载内容定义 -->
+	<bean class="org.pshow.repo.ContentScheamBootstrap" init-method="onBootstrap" lazy-init="false">
+		<property name="definitions">
+			<list>
+				<value>classpath:org/pshow/repo/datamodel/content/definition/datatype.xml</value>
+				<value>classpath:org/pshow/repo/datamodel/content/definition/system.xml</value>
+				<value>file:${schema.definition.location}/*.xml</value>
+			</list>
+		</property>
+		<property name="csh" ref="contentSchemaHolder" />
+	</bean>
+
+	<bean id="contentSchemaHolder" class="org.pshow.repo.schema.ContentSchemaHolderImpl">
+		<property name="namespaceDao" ref="namespaceDao" />
+		<property name="qnameDao" ref="qnameDao" />
+		<property name="store" ref="memoryStore"></property>
+	</bean>
+
+	<bean id="memoryStore" class="org.pshow.repo.cache.MemoryStore" />
+
+	<bean id="contentService" class="org.pshow.repo.service.ContentServiceImpl">
+		<property name="namespaceDao" ref="namespaceDao" />
+		<property name="workspaceDao" ref="workspaceDao" />
+		<property name="contentDao" ref="contentDao" />
+		<property name="qnameDao" ref="qnameDao" />
+		<property name="propertyDao" ref="propertyDao" />
+		<property name="schemaHolder" ref="contentSchemaHolder" />
+	</bean>
+</beans>

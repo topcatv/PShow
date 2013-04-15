@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.method.MethodConstraintViolationException;
 import org.junit.Test;
@@ -100,12 +101,12 @@ public class AllTest extends BaseIntegrationTest {
     }
 
     private void testGetChildByFilter(ContentRef first) {
-        HashSet<QName> filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+        HashSet<QName> filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
         List<ContentRef> child = cs.getChild(first, filterSet);
         assertNotNull(child);
         assertEquals(1, child.size());
         
-        filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
+        filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
         child = cs.getChild(first, filterSet);
         assertNotNull(child);
         assertEquals(0, child.size());
@@ -114,7 +115,7 @@ public class AllTest extends BaseIntegrationTest {
             
             @Override
             public boolean isMatch(QName qname) {
-                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
             }
         });
         assertNotNull(child);
@@ -124,7 +125,7 @@ public class AllTest extends BaseIntegrationTest {
             
             @Override
             public boolean isMatch(QName qname) {
-                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
+                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
             }
         });
         assertNotNull(child);
@@ -142,9 +143,9 @@ public class AllTest extends BaseIntegrationTest {
     private ContentRef testCreateWithPropertiesSuccess(ContentRef root) {
         ContentRef createContent = null;
         Map<QName, Serializable> properties = Maps.newHashMap();
-        properties.put(QName.createQName("http://www.pshow.org/model/system/0.1", "node-uuid"), "this is a test");
+        properties.put(QName.createQName("http://www.pshow.org/model/system/0.1", "name"), RandomStringUtils.randomAlphanumeric(5));
         try {
-            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"), properties);
+            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"), properties);
         } catch (TypeException e) {
             e.printStackTrace();
             fail("not to here");
@@ -176,7 +177,7 @@ public class AllTest extends BaseIntegrationTest {
     private void testGetType(ContentRef createContent) {
         assertNotNull(createContent);
         QName type = cs.getType(createContent);
-        assertEquals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"), type);
+        assertEquals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"), type);
     }
 
 }

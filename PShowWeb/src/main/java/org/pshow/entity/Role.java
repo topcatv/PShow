@@ -2,14 +2,8 @@ package org.pshow.entity;
 
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.google.common.collect.ImmutableList;
 
@@ -18,9 +12,6 @@ import com.google.common.collect.ImmutableList;
  * 
  * @author calvin
  */
-@Entity
-@Table(name = "ss_role")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Role extends IdEntity {
 
 	private String name;
@@ -50,7 +41,6 @@ public class Role extends IdEntity {
 		this.permissions = permissions;
 	}
 
-	@Transient
 	public List<String> getPermissionList() {
 		return ImmutableList.copyOf(StringUtils.split(permissions, ","));
 	}

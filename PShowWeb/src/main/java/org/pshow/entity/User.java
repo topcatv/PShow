@@ -1,35 +1,12 @@
 package org.pshow.entity;
 
-import java.util.List;
-
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
 
 /**
  * 用户.
  * 
  * @author calvin
  */
-@Entity
-@Table(name = "ss_user")
-// 默认的缓存策略.
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class User extends IdEntity {
 	private String loginName;
 	private String plainPassword;
@@ -39,9 +16,6 @@ public class User extends IdEntity {
 	private String email;
 	private String status;
 
-	private List<Role> roleList = Lists.newArrayList(); // 有序的关联对象集合
-
-	@NotBlank
 	public String getLoginName() {
 		return loginName;
 	}
@@ -50,7 +24,6 @@ public class User extends IdEntity {
 		this.loginName = loginName;
 	}
 
-	@Transient
 	public String getPlainPassword() {
 		return plainPassword;
 	}
@@ -75,7 +48,6 @@ public class User extends IdEntity {
 		this.salt = salt;
 	}
 
-	@NotBlank
 	public String getName() {
 		return name;
 	}
@@ -84,7 +56,6 @@ public class User extends IdEntity {
 		this.name = name;
 	}
 
-	@Email
 	public String getEmail() {
 		return email;
 	}
@@ -99,34 +70,6 @@ public class User extends IdEntity {
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-
-	// 多对多定义
-	@ManyToMany
-	@JoinTable(name = "ss_user_role", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
-	// Fecth策略定义
-	@Fetch(FetchMode.SUBSELECT)
-	// 集合按id排序
-	@OrderBy("id ASC")
-	// 缓存策略
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-	public List<Role> getRoleList() {
-		return roleList;
-	}
-
-	public void setRoleList(List<Role> roleList) {
-		this.roleList = roleList;
-	}
-
-	@Transient
-	@JsonIgnore
-	public String getRoleNames() {
-		StringBuilder sb = new StringBuilder();
-		for (Role role : roleList) {
-			sb.append(role.getName()).append(",");
-		}
-		sb.deleteCharAt(sb.length());
-		return sb.toString();
 	}
 
 	@Override
