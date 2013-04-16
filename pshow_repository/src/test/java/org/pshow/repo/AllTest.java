@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
+import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.datamodel.namespace.QNamePattern;
 import org.pshow.repo.service.ContentService;
@@ -48,7 +49,8 @@ import com.google.common.collect.Sets;
 @SuppressWarnings("deprecation")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class AllTest extends BaseIntegrationTest {
-	@Autowired
+	private static final QName NAME_Q_NAME = QName.createQName("http://www.pshow.org/model/system/0.1", "name");
+    @Autowired
 	private ContentService cs;
 	@Test
 	public void testIntercepter(){
@@ -98,6 +100,22 @@ public class AllTest extends BaseIntegrationTest {
         testMoveContent(second,first);
         
         testGetChildByFilter(first);
+        
+        testRemoveProperty(second);
+    }
+
+    private void testRemoveProperty(ContentRef second) {
+        Serializable property = cs.getProperty(second, NAME_Q_NAME);
+        assertNotNull(property);
+        cs.removeProperty(second, NAME_Q_NAME);
+        assertNull(cs.getProperty(second, NAME_Q_NAME));
+        try {
+            cs.setProperty(second, NAME_Q_NAME, property);
+        } catch (DataTypeUnSupportExeception e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
+        assertNotNull(cs.getProperty(second, NAME_Q_NAME));
     }
 
     private void testGetChildByFilter(ContentRef first) {
@@ -143,7 +161,7 @@ public class AllTest extends BaseIntegrationTest {
     private ContentRef testCreateWithPropertiesSuccess(ContentRef root) {
         ContentRef createContent = null;
         Map<QName, Serializable> properties = Maps.newHashMap();
-        properties.put(QName.createQName("http://www.pshow.org/model/system/0.1", "name"), RandomStringUtils.randomAlphanumeric(5));
+        properties.put(NAME_Q_NAME, RandomStringUtils.randomAlphanumeric(5));
         try {
             createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"), properties);
         } catch (TypeException e) {

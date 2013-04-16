@@ -194,7 +194,12 @@ public class ContentServiceImpl implements ContentService {
         propertyModel.setLongValue(propertyValue.getLongValue());
         propertyModel.setStringValue(propertyValue.getTextValue());
         propertyModel.setSerializableValue(propertyValue.getValue());
-        propertyDao.insertProperty(propertyModel);
+        int count = propertyDao.countProperty(contentId, propertyQnameId);
+        if(count == 0){
+            propertyDao.insertProperty(propertyModel);
+        } else {
+            propertyDao.updataProperty(propertyModel);
+        }
     }
 
     private void checkValueType(DataType dataType, Serializable value) throws TypeException {
@@ -342,9 +347,11 @@ public class ContentServiceImpl implements ContentService {
      * java.io.Serializable)
      */
     @Override
-    public void setProperty(ContentRef contentRef, QName qname, Serializable value) {
-        // TODO Auto-generated method stub
-
+    public void setProperty(ContentRef contentRef, QName qname, Serializable value) throws DataTypeUnSupportExeception {
+        PropertyValue propertyValue = new PropertyValue(value);
+        long contentId = contentDao.getContentByUUID(contentRef.getId()).getId();
+        long propertyQnameId = qnameDao.findQName(qname).getId();
+        savePropertyValue(propertyValue, contentId, propertyQnameId);
     }
 
     /*
@@ -355,8 +362,7 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public void removeProperty(ContentRef contentRef, QName qname) {
-        // TODO Auto-generated method stub
-
+        propertyDao.removeProperty(contentRef.getId(), qname);
     }
 
     /*

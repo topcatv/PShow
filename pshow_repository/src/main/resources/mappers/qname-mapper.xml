@@ -19,7 +19,7 @@
 		select count(1) from ps_qname where ns_id=#{namespaceId} and local_name=#{localName}
 	</select>
 	<select id="findQName" parameterType="org.pshow.repo.datamodel.namespace.QName" resultMap="qnameResultMap">
-		select a.id, a.ns_id, a.local_name from ps_qname a left join ps_namespace b on a.ns_id=b.id where b.uri=#{namespaceURI} and a.local_name=#{localName}
+		select a.id, a.ns_id, a.local_name, b.uri from ps_qname a left join ps_namespace b on a.ns_id=b.id where b.uri=#{namespaceURI} and a.local_name=#{localName}
 	</select>
 	<select id="findQNameById" parameterType="long" resultMap="qnameResultMap">
 		select a.id, a.ns_id, a.local_name, b.uri from ps_qname a left join ps_namespace b on a.ns_id=b.id where a.id=#{value}

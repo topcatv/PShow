@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 import org.pshow.repo.audit.Auditable;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
+import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.datamodel.namespace.QNamePattern;
 import org.springframework.validation.annotation.Validated;
@@ -71,7 +72,7 @@ public interface ContentService {
 
     void addProperties(ContentRef contentRef, Map<QName, Serializable> properties);
 
-    void setProperty(ContentRef contentRef, QName qname, Serializable value);
+    void setProperty(ContentRef contentRef, QName qname, Serializable value) throws DataTypeUnSupportExeception;
 
     void removeProperty(ContentRef contentRef, QName qname);
 

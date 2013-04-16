@@ -34,4 +34,10 @@ public interface PropertyDao {
 
     List<PropertyModel> findProperties(String contentId);
 
+    void removeProperty(String contentId, QName qname);
+
+    void updataProperty(PropertyModel propertyModel);
+
+    int countProperty(long contentId, long propertyQnameId);
+
 }

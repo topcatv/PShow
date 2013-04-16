@@ -54,4 +54,25 @@ public class PropertyDaoImpl extends SqlSessionDaoSupport implements PropertyDao
         return getSqlSession().selectList("org.pshow.repo.dao.model.PropertyModel.findProperties", contentId);
     }
 
+    @Override
+    public void removeProperty(String contentId, QName qname) {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        params.put("contentId", contentId);
+        params.put("qname", qname);
+        getSqlSession().delete("org.pshow.repo.dao.model.PropertyModel.removeProperty", params);
+        
+    }
+
+    @Override
+    public void updataProperty(PropertyModel propertyModel) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public int countProperty(long contentId, long propertyQnameId) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
 }

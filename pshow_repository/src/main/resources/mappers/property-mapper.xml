@@ -27,6 +27,11 @@
 			left join ps_namespace n on q.ns_id=n.id
 			where c.uuid=#{contentId} and q.local_name=#{qname.localName} and n.uri=#{qname.namespaceURI}
 	</select>
+	<delete id="removeProperty" parameterType="java.util.Map">
+		delete from ps_content_properties where content_id=(select id from ps_content where uuid=#{contentId}) and qname_id=(
+			select q.id from ps_qname q left join ps_namespace n on q.ns_id=n.id
+			where q.local_name=#{qname.localName} and n.uri=#{qname.namespaceURI})
+	</delete>
 	<select id="findProperties" parameterType="string" resultMap="propertyResultMap">
 		select p.* from 
 			ps_content_properties p left join ps_content c on p.content_id=c.id
