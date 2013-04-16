@@ -20,4 +20,16 @@
 		values
 		(#{contentId}, #{actualType}, #{booleanValue}, #{longValue}, #{floatValue}, #{doubleValue}, #{stringValue}, #{serializableValue}, #{propertyQName}, 1)
 	</insert>
+	<select id="findProperty" parameterType="java.util.Map" resultMap="propertyResultMap">
+		select p.* from 
+			ps_content_properties p left join ps_content c on p.content_id=c.id
+			left join ps_qname q on p.qname_id=q.id
+			left join ps_namespace n on q.ns_id=n.id
+			where c.uuid=#{contentId} and q.local_name=#{qname.localName} and n.uri=#{qname.namespaceURI}
+	</select>
+	<select id="findProperties" parameterType="string" resultMap="propertyResultMap">
+		select p.* from 
+			ps_content_properties p left join ps_content c on p.content_id=c.id
+			where c.uuid=#{contentId}
+	</select>
 </mapper>

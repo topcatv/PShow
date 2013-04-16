@@ -18,6 +18,7 @@ package org.pshow.repo.service;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -279,8 +280,18 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public Map<QName, Serializable> getProperties(ContentRef contentRef) {
-        // TODO Auto-generated method stub
-        return null;
+        List<PropertyModel> propertyModels = propertyDao.findProperties(contentRef.getId());
+        if (propertyModels == null) {
+            return null;
+        }
+        HashMap<QName, Serializable> result = new HashMap<QName, Serializable>();
+        for (PropertyModel propertyModel : propertyModels) {
+            PropertyValue propertyValue = new PropertyValue(propertyModel);
+            long qnameId = propertyModel.getPropertyQName();
+            QNameModel qNameModel = qnameDao.findQNameById(qnameId);
+            result.put(QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName()), propertyValue.getValue());
+        }
+        return result;
     }
 
     /*
@@ -291,8 +302,12 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public Serializable getProperty(ContentRef contentRef, QName qname) {
-        // TODO Auto-generated method stub
-        return null;
+        PropertyModel propertyModel = propertyDao.findProperty(contentRef.getId(), qname);
+        if (propertyModel == null) {
+            return null;
+        }
+        PropertyValue propertyValue = new PropertyValue(propertyModel);
+        return propertyValue.getValue();
     }
 
     /*

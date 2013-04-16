@@ -19,6 +19,7 @@ package org.pshow.repo.datamodel.content;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.pshow.repo.dao.model.PropertyModel;
 import org.pshow.repo.datamodel.content.definition.DataType.Type;
 import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 
@@ -30,6 +31,36 @@ public class PropertyValue {
 
     private Serializable value;
     private Type         type;
+    
+    public PropertyValue(PropertyModel pm){
+        this.type = Type.valueOf(pm.getActualType());
+        switch (type) {
+            case ANY:
+            case CONTENT:
+            case DATE:
+            case DATETIME:
+                this.value = pm.getSerializableValue();
+                break;
+            case TEXT:
+                this.value = pm.getStringValue();
+                break;
+            case INT:
+                this.value = pm.getLongValue();
+                break;
+            case LONG:
+                this.value = pm.getLongValue();
+                break;
+            case FLOAT:
+                this.value = pm.getFloatValue();
+                break;
+            case DOUBLE:
+                this.value = pm.getDoubleValue();
+                break;
+            case BOOLEAN:
+                this.value = pm.getBooleanValue();
+                break;
+        }
+    }
 
     public PropertyValue(Serializable value) throws DataTypeUnSupportExeception {
         this.value = value;

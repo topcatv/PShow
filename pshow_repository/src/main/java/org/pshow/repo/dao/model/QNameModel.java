@@ -31,7 +31,14 @@ public class QNameModel {
         
     }
     
+    public QNameModel(String namespaceURI, String localName) {
+        super();
+        this.namespaceURI = namespaceURI;
+        this.localName = localName;
+    }
+
     public QNameModel(long namespaceId, String localName) {
+        super();
         this.namespaceId = namespaceId;
         this.localName = localName;
     }
@@ -70,6 +77,37 @@ public class QNameModel {
     
     public void setNamespaceURI(String namespaceURI) {
         this.namespaceURI = namespaceURI;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((localName == null) ? 0 : localName.hashCode());
+        result = prime * result + ((namespaceURI == null) ? 0 : namespaceURI.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        QNameModel other = (QNameModel) obj;
+        if (localName == null) {
+            if (other.localName != null)
+                return false;
+        } else if (!localName.equals(other.localName))
+            return false;
+        if (namespaceURI == null) {
+            if (other.namespaceURI != null)
+                return false;
+        } else if (!namespaceURI.equals(other.namespaceURI))
+            return false;
+        return true;
     }
 
 }

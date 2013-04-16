@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.pshow.repo.datamodel.content.ContentData;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.service.ContentService;
@@ -33,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-
 /**
  * @author roy
  *
@@ -43,32 +41,24 @@ public class ContentController {
     @Autowired
     private ContentService contentService;
     
-    @RequestMapping(value="/content/{parentId}/child",method=RequestMethod.GET)
+    @RequestMapping(value="/content/child/{parentId}",method=RequestMethod.GET)
     @ResponseBody
     public List<Map<String, Serializable>> findChild(@PathVariable("parentId") String parentId) {
+        if("root".equalsIgnoreCase(parentId)){
+            ContentRef root = contentService.getRoot(contentService.findWorkspace("default"));
+            parentId = root.getId();
+        }
         List<ContentRef> child = contentService.getChild(new ContentRef(parentId));
         List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>(child.size());
         for (ContentRef contentRef : child) {
             Serializable property = contentService.getProperty(contentRef, QName.createQName("http://www.pshow.org/model/system/0.1", "name"));
             Map<String, Serializable> e = new HashMap<String, Serializable>(1);
-            e.put(contentRef.getId(), property);
+            e.put("id", contentRef.getId());
+            e.put("name", property);
+            e.put("parent", parentId);
             result.add(e);
         }
         return result;
     }
     
-    @RequestMapping(value="/content/root/child",method=RequestMethod.GET)
-    @ResponseBody
-    public List<Map<String, Serializable>> findRootChild() {
-        ContentRef root = contentService.getRoot(contentService.findWorkspace("default"));
-        List<ContentRef> child = contentService.getChild(root );
-        List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>(child.size());
-        for (ContentRef contentRef : child) {
-            Serializable property = contentService.getProperty(contentRef, QName.createQName("http://www.pshow.org/model/system/0.1", "name"));
-            Map<String, Serializable> e = new HashMap<String, Serializable>(1);
-            e.put(contentRef.getId(), property);
-            result.add(e);
-        }
-        return result;
-    }
 }

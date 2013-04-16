@@ -71,6 +71,33 @@ public class DataType {
                 throw new DataTypeUnSupportExeception(String.format("Unsupport [%s] data type", o.getClass().getName()));
             }
         }
+
+        public static Type valueOf(int value) {
+            switch (value) {
+                case 0:
+                    return ANY;
+                case 1:
+                    return TEXT;
+                case 2:
+                    return CONTENT;
+                case 3:
+                    return INT;
+                case 4:
+                    return LONG;
+                case 5:
+                    return FLOAT;
+                case 6:
+                    return DOUBLE;
+                case 7:
+                    return DATE;
+                case 8:
+                    return DATETIME;
+                case 9:
+                    return BOOLEAN;
+                default:
+                    return null;
+            }
+        }
     }
 
     public String getName() {

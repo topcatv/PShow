@@ -16,7 +16,10 @@
  */
 package org.pshow.repo.dao;
 
+import java.util.List;
+
 import org.pshow.repo.dao.model.PropertyModel;
+import org.pshow.repo.datamodel.namespace.QName;
 
 
 /**
@@ -26,5 +29,9 @@ import org.pshow.repo.dao.model.PropertyModel;
 public interface PropertyDao {
 
     void insertProperty(PropertyModel propertyModel);
+
+    PropertyModel findProperty(String contentId, QName qname);
+
+    List<PropertyModel> findProperties(String contentId);
 
 }

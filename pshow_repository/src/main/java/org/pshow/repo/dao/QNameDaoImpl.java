@@ -20,19 +20,28 @@ import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.pshow.repo.dao.model.QNameModel;
 import org.pshow.repo.datamodel.namespace.QName;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 
 /**
  * @author roy
- *
+ * 
  */
 public class QNameDaoImpl extends SqlSessionDaoSupport implements QNameDao {
 
-    /* (non-Javadoc)
-     * @see org.pshow.repo.dao.QNameDao#insertQName(org.pshow.repo.dao.model.QNameModel)
+    private static BiMap<Long, QNameModel> qnames = Maps.synchronizedBiMap(HashBiMap.<Long, QNameModel> create());
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.dao.QNameDao#insertQName(org.pshow.repo.dao.model.QNameModel
+     * )
      */
     @Override
     public void insertQName(QNameModel qNameModel) {
         getSqlSession().insert("org.pshow.repo.dao.model.QNameModel.insertQName", qNameModel);
+        qnames.put(qNameModel.getId(), qNameModel);
     }
 
     @Override
@@ -42,12 +51,23 @@ public class QNameDaoImpl extends SqlSessionDaoSupport implements QNameDao {
 
     @Override
     public QNameModel findQName(QName qName) {
-        return getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.findQName", qName);
+        QNameModel qNameModel = new QNameModel(qName.getNamespaceURI(), qName.getLocalName());
+        if (qnames.containsValue(qNameModel)) {
+            return qnames.get(qnames.inverse().get(qNameModel));
+        }
+        QNameModel result = getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.findQName", qName);
+        qnames.put(result.getId(), result);
+        return result;
     }
 
     @Override
     public QNameModel findQNameById(long id) {
-        return getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.findQNameById", id);
+        if (qnames.containsKey(id)) {
+            return qnames.get(id);
+        }
+        QNameModel result = getSqlSession().selectOne("org.pshow.repo.dao.model.QNameModel.findQNameById", id);
+        qnames.put(result.getId(), result);
+        return result;
     }
 
 }

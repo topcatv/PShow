@@ -16,22 +16,42 @@
  */
 package org.pshow.repo.dao;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.pshow.repo.dao.model.PropertyModel;
-
+import org.pshow.repo.datamodel.namespace.QName;
 
 /**
  * @author roy
- *
+ * 
  */
 public class PropertyDaoImpl extends SqlSessionDaoSupport implements PropertyDao {
 
-    /* (non-Javadoc)
-     * @see org.pshow.repo.dao.PropertyDao#insertProperty(org.pshow.repo.dao.model.PropertyModel)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.dao.PropertyDao#insertProperty(org.pshow.repo.dao.model
+     * .PropertyModel)
      */
     @Override
     public void insertProperty(PropertyModel propertyModel) {
-        getSqlSession().insert("org.pshow.repo.dao.model.PropertyModel.insertProperty",propertyModel);
+        getSqlSession().insert("org.pshow.repo.dao.model.PropertyModel.insertProperty", propertyModel);
+    }
+
+    @Override
+    public PropertyModel findProperty(String contentId, QName qname) {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        params.put("contentId", contentId);
+        params.put("qname", qname);
+        return getSqlSession().selectOne("org.pshow.repo.dao.model.PropertyModel.findProperty", params);
+    }
+
+    @Override
+    public List<PropertyModel> findProperties(String contentId) {
+        return getSqlSession().selectList("org.pshow.repo.dao.model.PropertyModel.findProperties", contentId);
     }
 
 }
