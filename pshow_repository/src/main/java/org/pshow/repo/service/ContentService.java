@@ -56,7 +56,7 @@ public interface ContentService {
 
     QName getType(ContentRef contentRef);
     
-    void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties);
+    void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) throws TypeException;
 
     Set<QName> getFacets(ContentRef contentRef);
 
@@ -68,9 +68,7 @@ public interface ContentService {
 
     Serializable getProperty(ContentRef contentRef, QName qname);
 
-    void setProperties(ContentRef contentRef, Map<QName, Serializable> properties);
-
-    void addProperties(ContentRef contentRef, Map<QName, Serializable> properties);
+    void setProperties(ContentRef contentRef, Map<QName, Serializable> properties) throws TypeException;
 
     void setProperty(ContentRef contentRef, QName qname, Serializable value) throws DataTypeUnSupportExeception;
 
@@ -84,6 +82,6 @@ public interface ContentService {
 
     List<ContentRef> getChild(ContentRef contentRef, Set<QName> typeQNames);
 
-    void removeAspect(ContentRef contentRef, QName facetTypeQName);
+    void removeFacet(ContentRef contentRef, QName facetTypeQName);
 
 }

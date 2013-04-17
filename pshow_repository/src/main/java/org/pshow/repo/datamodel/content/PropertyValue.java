@@ -45,7 +45,7 @@ public class PropertyValue {
                 this.value = pm.getStringValue();
                 break;
             case INT:
-                this.value = pm.getLongValue();
+                this.value = pm.getLongValue().intValue();
                 break;
             case LONG:
                 this.value = pm.getLongValue();

@@ -19,9 +19,11 @@ package org.pshow.repo;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -102,6 +104,28 @@ public class AllTest extends BaseIntegrationTest {
         testGetChildByFilter(first);
         
         testRemoveProperty(second);
+        
+        testFacet(first);
+    }
+
+    private void testFacet(ContentRef first) {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        QName clientVisibilityMask = QName.createQName("http://www.pshow.org/model/system/0.1", "clientVisibilityMask");
+        properties.put(clientVisibilityMask, 1);
+        QName facetQname = QName.createQName("http://www.pshow.org/model/system/0.1", "hidden");
+        try {
+            cs.addFacet(first, facetQname, properties );
+        } catch (TypeException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
+        Serializable property = cs.getProperty(first, clientVisibilityMask);
+        assertEquals(1, property);
+        Set<QName> facets = cs.getFacets(first);
+        assertEquals(facets.size(), 1);
+        assertTrue(cs.hasFacet(first, facetQname));
+        cs.removeFacet(first, facetQname);
+        assertFalse(cs.hasFacet(first, facetQname));
     }
 
     private void testRemoveProperty(ContentRef second) {

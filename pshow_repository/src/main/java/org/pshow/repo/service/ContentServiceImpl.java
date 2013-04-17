@@ -19,6 +19,7 @@ package org.pshow.repo.service;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,11 +96,7 @@ public class ContentServiceImpl implements ContentService {
     @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
     public ContentRef createContent(ContentRef parentRef, QName typeQName) throws TypeException {
         ContentRef createContent = null;
-        try {
-            createContent = createContent(parentRef, typeQName, null);
-        } catch (DataTypeUnSupportExeception e) {
-            e.printStackTrace();
-        }
+        createContent = createContent(parentRef, typeQName, null);
         return createContent;
     }
 
@@ -186,16 +183,37 @@ public class ContentServiceImpl implements ContentService {
 
     private void savePropertyValue(PropertyValue propertyValue, long contentId, long propertyQnameId) {
         PropertyModel propertyModel = new PropertyModel();
+        Type type = propertyValue.getType();
+        switch (type) {
+            case ANY:
+            case CONTENT:
+            case DATE:
+            case DATETIME:
+            case BOOLEAN:
+                propertyModel.setSerializableValue(propertyValue.getValue());
+                break;
+            case TEXT:
+                propertyModel.setStringValue(propertyValue.getTextValue());
+                break;
+            case INT:
+                propertyModel.setLongValue(Long.valueOf(propertyValue.getIntValue()));
+                break;
+            case LONG:
+                propertyModel.setLongValue(propertyValue.getLongValue());
+                break;
+            case FLOAT:
+                propertyModel.setFloatValue(propertyValue.getFloatValue());
+                break;
+            case DOUBLE:
+                propertyModel.setDoubleValue(propertyValue.getDoubleValue());
+                break;
+        }
         propertyModel.setContentId(contentId);
         propertyModel.setPropertyQName(propertyQnameId);
         propertyModel.setActualType(propertyValue.getActualType());
-        propertyModel.setDoubleValue(propertyValue.getDoubleValue());
-        propertyModel.setFloatValue(propertyValue.getFloatValue());
-        propertyModel.setLongValue(propertyValue.getLongValue());
-        propertyModel.setStringValue(propertyValue.getTextValue());
-        propertyModel.setSerializableValue(propertyValue.getValue());
+        
         int count = propertyDao.countProperty(contentId, propertyQnameId);
-        if(count == 0){
+        if (count == 0) {
             propertyDao.insertProperty(propertyModel);
         } else {
             propertyDao.updataProperty(propertyModel);
@@ -249,8 +267,15 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public Set<QName> getFacets(ContentRef contentRef) {
-        // TODO Auto-generated method stub
-        return null;
+        List<QNameModel> qnameModels = contentDao.getFacetsByContent(contentRef.getId());
+        HashSet<QName> hashSet = new HashSet<QName>();
+        if (qnameModels == null) {
+            return hashSet;
+        }
+        for (QNameModel qNameModel : qnameModels) {
+            hashSet.add(QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName()));
+        }
+        return hashSet;
     }
 
     /*
@@ -261,8 +286,43 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public boolean hasFacet(ContentRef contentRef, QName facetQName) {
-        // TODO Auto-generated method stub
-        return false;
+        if (facetQName == null) {
+            return false;
+        }
+        List<QNameModel> qnameModels = contentDao.getFacetsByContent(contentRef.getId());
+        if (qnameModels == null) {
+            return false;
+        }
+        QNameModel facetQnameModel = new QNameModel(facetQName.getNamespaceURI(), facetQName.getLocalName());
+        return qnameModels.contains(facetQnameModel);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.service.ContentService#removeFacet(org.pshow.repo.datamodel
+     * .content.ContentRef, org.pshow.repo.datamodel.namespace.QName)
+     */
+    @Override
+    public void removeFacet(ContentRef contentRef, QName facetTypeQName) {
+        QNameModel qNameModel = qnameDao.findQName(facetTypeQName);
+        contentDao.removeFacetByContent(contentRef.getId(), qNameModel.getId());
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.pshow.repo.service.ContentService#addFacet(org.pshow.repo.datamodel
+     * .content.ContentRef, org.pshow.repo.datamodel.namespace.QName,
+     * java.util.Map)
+     */
+    @Override
+    public void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) throws TypeException {
+        QNameModel qNameModel = qnameDao.findQName(facetQName);
+        ContentData contentData = contentDao.getContentByUUID(contentRef.getId());
+        contentDao.insertContentFacet(contentData.getId(), qNameModel.getId());
+
+        saveProperties(properties, schemaHolder.getFacet(facetQName).getProperties(), contentData.getId());
     }
 
     /*
@@ -322,21 +382,20 @@ public class ContentServiceImpl implements ContentService {
      * .content.ContentRef, java.util.Map)
      */
     @Override
-    public void setProperties(ContentRef contentRef, Map<QName, Serializable> properties) {
-        // TODO Auto-generated method stub
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.pshow.repo.service.ContentService#addProperties(org.pshow.repo.datamodel
-     * .content.ContentRef, java.util.Map)
-     */
-    @Override
-    public void addProperties(ContentRef contentRef, Map<QName, Serializable> properties) {
-        // TODO Auto-generated method stub
-
+    public void setProperties(ContentRef contentRef, Map<QName, Serializable> properties) throws TypeException {
+        ContentData self = contentDao.getContentByUUID(contentRef.getId());
+        long typeId = self.getTypeId();
+        QNameModel qNameModel = qnameDao.findQNameById(typeId);
+        ContentType contentType = schemaHolder.getContentType(QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName()));
+        saveProperties(properties, contentType.getProperties(), self.getId());
+        List<QNameModel> facetsByContent = contentDao.getFacetsByContent(contentRef.getId());
+        if (facetsByContent != null) {
+            for (QNameModel facet_qNameModel : facetsByContent) {
+                QName facetQName = QName.createQName(facet_qNameModel.getNamespaceURI(), facet_qNameModel.getLocalName());
+                ContentFacet facet = schemaHolder.getFacet(facetQName);
+                saveProperties(properties, facet.getProperties(), self.getId());
+            }
+        }
     }
 
     /*
@@ -435,18 +494,6 @@ public class ContentServiceImpl implements ContentService {
         return child;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.pshow.repo.service.ContentService#removeAspect(org.pshow.repo.datamodel
-     * .content.ContentRef, org.pshow.repo.datamodel.namespace.QName)
-     */
-    @Override
-    public void removeAspect(ContentRef contentRef, QName facetTypeQName) {
-        // TODO Auto-generated method stub
-
-    }
-
     public void setNamespaceDao(NamespaceDao namespaceDao) {
         this.namespaceDao = namespaceDao;
     }
@@ -514,12 +561,6 @@ public class ContentServiceImpl implements ContentService {
 
     public void setQnameDao(QNameDao qnameDao) {
         this.qnameDao = qnameDao;
-    }
-
-    @Override
-    public void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) {
-        // TODO Auto-generated method stub
-        
     }
 
 }

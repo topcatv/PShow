@@ -16,6 +16,12 @@
 		<result property="workspaceId" column="workspace_id" />
 		<result property="aclId" column="acl_id" />
 	</resultMap>
+	<resultMap id="qnameResultMap" type="org.pshow.repo.dao.model.QNameModel">
+		<result property="localName" column="local_name" />
+		<result property="namespaceId" column="ns_id" />
+		<result property="namespaceURI" column="uri" />
+		<result property="id" column="id" />
+	</resultMap>
 	<insert id="insertContent" parameterType="org.pshow.repo.datamodel.content.ContentData">
 		<selectKey keyProperty="id" resultType="long" order="BEFORE">
 			SELECT nextval('seq_content') as id
@@ -50,4 +56,18 @@
 		on a.parent_id=b.id
 		where b.uuid=#{value}
 	</select>
+	<select id="getFacetsByContent" parameterType="string" resultMap="qnameResultMap">
+		select c.id, c.ns_id, c.local_name, d.uri 
+		from ps_content a 
+			left join ps_content_facet b on a.id=b.content_id
+			left join ps_qname c on b.qname_id=c.id
+			left join ps_namespace d on c.ns_id=d.id
+		where a.uuid=#{value}
+	</select>
+	<delete id="removeFacetByContent" parameterType="java.util.Map">
+		delete from ps_content_facet where content_id=(select id from ps_content where uuid=#{contentId}) and qname_id=#{qnameId}
+	</delete>
+	<insert id="insertContentFacet" parameterType="java.util.Map">
+		insert into ps_content_facet(content_id, qname_id) values(#{contentId}, #{qnameId});
+	</insert>
 </mapper>

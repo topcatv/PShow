@@ -18,6 +18,7 @@ package org.pshow.repo.dao;
 
 import java.util.List;
 
+import org.pshow.repo.dao.model.QNameModel;
 import org.pshow.repo.datamodel.content.ContentData;
 
 
@@ -36,5 +37,11 @@ public interface ContentDao {
     ContentData getContentByUUID(String uuid);
 
     List<ContentData> getContentByParentUUID(String uuid);
+
+    List<QNameModel> getFacetsByContent(String uuid);
+
+    void removeFacetByContent(String id, long id2);
+
+    void insertContentFacet(long contentId, long qnameId);
 
 }
