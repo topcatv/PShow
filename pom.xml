@@ -510,5 +510,6 @@
 		
 		<module>pshow_repository</module>
 		<module>PShowWeb</module>
+		<module>pshow_workflow</module>
 	</modules>
 </project>
