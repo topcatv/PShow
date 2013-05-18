@@ -46,180 +46,187 @@ import com.google.common.collect.Sets;
 
 /**
  * @author roy
- *
+ * 
  */
 @SuppressWarnings("deprecation")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class AllTest extends BaseIntegrationTest {
-	private static final QName NAME_Q_NAME = QName.createQName("http://www.pshow.org/model/system/0.1", "name");
-    @Autowired
-	private ContentService cs;
+	private static final QName	NAME_Q_NAME	= QName.createQName("http://www.pshow.org/model/system/0.1", "name");
+	@Autowired
+	private ContentService	   cs;
+
 	@Test
-	public void testIntercepter(){
+	public void testIntercepter() {
 		try {
-            cs.getContent(null);
-        } catch (MethodConstraintViolationException e) {
+			cs.getContent(null);
+		} catch (MethodConstraintViolationException e) {
 			assertEquals("{javax.validation.constraints.NotNull.message}", e.getConstraintViolations().iterator().next().getMessageTemplate());
 			return;
 		}
-		
+
 		fail("Was expecting a ConstraintViolationException.");
 	}
-	
+
 	@Test
-	public void testCreateWorksapce(){
-	    try {
-            WorkspaceRef workspace = cs.createWorkspace("default");
-            fail("not to here");
-            cs.getRoot(workspace);
-        } catch (DuplicateWorkspaceException e) {
-            assertEquals("workspace[default] already exist.", e.getMessage());
-        }
+	public void testCreateWorksapce() {
+		try {
+			String workspace_name = "default";
+			WorkspaceRef workspace = cs.findWorkspace(workspace_name);
+			if (workspace == null) {
+				workspace = cs.createWorkspace(workspace_name);
+				cs.getRoot(workspace);
+			} else {
+				workspace = cs.createWorkspace(workspace_name);
+				fail("not to here");
+			}
+		} catch (DuplicateWorkspaceException e) {
+			assertEquals("workspace[default] already exist.", e.getMessage());
+		}
 	}
-	
+
 	@Test
-	public void testGetroot(){
-	    WorkspaceRef workspace = cs.findWorkspace("default");
-	    ContentRef root = cs.getRoot(workspace);
-	    assertNotNull(root);
-	    assertNotNull(root.getId());
-	    assertTrue(StringUtils.isNotEmpty(root.getId()));
+	public void testGetroot() {
+		WorkspaceRef workspace = cs.findWorkspace("default");
+		ContentRef root = cs.getRoot(workspace);
+		assertNotNull(root);
+		assertNotNull(root.getId());
+		assertTrue(StringUtils.isNotEmpty(root.getId()));
 	}
-	
+
 	@Test
-    public void testCreateContent(){
-        WorkspaceRef workspace = cs.findWorkspace("default");
-        ContentRef root = cs.getRoot(workspace);
-        
-        testCreateFail(root);
-        
-        ContentRef first = testCreateSuccess(root);
-        
-        ContentRef second = testCreateWithPropertiesSuccess(root);
-        
-        testGetType(second);
-        
-        testMoveContent(second,first);
-        
-        testGetChildByFilter(first);
-        
-        testRemoveProperty(second);
-        
-        testFacet(first);
-    }
+	public void testCreateContent() {
+		WorkspaceRef workspace = cs.findWorkspace("default");
+		ContentRef root = cs.getRoot(workspace);
 
-    private void testFacet(ContentRef first) {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        QName clientVisibilityMask = QName.createQName("http://www.pshow.org/model/system/0.1", "clientVisibilityMask");
-        properties.put(clientVisibilityMask, 1);
-        QName facetQname = QName.createQName("http://www.pshow.org/model/system/0.1", "hidden");
-        try {
-            cs.addFacet(first, facetQname, properties );
-        } catch (TypeException e) {
-            e.printStackTrace();
-            fail("not to here");
-        }
-        Serializable property = cs.getProperty(first, clientVisibilityMask);
-        assertEquals(1, property);
-        Set<QName> facets = cs.getFacets(first);
-        assertEquals(facets.size(), 1);
-        assertTrue(cs.hasFacet(first, facetQname));
-        cs.removeFacet(first, facetQname);
-        assertFalse(cs.hasFacet(first, facetQname));
-    }
+		testCreateFail(root);
 
-    private void testRemoveProperty(ContentRef second) {
-        Serializable property = cs.getProperty(second, NAME_Q_NAME);
-        assertNotNull(property);
-        cs.removeProperty(second, NAME_Q_NAME);
-        assertNull(cs.getProperty(second, NAME_Q_NAME));
-        try {
-            cs.setProperty(second, NAME_Q_NAME, property);
-        } catch (DataTypeUnSupportExeception e) {
-            e.printStackTrace();
-            fail("not to here");
-        }
-        assertNotNull(cs.getProperty(second, NAME_Q_NAME));
-    }
+		ContentRef first = testCreateSuccess(root);
 
-    private void testGetChildByFilter(ContentRef first) {
-        HashSet<QName> filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
-        List<ContentRef> child = cs.getChild(first, filterSet);
-        assertNotNull(child);
-        assertEquals(1, child.size());
-        
-        filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
-        child = cs.getChild(first, filterSet);
-        assertNotNull(child);
-        assertEquals(0, child.size());
-        
-        child = cs.getChild(first, new QNamePattern() {
-            
-            @Override
-            public boolean isMatch(QName qname) {
-                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
-            }
-        });
-        assertNotNull(child);
-        assertEquals(1, child.size());
-        
-        child = cs.getChild(first, new QNamePattern() {
-            
-            @Override
-            public boolean isMatch(QName qname) {
-                return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
-            }
-        });
-        assertNotNull(child);
-        assertEquals(0, child.size());
-    }
+		ContentRef second = testCreateWithPropertiesSuccess(root);
 
-    private void testMoveContent(ContentRef second, ContentRef first) {
-        cs.moveContent(second, first);
-        List<ContentRef> child = cs.getChild(first);
-        assertNotNull(child);
-        assertEquals(1, child.size());
-        assertEquals(child.get(0), second);
-    }
+		testGetType(second);
 
-    private ContentRef testCreateWithPropertiesSuccess(ContentRef root) {
-        ContentRef createContent = null;
-        Map<QName, Serializable> properties = Maps.newHashMap();
-        properties.put(NAME_Q_NAME, RandomStringUtils.randomAlphanumeric(5));
-        try {
-            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"), properties);
-        } catch (TypeException e) {
-            e.printStackTrace();
-            fail("not to here");
-        }
-        return createContent;
-    }
+		testMoveContent(second, first);
 
-    private ContentRef testCreateSuccess(ContentRef root) {
-        ContentRef createContent = null;
-        try {
-            createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
-        } catch (TypeException e) {
-            e.printStackTrace();
-            fail("not to here");
-        }
-        assertNotNull(createContent);
-        return createContent;
-    }
+		testGetChildByFilter(first);
 
-    private void testCreateFail(ContentRef root) {
-        try {
-            cs.createContent(root, QName.createQName("fdsafsdfsa", "test"));
-            fail("not to here");
-        } catch (TypeException e) {
-            assertEquals("Create content error: type[QName [prefix=null, namespaceURI=fdsafsdfsa, localName=test]] not exist.", e.getMessage());
-        }
-    }
+		testRemoveProperty(second);
 
-    private void testGetType(ContentRef createContent) {
-        assertNotNull(createContent);
-        QName type = cs.getType(createContent);
-        assertEquals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"), type);
-    }
+		testFacet(first);
+	}
+
+	private void testFacet(ContentRef first) {
+		Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+		QName clientVisibilityMask = QName.createQName("http://www.pshow.org/model/system/0.1", "clientVisibilityMask");
+		properties.put(clientVisibilityMask, 1);
+		QName facetQname = QName.createQName("http://www.pshow.org/model/system/0.1", "hidden");
+		try {
+			cs.addFacet(first, facetQname, properties);
+		} catch (TypeException e) {
+			e.printStackTrace();
+			fail("not to here");
+		}
+		Serializable property = cs.getProperty(first, clientVisibilityMask);
+		assertEquals(1, property);
+		Set<QName> facets = cs.getFacets(first);
+		assertEquals(facets.size(), 1);
+		assertTrue(cs.hasFacet(first, facetQname));
+		cs.removeFacet(first, facetQname);
+		assertFalse(cs.hasFacet(first, facetQname));
+	}
+
+	private void testRemoveProperty(ContentRef second) {
+		Serializable property = cs.getProperty(second, NAME_Q_NAME);
+		assertNotNull(property);
+		cs.removeProperty(second, NAME_Q_NAME);
+		assertNull(cs.getProperty(second, NAME_Q_NAME));
+		try {
+			cs.setProperty(second, NAME_Q_NAME, property);
+		} catch (DataTypeUnSupportExeception e) {
+			e.printStackTrace();
+			fail("not to here");
+		}
+		assertNotNull(cs.getProperty(second, NAME_Q_NAME));
+	}
+
+	private void testGetChildByFilter(ContentRef first) {
+		HashSet<QName> filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
+		List<ContentRef> child = cs.getChild(first, filterSet);
+		assertNotNull(child);
+		assertEquals(1, child.size());
+
+		filterSet = Sets.newHashSet(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+		child = cs.getChild(first, filterSet);
+		assertNotNull(child);
+		assertEquals(0, child.size());
+
+		child = cs.getChild(first, new QNamePattern() {
+
+			@Override
+			public boolean isMatch(QName qname) {
+				return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"));
+			}
+		});
+		assertNotNull(child);
+		assertEquals(1, child.size());
+
+		child = cs.getChild(first, new QNamePattern() {
+
+			@Override
+			public boolean isMatch(QName qname) {
+				return qname.equals(QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+			}
+		});
+		assertNotNull(child);
+		assertEquals(0, child.size());
+	}
+
+	private void testMoveContent(ContentRef second, ContentRef first) {
+		cs.moveContent(second, first);
+		List<ContentRef> child = cs.getChild(first);
+		assertNotNull(child);
+		assertEquals(1, child.size());
+		assertEquals(child.get(0), second);
+	}
+
+	private ContentRef testCreateWithPropertiesSuccess(ContentRef root) {
+		ContentRef createContent = null;
+		Map<QName, Serializable> properties = Maps.newHashMap();
+		properties.put(NAME_Q_NAME, RandomStringUtils.randomAlphanumeric(5));
+		try {
+			createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"), properties);
+		} catch (TypeException e) {
+			e.printStackTrace();
+			fail("not to here");
+		}
+		return createContent;
+	}
+
+	private ContentRef testCreateSuccess(ContentRef root) {
+		ContentRef createContent = null;
+		try {
+			createContent = cs.createContent(root, QName.createQName("http://www.pshow.org/model/system/0.1", "base"));
+		} catch (TypeException e) {
+			e.printStackTrace();
+			fail("not to here");
+		}
+		assertNotNull(createContent);
+		return createContent;
+	}
+
+	private void testCreateFail(ContentRef root) {
+		try {
+			cs.createContent(root, QName.createQName("fdsafsdfsa", "test"));
+			fail("not to here");
+		} catch (TypeException e) {
+			assertEquals("Create content error: type[QName [prefix=null, namespaceURI=fdsafsdfsa, localName=test]] not exist.", e.getMessage());
+		}
+	}
+
+	private void testGetType(ContentRef createContent) {
+		assertNotNull(createContent);
+		QName type = cs.getType(createContent);
+		assertEquals(QName.createQName("http://www.pshow.org/model/system/0.1", "descriptor"), type);
+	}
 
 }

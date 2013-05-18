@@ -544,6 +544,9 @@ public class ContentServiceImpl implements ContentService {
     @Transactional(readOnly = true)
     public WorkspaceRef findWorkspace(String name) {
         Workspace workspace = workspaceDao.findWorkspaceByName(name);
+        if(workspace == null){
+        	return null;
+        }
         return new WorkspaceRef(workspace.getUuid());
     }
 

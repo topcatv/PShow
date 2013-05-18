@@ -47,15 +47,15 @@ import com.google.common.collect.Maps;
  */
 public class ContentSchemaHolderImpl implements ContentSchemaHolder {
 
-    private static final String  ALL_NAMESPACE  = "sys:all_namespace";
+    private static final String  ALL_NAMESPACE  = "ps:all_namespace";
 
-    private static final String  ALL_CONSTRAINT = "sys:all_constraint";
+    private static final String  ALL_CONSTRAINT = "ps:all_constraint";
 
-    private static final String  ALL_DATATYPE   = "sys:all_datatype";
+    private static final String  ALL_DATATYPE   = "ps:all_datatype";
 
-    private static final String  ALL_FACET      = "sys:all_facet";
+    private static final String  ALL_FACET      = "ps:all_facet";
 
-    private static final String  ALL_TYPE       = "sys:all_type";
+    private static final String  ALL_TYPE       = "ps:all_type";
 
     private Store<QName, Object> store;
 

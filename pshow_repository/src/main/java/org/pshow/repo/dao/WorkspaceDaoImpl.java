@@ -46,7 +46,9 @@ public class WorkspaceDaoImpl extends SqlSessionDaoSupport implements WorkspaceD
             return workspaceCache.get(name);
         }
         Workspace worksapce = getSqlSession().selectOne("org.pshow.repo.datamodel.content.Workspace.findWorkspaceByName", name);
-        workspaceCache.putIfAbsent(name, worksapce);
+        if(worksapce != null) {
+        	workspaceCache.putIfAbsent(name, worksapce);
+        }
         return worksapce;
     }
 
