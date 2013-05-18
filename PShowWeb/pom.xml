@@ -279,6 +279,10 @@
 			<artifactId>pshow_repository</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.activiti</groupId>
+			<artifactId>activiti-engine</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>dataplayer</finalName>
