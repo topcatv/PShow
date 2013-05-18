@@ -86,6 +86,7 @@ public class AllTest extends BaseIntegrationTest {
 
 	@Test
 	public void testGetroot() {
+		testCreateWorksapce();
 		WorkspaceRef workspace = cs.findWorkspace("default");
 		ContentRef root = cs.getRoot(workspace);
 		assertNotNull(root);
