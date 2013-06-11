@@ -1,0 +1,203 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title></title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width">
+<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+<!-- build:css styles/main.css -->
+<link id="bs-css" href="styles/bootstrap-cerulean.css" rel="stylesheet">
+<link rel="stylesheet" href="styles/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="styles/font-awesome-ie7.min.css">
+<![endif]-->
+<link rel="stylesheet" href="styles/bootstrap-responsive.css">
+<link rel="stylesheet" href="styles/charisma-app.css">
+<link rel="stylesheet" href="styles/uniform.default.css">
+<link href="styles/jquery-ui-1.8.21.custom.css" rel="stylesheet">
+<link href='styles/fullcalendar.css' rel='stylesheet'>
+<link href='styles/fullcalendar.print.css' rel='stylesheet'
+	media='print'>
+<link href='styles/chosen.css' rel='stylesheet'>
+<link href='styles/colorbox.css' rel='stylesheet'>
+<link href='styles/jquery.cleditor.css' rel='stylesheet'>
+<link href='styles/jquery.noty.css' rel='stylesheet'>
+<link href='styles/noty_theme_default.css' rel='stylesheet'>
+<link href='styles/elfinder.min.css' rel='stylesheet'>
+<link href='styles/elfinder.theme.css' rel='stylesheet'>
+<link href='styles/jquery.iphone.toggle.css' rel='stylesheet'>
+<link href='styles/opa-icons.css' rel='stylesheet'>
+<link href='styles/uploadify.css' rel='stylesheet'>
+<!-- endbuild -->
+</head>
+<body ng-app="pshow.main">
+	<!--[if lt IE 7]>
+      <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+    <![endif]-->
+
+	<!--[if lt IE 9]>
+      <script src="components/es5-shim/es5-shim.js"></script>
+      <script src="components/json3/lib/json3.min.js"></script>
+    <![endif]-->
+
+	<script src="components/jquery/jquery-1.7.2.min.js"></script>
+	<!-- jQuery UI -->
+	<script src="components/jquery-ui-1.8.21.custom.min.js"></script>
+	<script src="components/bootstrap/bootstrap.js"></script>
+	<script src="components/angular/angular.js"></script>
+	<script src="components/angular-resource/angular-resource.js"></script>
+	<script src="components/angular-cookies/angular-cookies.js"></script>
+	<script src="components/angular-sanitize/angular-sanitize.js"></script>
+	<!-- library for cookie management -->
+	<script src="components/jquery.cookie.js"></script>
+	<!-- calander plugin -->
+	<script src='components/fullcalendar.min.js'></script>
+	<!-- data table plugin -->
+	<script src='components/jquery.dataTables.min.js'></script>
+
+	<!-- chart libraries start -->
+	<script src="components/excanvas.js"></script>
+	<script src="components/jquery.flot.min.js"></script>
+	<script src="components/jquery.flot.pie.min.js"></script>
+	<script src="components/jquery.flot.stack.js"></script>
+	<script src="components/jquery.flot.resize.min.js"></script>
+	<!-- chart libraries end -->
+
+	<!-- select or dropdown enhancer -->
+	<script src="components/jquery.chosen.min.js"></script>
+	<!-- checkbox, radio, and file input styler -->
+	<script src="components/jquery.uniform.min.js"></script>
+	<!-- plugin for gallery image view -->
+	<script src="components/jquery.colorbox.min.js"></script>
+	<!-- rich text editor library -->
+	<script src="components/jquery.cleditor.min.js"></script>
+	<!-- notification plugin -->
+	<script src="components/jquery.noty.js"></script>
+	<!-- file manager library -->
+	<script src="components/jquery.elfinder.min.js"></script>
+	<!-- star rating plugin -->
+	<script src="components/jquery.raty.min.js"></script>
+	<!-- for iOS style toggle switch -->
+	<script src="components/jquery.iphone.toggle.js"></script>
+	<!-- autogrowing textarea plugin -->
+	<script src="components/jquery.autogrow-textarea.js"></script>
+	<!-- multiple file upload plugin -->
+	<script src="components/jquery.uploadify-3.1.min.js"></script>
+	<!-- history.js for cross-browser state change on ajax -->
+	<script src="components/jquery.history.js"></script>
+	<script src="components/jquery.blockUI.js"></script>
+	<style type="text/css">
+body {
+	padding-bottom: 40px;
+}
+
+.sidebar-nav {
+	padding: 9px 0;
+}
+</style>
+	<div class="container-fluid" ng-controller="MainLoginCtrl">
+		<div class="row-fluid">
+
+			<div class="row-fluid">
+				<div class="span12 center login-header">
+					<h2>Welcome to PSHOW CMS</h2>
+				</div>
+				<!--/span-->
+			</div>
+			<!--/row-->
+
+			<div class="row-fluid">
+				<div class="well span5 center login-box">
+					<div class="alert alert-info">Please login with your Username
+						and Password.</div>
+					<form class="form-horizontal">
+						<fieldset>
+							<div class="input-prepend" title="Username" data-rel="tooltip">
+								<span class="add-on"><i class="icon-user"></i></span><input
+									autofocus class="input-large span10" name="username"
+									id="username" type="text" ng-model="user.username" required/>
+							</div>
+							<div class="clearfix"></div>
+
+							<div class="input-prepend" title="Password" data-rel="tooltip">
+								<span class="add-on"><i class="icon-key"></i></span><input
+									class="input-large span10" name="password" id="password"
+									type="password" ng-model="user.password" required/>
+							</div>
+							<div class="clearfix"></div>
+
+							<div class="input-prepend">
+								<label class="remember" for="remember"><input
+									type="checkbox" id="remember" />Remember me</label>
+							</div>
+							<div class="clearfix"></div>
+
+							<p class="center span5">
+								<button class="btn btn-primary" ng-click="login()">Login</button>
+							</p>
+						</fieldset>
+					</form>
+				</div>
+				<!--/span-->
+			</div>
+			<!--/row-->
+		</div>
+		<!--/fluid-row-->
+
+	</div>
+	<!--/.fluid-container-->
+	<script type="text/javascript">
+		var loading = function(){
+			$.blockUI({ 
+				message: '请稍候...',
+				css: { 
+			        border: 'none', 
+		            padding: '15px', 
+		            backgroundColor: '#000', 
+		            '-webkit-border-radius': '10px', 
+		            '-moz-border-radius': '10px', 
+		            opacity: .5, 
+		            color: '#fff'
+			    }
+			});
+		};
+		//uniform - styler for checkbox, radio and file input
+		$("input:checkbox, input:radio, input:file").not(
+				'[data-no-uniform="true"],#uniform-is-ajax').uniform();
+	    // declare a module
+	    var pshow_main = angular.module('pshow.main', []);
+	     
+	    // configure the module.
+	    pshow_main.controller('MainLoginCtrl', ['$scope', '$location', '$window', function ($scope, $location, $window) {
+		    $scope.user = {username:"",password:""};
+		    
+		    $scope.login = function(){
+		    	loading();
+		    	$.post('proxy/login', $scope.user, function(data){
+		    		var parseData = angular.fromJson(data);
+		    		if(parseData.success){
+		        		$location.path("index.html");
+		        		$window.location.href = $location.absUrl();
+		        		$window.location.reload();
+		            }
+		    	});
+		    };
+	    }]);
+	</script>
+	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+	<script>
+		/*var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+		(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+		g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+		s.parentNode.insertBefore(g,s)}(document,'script'));
+		 */
+	</script>
+</body>
+</html>

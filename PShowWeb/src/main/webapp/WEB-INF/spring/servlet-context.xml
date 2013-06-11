@@ -22,15 +22,16 @@
 	
 	<!-- 定义无Controller的path<->view直接映射 -->
 	<mvc:view-controller path="/" view-name="login"/>
-	<mvc:view-controller path="/main" view-name="main"/>
+	<mvc:view-controller path="/login_success" view-name="login_success"/>
 
 	<!-- 静态资源访问(二选一方式配置) -->
 	<!-- <mvc:default-servlet-handler/> -->
 
-	<mvc:resources mapping="/javascript/**" location="/resources/javascript/" />
-	<mvc:resources mapping="/styles/**" location="/resources/css/" />
-	<mvc:resources mapping="/images/**" location="/resources/images/" />
+	<mvc:resources mapping="/js/**" location="/resources/js/" />
+	<mvc:resources mapping="/style/**" location="/resources/css/" />
 	<mvc:resources mapping="/views/**" location="/views/" />
+	<mvc:resources mapping="/swf/**" location="/resources/swf/" />
+	<mvc:resources mapping="/img/**" location="/resources/img/" />
 
 	<!-- 支持 Shiro对Controller的方法级AOP安全控制 begin -->
 	<bean

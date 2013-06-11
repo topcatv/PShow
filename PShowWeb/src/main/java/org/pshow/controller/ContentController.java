@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.service.ContentService;
@@ -34,31 +35,40 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author roy
- *
+ * 
  */
 @Controller
 public class ContentController {
+
     @Autowired
     private ContentService contentService;
-    
-    @RequestMapping(value="/content/child/{parentId}",method=RequestMethod.GET)
+
+    @RequestMapping(value = "/content/child/{parentId}", method = RequestMethod.GET)
     @ResponseBody
     public List<Map<String, Serializable>> findChild(@PathVariable("parentId") String parentId) {
-        if("root".equalsIgnoreCase(parentId)){
+        List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>();
+        if (StringUtils.equalsIgnoreCase("root", parentId)) {
             ContentRef root = contentService.getRoot(contentService.findWorkspace("default"));
             parentId = root.getId();
         }
         List<ContentRef> child = contentService.getChild(new ContentRef(parentId));
-        List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>(child.size());
         for (ContentRef contentRef : child) {
             Serializable property = contentService.getProperty(contentRef, QName.createQName("http://www.pshow.org/model/system/0.1", "name"));
+            property = property == null ? "ad" : property;
             Map<String, Serializable> e = new HashMap<String, Serializable>(1);
             e.put("id", contentRef.getId());
-            e.put("name", property);
-            e.put("parent", parentId);
+            e.put("text", property);
+            e.put("pid", parentId);
             result.add(e);
         }
         return result;
     }
     
+    @RequestMapping(value = "/content", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String,String> createContent(String contentName,String workspaceId){
+        
+        return null;
+    }
+
 }

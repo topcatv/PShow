@@ -1,0 +1,38 @@
+<div class="row">
+	<div class="span11" style="margin-left: 8px;">
+	<ul class="breadcrumb">
+		<li ng-repeat="(id, name) in breadcrumb">
+			<a href="javascript:void(0);" ng-click='cd(id)'>{{name}}</a> <span class="divider" ng-hide="$last">/</span>
+		</li>
+	</ul>
+	</div>
+</div>
+
+<div class="row">
+	<div class="btn-toolbar" style="margin-left: 8px;">
+      <div class="btn-group">
+        <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><i class="icon-plus"></i> 创建 <span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a href="#"><i class="icon-folder-close"></i> 文件夹</a></li>
+          <li><a href="#"><i class="icon-briefcase"></i> 文档</a></li>
+        </ul>
+      </div><!-- /btn-group -->
+    </div>
+</div>
+
+<div class="row">
+	<div class="well span11" style="margin-left: 8px;">
+	<ul class="thumbnails" ng-init="init()">
+		<li ng-repeat="content in contents">
+			<div class="thumbnail">
+				<a href="javascript:void(0);" ng-click='cd(content.id)'> <img src="img/sys/Folder.png"
+					alt="" />
+					<h3>{{content.text}}</h3></a>
+			</div>
+		</li>
+		<li ng-show="contents.length == 0">
+			<h3>文件夹下没有内容</h3>
+		</li>
+	</ul>
+	</div>
+</div>
