@@ -171,12 +171,12 @@
 			<!-- left menu starts -->
 			<div class="span2 main-menu-span">
 				<div class="well nav-collapse sidebar-nav">
-					<ul class="nav nav-tabs nav-stacked main-menu">
+					<ul class="nav nav-tabs nav-stacked main-menu" ng-controller="IndexCtrl">
 						<li class="nav-header hidden-tablet">Main</li>
-						<li><a class="ajax-link" href="#/index"><i
+						<li><a class="ajax-link" href="javascript:void(0)" ng-click="goto('index')"><i
 								class="icon-home"></i><span class="hidden-tablet">
 									Dashboard</span></a></li>
-						<li><a class="ajax-link" href="#/content"><i
+						<li><a class="ajax-link" href="javascript:void(0)" ng-click="goto('content')"><i
 								class="icon-eye-open"></i><span class="hidden-tablet">
 									Content</span></a></li>
 						<li><a class="ajax-link" href="form.html"><i
@@ -272,6 +272,7 @@
 	<script src="scripts/controllers/index.js"></script>
 	<script src="scripts/controllers/content.js"></script>
     <script src="scripts/services/content.js"></script>
+<script src="scripts/services/common.js"></script>
 	<!-- endbuild -->
 
 	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->

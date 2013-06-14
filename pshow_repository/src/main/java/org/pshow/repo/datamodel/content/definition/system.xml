@@ -29,6 +29,19 @@
                 <!-- <facet>sys:localized</facet> -->
             </mandatory-facets>
         </type>
+        <type name="sys:folder">
+            <title>Folder</title>
+            <parent>sys:base</parent>
+            <properties>
+            	<property name="sys:name">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="true"/>
+                </property>
+            </properties>
+            <associations/>
+            <mandatory-facets/>
+        </type>
         <type name="sys:descriptor">
             <title>Descriptor</title>
             <parent>sys:base</parent>
