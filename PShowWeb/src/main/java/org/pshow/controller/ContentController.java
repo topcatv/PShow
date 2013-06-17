@@ -48,12 +48,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class ContentController {
 
+    private static final QName CONTENT_NAME_Q_NAME = QName.createQName(
+                                                           NamespaceService.SYSTEM_NAMESAPCE_URI,
+                                                           "name");
     @Autowired
-    private ContentService contentService;
+    private ContentService     contentService;
     @Autowired
-    private NamespaceDao   namespaceDao;
+    private NamespaceDao       namespaceDao;
 
-    private static Logger  LOGGER = Logger.getLogger(ContentController.class);
+    private static Logger      LOGGER              = Logger.getLogger(ContentController.class);
 
     @RequestMapping(
         value = "/content/child/{parentId}",
@@ -63,6 +66,7 @@ public class ContentController {
             @PathVariable("parentId") String parentId) {
         List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>();
         if (StringUtils.equalsIgnoreCase("root", parentId)) {
+            //TODO 也许可以将所有的workspace的root都缓存起来，不必每次都查询数据库
             ContentRef root = contentService.getRoot(contentService
                     .findWorkspace("default"));
             parentId = root.getId();
@@ -71,9 +75,8 @@ public class ContentController {
                 parentId));
         for (ContentRef contentRef : child) {
             Serializable property = contentService.getProperty(contentRef,
-                    QName.createQName("http://www.pshow.org/model/system/0.1",
-                            "name"));
-            property = property == null ? "ad" : property;
+                    CONTENT_NAME_Q_NAME);
+            property = (property == null ? "ad" : property);
             Map<String, Serializable> e = new HashMap<String, Serializable>(1);
             e.put("id", contentRef.getId());
             e.put("text", property);
@@ -92,9 +95,6 @@ public class ContentController {
             @RequestParam("type") String type) throws InvalidQNameException,
             TypeException, NamespaceException {
         LOGGER.debug(contentName);
-        String[] split = StringUtils.split(type, ":");
-        String prefix = split[0];
-        String localName = split[1];
         ContentRef parentContent = new ContentRef(parentId);
         if ("root".equalsIgnoreCase(parentId)) {
             String ws = StringUtils.isBlank(workspace) ? "default" : workspace;
@@ -102,9 +102,15 @@ public class ContentController {
             parentContent = contentService.getRoot(workspaceRef);
         }
         ContentRef content = contentService.createContent(parentContent,
-                QName.createQName(prefix, localName, namespaceDao));
-        contentService.setProperty(content, QName.createQName(
-                NamespaceService.SYSTEM_NAMESAPCE_URI, "name"), contentName);
+                parseType(type));
+        contentService.setProperty(content, CONTENT_NAME_Q_NAME, contentName);
         return content;
+    }
+
+    private QName parseType(String type) {
+        String[] split = StringUtils.split(type, ":");
+        String prefix = split[0];
+        String localName = split[1];
+        return QName.createQName(prefix, localName, namespaceDao);
     }
 }

@@ -1,28 +1,46 @@
 'use strict';
 
 angular.module('pshowApp')
-  .controller('ContentCtrl', ['$scope', '$routeParams', 'content', 'common', function ($scope, $routeParams, content, common) {
+  .controller('ContentCtrl', ['$scope', '$routeParams', 'content', 'common', '$window', function ($scope, $routeParams, content, common, $window) {
 	  $scope.contents = [];
 	  $scope.content = {parentId : $routeParams.parentId};
-	  $scope.breadcrumb = {};
+	  
 	  $scope.init = function(){
 	  	  loading();
 		  content.getChild('root', function(data){
 			  $scope.contents = data;
-			  $scope.breadcrumb['root'] = '根目录';
+			  if(!$window.breadcrumb){
+			  	$window.breadcrumb = new Array();
+			  }
+			  $window.breadcrumb.push({id:'root', name:'根目录'});
 			  $scope.content['parentId'] = 'root';
 			  loading_over();
 		  });
 	  };
 
-	  $scope.cd = function(content_id){
+	  $scope.cd = function(content_id, content_name){
 	  	loading();
 	  	content.getChild(content_id, function(data){
 		  $scope.contents = data;
-		  $scope.content['parentId'] = content_id;
+		  var index = -1;
+		  for(var i=0; i<$window.breadcrumb.length; i++){
+		    if($window.breadcrumb[i].id == content_id) {
+		    	index = i;
+		    	break;
+		    }
+		  }
+		  if(index != -1){
+		  	$window.breadcrumb = $window.breadcrumb.slice(0, index+1);
+		  }else{
+		  	$window.breadcrumb.push({id: content_id, name: content_name});
+		  }
 		  loading_over();
 		});
 	  };
+
+	  $scope.breadcrumb = function(){
+	  	return $window.breadcrumb;
+	  }
 
 	  $scope.createFolder = function(){
 	  	loading();

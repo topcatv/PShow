@@ -1,8 +1,8 @@
 <div class="row">
 	<div class="span11" style="margin-left: 8px;">
 	<ul class="breadcrumb">
-		<li ng-repeat="(id, name) in breadcrumb">
-			<a href="javascript:void(0);" ng-click='cd(id)'>{{name}}</a> <span class="divider" ng-hide="$last">/</span>
+		<li ng-repeat="content in breadcrumb()">
+			<a href="javascript:void(0);" ng-click='cd(content.id, content.name)'>{{content.name}}</a> <span class="divider" ng-hide="$last">/</span>
 		</li>
 	</ul>
 	</div>
@@ -21,11 +21,11 @@
 </div>
 
 <div class="row">
-	<div class="well span11" style="margin-left: 8px;">
+	<div class="well span11" style="margin-left: 8px;height: 520px;overflow: auto;position: relative;">
 	<ul class="thumbnails" ng-init="init()">
 		<li ng-repeat="content in contents">
 			<div class="thumbnail">
-				<a href="javascript:void(0);" ng-click='cd(content.id)'> <img src="img/sys/Folder.png"
+				<a href="javascript:void(0);" ng-click='cd(content.id, content.text)'> <img src="img/sys/Folder.png"
 					alt="" />
 					<h3>{{content.text}}</h3></a>
 			</div>
