@@ -15,6 +15,10 @@ angular.module('pshowApp', [])
         templateUrl: 'views/newFolder.html',
         controller: 'ContentCtrl'
       })
+      .when('/content/create/content/:parentId', {
+        templateUrl: 'views/newContent.html',
+        controller: 'ContentCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });

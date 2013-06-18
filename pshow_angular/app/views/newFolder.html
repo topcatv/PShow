@@ -8,3 +8,7 @@
     <button ng-controller="IndexCtrl" type="button" class="btn" ng-click="back()"><i class="icon-reply"></i> 返回</button>
   </fieldset>
 </form>
+<script type="text/javascript">
+    $("input:checkbox, input:radio, input:file").not(
+                '[data-no-uniform="true"],#uniform-is-ajax').uniform();
+</script>

@@ -27,10 +27,13 @@ import org.apache.log4j.Logger;
 import org.pshow.repo.dao.NamespaceDao;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
+import org.pshow.repo.datamodel.content.definition.ContentType;
+import org.pshow.repo.datamodel.content.definition.Property;
 import org.pshow.repo.datamodel.namespace.InvalidQNameException;
 import org.pshow.repo.datamodel.namespace.NamespaceException;
 import org.pshow.repo.datamodel.namespace.NamespaceService;
 import org.pshow.repo.datamodel.namespace.QName;
+import org.pshow.repo.schema.ContentSchemaHolder;
 import org.pshow.repo.service.ContentService;
 import org.pshow.repo.service.TypeException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,20 +46,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author roy
+ * @param <E>
  * 
  */
 @Controller
-public class ContentController {
+public class ContentController<E> {
 
-    private static final QName CONTENT_NAME_Q_NAME = QName.createQName(
-                                                           NamespaceService.SYSTEM_NAMESAPCE_URI,
-                                                           "name");
+    private static final QName  CONTENT_NAME_Q_NAME = QName.createQName(
+                                                            NamespaceService.SYSTEM_NAMESAPCE_URI,
+                                                            "name");
     @Autowired
-    private ContentService     contentService;
+    private ContentService      contentService;
     @Autowired
-    private NamespaceDao       namespaceDao;
+    private ContentSchemaHolder csh;
+    @Autowired
+    private NamespaceDao        namespaceDao;
 
-    private static Logger      LOGGER              = Logger.getLogger(ContentController.class);
+    private static Logger       LOGGER              = Logger.getLogger(ContentController.class);
 
     @RequestMapping(
         value = "/content/child/{parentId}",
@@ -66,7 +72,7 @@ public class ContentController {
             @PathVariable("parentId") String parentId) {
         List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>();
         if (StringUtils.equalsIgnoreCase("root", parentId)) {
-            //TODO 也许可以将所有的workspace的root都缓存起来，不必每次都查询数据库
+            // TODO 也许可以将所有的workspace的root都缓存起来，不必每次都查询数据库
             ContentRef root = contentService.getRoot(contentService
                     .findWorkspace("default"));
             parentId = root.getId();
@@ -105,6 +111,25 @@ public class ContentController {
                 parseType(type));
         contentService.setProperty(content, CONTENT_NAME_Q_NAME, contentName);
         return content;
+    }
+
+    @RequestMapping(value = "/content/type", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, String> findAllSchema() {
+        List<ContentType> cts = csh.getAllContentType();
+        HashMap<String, String> map = new HashMap<String, String>(cts.size());
+        for (ContentType ct : cts) {
+//            map.put("name", ct.getName());
+            map.put(ct.getName(), ct.getTitle());
+        }
+        return map;
+    }
+    
+    @RequestMapping(value = "/content/type/properties/{schemaName}", method = RequestMethod.GET)
+    @ResponseBody
+    public List<Property> findPropertiesBySchema(@PathVariable("schemaName") String schemaName) {
+        ContentType contentType = csh.getContentType(parseType(schemaName));
+        return contentType.getProperties();
     }
 
     private QName parseType(String type) {
