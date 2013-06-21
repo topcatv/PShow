@@ -43,26 +43,6 @@ $(document).ready(function(){
 			$(this).parent().addClass('active');
 	});
 	
-	//establish history variables
-	var
-		History = window.History, // Note: We are using a capital H instead of a lower h
-		State = History.getState(),
-		$log = $('#log');
-
-	//bind to State Change
-	History.Adapter.bind(window,'statechange',function(){ // Note: We are using statechange instead of popstate
-		var State = History.getState(); // Note: We are using History.getState() instead of event.state
-		$.ajax({
-			url:State.url,
-			success:function(msg){
-				$('#content').html($(msg).find('#content').html());
-				$('#loading').remove();
-				$('#content').fadeIn();
-				docReady();
-			}
-		});
-	});
-	
 	//ajaxify menus
 	$('a.ajax-link').click(function(e){
 		if($.browser.msie) e.which=1;

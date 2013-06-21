@@ -5,7 +5,4 @@ angular.module('pshowApp')
     $scope.goto = function(path){
     	common.goto(path);
     };
-    $scope.back = function(){
-    	common.back();
-    };
   }]);

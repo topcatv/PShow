@@ -79,8 +79,6 @@
 <script src="components/jquery.autogrow-textarea.js"></script>
 <!-- multiple file upload plugin -->
 <script src="components/jquery.uploadify-3.1.min.js"></script>
-<!-- history.js for cross-browser state change on ajax -->
-<script src="components/jquery.history.js"></script>
 <script src="components/jquery.blockUI.js"></script>
 <!-- endbuild -->
 </head>
@@ -177,7 +175,7 @@
 						<li><a class="ajax-link" href="javascript:void(0)" ng-click="goto('index')"><i
 								class="icon-home"></i><span class="hidden-tablet">
 									Dashboard</span></a></li>
-						<li><a class="ajax-link" href="javascript:void(0)" ng-click="goto('content')"><i
+						<li><a class="ajax-link" href="javascript:void(0)" ng-click="goto('content/root/根目录')"><i
 								class="icon-eye-open"></i><span class="hidden-tablet">
 									Content</span></a></li>
 						<li><a class="ajax-link" href="form.html"><i
@@ -272,9 +270,8 @@
 	<script src="scripts/app.js"></script>
 	<script src="scripts/controllers/index.js"></script>
 	<script src="scripts/controllers/content.js"></script>
-    <script src="scripts/services/content.js"></script>
+	<script src="scripts/services/content.js"></script>
 	<script src="scripts/services/common.js"></script>
-<script src="scripts/controllers/main.js"></script>
 	<!-- endbuild -->
 
 	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
@@ -287,7 +284,6 @@
 		 /* $.ajaxSetup({
 			  async : false
 		  }); */
-	$('.main-menu-span').affix()
 	</script>
 </body>
 </html>

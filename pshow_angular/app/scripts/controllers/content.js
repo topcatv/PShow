@@ -3,15 +3,14 @@
 angular.module('pshowApp')
   .controller('ContentCtrl', ['$scope', '$routeParams', 'content', 'common', function ($scope, $routeParams, content, common) {
 	  $scope.contents = [];
-	  $scope.contenttypes = [];
-	  $scope.content = {parentId : $routeParams.parentId};
+	  $scope.contenttypes;
+	  $scope.content = {parentId : $routeParams.parentId, name: $routeParams.cname};
 	  
 	  $scope.init = function(){
 	  	  loading();
-		  content.getChild('root', function(data){
+		  content.getChild($scope.content.parentId, function(data){
 			  $scope.contents = data;
-			  common.addBreadcrumb('root', '根目录');
-			  $scope.content['parentId'] = 'root';
+			  common.addBreadcrumb($scope.content.parentId, $scope.content.name);
 			  loading_over();
 		  });
 	  };
@@ -23,12 +22,7 @@ angular.module('pshowApp')
 	  };
 
 	  $scope.cd = function(content_id, content_name){
-	  	loading();
-	  	content.getChild(content_id, function(data){
-		  $scope.contents = data;
-		  common.addBreadcrumb(content_id, content_name);
-		  loading_over();
-		});
+	  	common.goto("content/"+content_id+"/"+content_name);
 	  };
 
 	  $scope.breadcrumb = function(){
@@ -38,7 +32,6 @@ angular.module('pshowApp')
 	  $scope.createFolder = function(){
 	  	loading();
 	  	content.createFolder($scope.content, function(data){
-	  		console.log(data);
 	  		if(data.id){
 	  			noty({
 	  				text: "文件夹建成功！",

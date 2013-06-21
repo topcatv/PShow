@@ -13,8 +13,8 @@
       <div class="btn-group">
         <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><i class="icon-plus"></i> 创建 <span class="caret"></span></button>
         <ul class="dropdown-menu">
-          <li><a href="javascript:void(0)" ng-click="openCreateFolder()"><i class="icon-folder-close"></i> 文件夹</a></li>
-          <li><a href="javascript:void(0)" ng-click="openCreateContent()"><i class="icon-briefcase"></i> 文档</a></li>
+          <li><a href="javascript:void(0);" ng-click="openCreateFolder()"><i class="icon-folder-close"></i> 文件夹</a></li>
+          <li><a href="javascript:void(0);" ng-click="openCreateContent()"><i class="icon-briefcase"></i> 文档</a></li>
         </ul>
       </div>
     </div>
@@ -25,7 +25,7 @@
 	<ul class="thumbnails" ng-init="init()">
 		<li ng-repeat="content in contents">
 			<div class="thumbnail">
-				<a href="javascript:void(0);" ng-click='cd(content.id, content.text)'> <img src="img/sys/Folder.png"
+				<a href="javascript:void(0);" ng-click='cd(content.id, content.text)'> <img src="/img/sys/Folder.png"
 					alt="" />
 					<h3>{{content.text}}</h3></a>
 			</div>

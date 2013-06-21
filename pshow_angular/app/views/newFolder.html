@@ -5,7 +5,7 @@
     <input type="text" placeholder="文件夹名" ng-model="content.name" required>
     <span class="help-block">请输入文件夹名，长度不可小于3个字，只能包含汉字，字母与数字</span>
     <button type="submit" class="btn btn-primary"><i class="icon-ok"></i> 创建</button>
-    <button ng-controller="IndexCtrl" type="button" class="btn" ng-click="back()"><i class="icon-reply"></i> 返回</button>
+    <button type="button" class="btn" onclick="window.history.back()"><i class="icon-reply"></i> 返回</button>
   </fieldset>
 </form>
 <script type="text/javascript">
