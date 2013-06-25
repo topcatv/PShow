@@ -11,12 +11,22 @@ angular.module('pshowApp')
       getAllContentType: function (callback) {
         $http.get('/proxy/content/type').success(function(data){callback(data);});
       },
+      getProperties: function (content_name, callback) {
+        $http.get('/proxy/content/type/properties/' + content_name).success(function(data){callback(data);});
+      },
       createFolder: function(content, callback){
         content['type'] = "sys:folder";
       	$http.post('/proxy/content', $.param(content), {
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         })
       	.success(function(data){callback(data);});
+      },
+      createContent: function(contentType, content, callback){
+        content['type'] = contentType.name;
+        $http.post('/proxy/content', $.param(content), {
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        })
+        .success(function(data){callback(data);});
       }
     };
   }]);

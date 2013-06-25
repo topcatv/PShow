@@ -1,33 +1,21 @@
-<form ng-submit="createFolder()">
-	<div class="tabbable"> <!-- Only required for left/right tabs -->
-	  <ul id="content_tab" class="nav nav-tabs">
-	    <li class="active"><a href="#ct" data-toggle="tab">选择类型</a></li>
-	    <li><a href="#tab2" data-toggle="tab">Section 2</a></li>
-	  </ul>
-	  <div class="tab-content">
-	    <div class="tab-pane active" id="ct" style="height: 500px">
-	        <div class="control-group">
-				<label class="control-label" for="ct">文档类型</label>
-				<div class="controls" ng-init="getAllContentType()">
-				  <select id="ct" required data-placeholder="文档类型" ng-model="content.type" ng-options="title for (name, title) in contenttypes">
-				  </select>
-				</div>
-
+<form ng-submit="createContent()" class="form-horizontal">
+	<fieldset>
+	<legend>创建内容</legend>
+		<div class="control-group">
+			<label class="control-label" for="ct">文档类型</label>
+			<div class="controls" ng-init="getAllContentType()">
+			  <select id="ct" required ng-model="contenttype" ng-options="ct.title for ct in contenttypes" ng-change="getPropertiesForCT()">
+			  	<option value="">-- 请选择 --</option>
+			  </select>
 			</div>
-			<div class="control-group">
-				<div class="controls">
-					<a class="btn btn-primary" href="javascript:void(0);" onclick="$('#content_tab li:eq(1) a').tab('show')"><i class="icon-arrow-right icon-white"></i> 下一步</a>
-				</div>
+		</div>
+		<dyform ng-repeat="property in properties" property="property"/>
+		<div class="control-group">
+			<div class="controls">
+				<button type="submit" class="btn btn-primary"><i class="icon-ok"></i> 创建</button>
+			<button type="button" class="btn" onclick="window.history.back()"><i class="icon-reply"></i>返回</button>
 			</div>
-	    </div>
-	    <div class="tab-pane" id="tab2">
-	      <button type="submit" class="btn btn-primary"><i class="icon-ok"></i> 创建</button>
-		  <button type="button" class="btn" onclick="window.history.back()"><i class="icon-reply"></i>返回</button>
-	    </div>
-	  </div>
-	</div>
+		</div>
+		</div>
+	</fieldset>
 </form>
-<script type="text/javascript">
-    // $("input:checkbox, input:radio, input:file, select").not(
-    //             '[data-no-uniform="true"],#uniform-is-ajax').uniform();
-</script>

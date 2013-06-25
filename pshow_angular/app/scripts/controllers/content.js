@@ -5,6 +5,8 @@ angular.module('pshowApp')
 	  $scope.contents = [];
 	  $scope.contenttypes;
 	  $scope.content = {parentId : $routeParams.parentId, name: $routeParams.cname};
+	  $scope.contenttype;
+	  $scope.properties;
 	  
 	  $scope.init = function(){
 	  	  loading();
@@ -18,6 +20,12 @@ angular.module('pshowApp')
 	  $scope.getAllContentType = function(){
 		  content.getAllContentType(function(data){
 			  $scope.contenttypes = data;
+		  });
+	  };
+
+	  $scope.getPropertiesForCT = function(){
+		  content.getProperties($scope.contenttype.name, function(data){
+			  $scope.properties = data;
 		  });
 	  };
 
@@ -40,6 +48,17 @@ angular.module('pshowApp')
 	  			});
 	  		}
 	  		loading_over();
+	  	});
+	  };
+
+	  $scope.contentChange = function(){
+	  	console.log('a');
+	  }
+
+	  $scope.createContent = function(){
+	  	console.log('create content');
+	  	content.createContent($scope.contenttype, $scope.content, function(data){
+	  		console.log(data);
 	  	});
 	  };
 

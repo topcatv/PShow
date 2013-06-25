@@ -19,8 +19,13 @@ package org.pshow.controller;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -98,9 +103,12 @@ public class ContentController<E> {
             @RequestParam("name") String contentName,
             @RequestParam(value = "workspace", required = false) String workspace,
             @RequestParam("parentId") String parentId,
-            @RequestParam("type") String type) throws InvalidQNameException,
-            TypeException, NamespaceException {
+            @RequestParam("type") String type, HttpServletRequest request)
+            throws InvalidQNameException, TypeException, NamespaceException {
         LOGGER.debug(contentName);
+        String name = (contentName == null ? request.getParameter("sys:name")
+                : contentName);
+
         ContentRef parentContent = new ContentRef(parentId);
         if ("root".equalsIgnoreCase(parentId)) {
             String ws = StringUtils.isBlank(workspace) ? "default" : workspace;
@@ -108,31 +116,55 @@ public class ContentController<E> {
             parentContent = contentService.getRoot(workspaceRef);
         }
         ContentRef content = contentService.createContent(parentContent,
-                parseType(type));
-        contentService.setProperty(content, CONTENT_NAME_Q_NAME, contentName);
+                parseQName(type));
+        contentService.setProperty(content, CONTENT_NAME_Q_NAME, name);
+        contentService.setProperties(content, getProperties(request));
         return content;
+    }
+
+    private Map<QName, Serializable> getProperties(HttpServletRequest request) {
+        Map<String, Serializable> parameterMap = request.getParameterMap();
+        Map<QName, Serializable> map = new HashMap<QName, Serializable>(
+                parameterMap.size());
+        Set<Entry<String, Serializable>> entrySet = parameterMap.entrySet();
+        for (Entry<String, Serializable> entry : entrySet) {
+            String key = entry.getKey();
+            Serializable value = entry.getValue();
+            if (StringUtils.contains(key, ":")
+                    && !StringUtils.equals("sys:name", key)) {
+                map.put(parseQName(key), value);
+            }
+        }
+        return map;
     }
 
     @RequestMapping(value = "/content/type", method = RequestMethod.GET)
     @ResponseBody
-    public Map<String, String> findAllSchema() {
+    public List<Map<String, String>> findAllSchema() {
         List<ContentType> cts = csh.getAllContentType();
-        HashMap<String, String> map = new HashMap<String, String>(cts.size());
+        List<Map<String, String>> list = new ArrayList<Map<String, String>>(
+                cts.size());
         for (ContentType ct : cts) {
-//            map.put("name", ct.getName());
-            map.put(ct.getName(), ct.getTitle());
+            HashMap<String, String> map = new HashMap<String, String>(
+                    cts.size());
+            map.put("name", ct.getName());
+            map.put("title", ct.getTitle());
+            list.add(map);
         }
-        return map;
+        return list;
     }
-    
-    @RequestMapping(value = "/content/type/properties/{schemaName}", method = RequestMethod.GET)
+
+    @RequestMapping(
+        value = "/content/type/properties/{schemaName}",
+        method = RequestMethod.GET)
     @ResponseBody
-    public List<Property> findPropertiesBySchema(@PathVariable("schemaName") String schemaName) {
-        ContentType contentType = csh.getContentType(parseType(schemaName));
+    public List<Property> findPropertiesBySchema(
+            @PathVariable("schemaName") String schemaName) {
+        ContentType contentType = csh.getContentType(parseQName(schemaName));
         return contentType.getProperties();
     }
 
-    private QName parseType(String type) {
+    private QName parseQName(String type) {
         String[] split = StringUtils.split(type, ":");
         String prefix = split[0];
         String localName = split[1];

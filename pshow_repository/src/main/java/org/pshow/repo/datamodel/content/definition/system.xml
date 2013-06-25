@@ -34,6 +34,7 @@
             <parent>sys:base</parent>
             <properties>
             	<property name="sys:name">
+            		<title>名称</title>
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <index enabled="true"/>
@@ -47,6 +48,7 @@
             <parent>sys:base</parent>
             <properties>
                 <property name="sys:name">
+                	<title>名称</title>
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <index enabled="true"/>
