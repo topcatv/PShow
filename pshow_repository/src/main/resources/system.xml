@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://pshow.org/content/definition/1.0" name="sys:systemmodel">
+	<description>Alfresco Repository System Definitions</description>
+	<author>Alfresco</author>
+	<published>2005-09-29</published>
+	<version>1.0</version>
+	<imports>
+		<namespace uri="http://www.pshow.org/model/datatype/0.1" prefix="d" />
+	</imports>
+	<namespaces>
+		<namespace uri="http://www.pshow.org/model/system/0.1" prefix="sys" />
+	</namespaces>
+	<data-types />
+	<constraints />
+	<types>
+		<type name="sys:base">
+			<title>Base</title>
+			<properties>
+				<property name="sys:name">
+					<title>名称</title>
+					<type>d:text</type>
+					<mandatory>true</mandatory>
+					<index enabled="true" />
+				</property>
+				<property name="sys:description">
+					<title>描述</title>
+					<type>d:text</type>
+					<mandatory>false</mandatory>
+					<index enabled="true" />
+				</property>
+			</properties>
+			<associations />
+			<mandatory-facets />
+		</type>
+		<type name="sys:folder">
+			<title>文件夹</title>
+			<parent>sys:base</parent>
+			<properties />
+			<associations />
+			<mandatory-facets />
+		</type>
+		<type name="sys:file">
+			<title>文件</title>
+			<parent>sys:base</parent>
+			<properties>
+				<property name="sys:encoding">
+					<title>字符集编码</title>
+					<type>d:text</type>
+					<mandatory>false</mandatory>
+				</property>
+				<property name="sys:mimeType">
+					<title>文件类型</title>
+					<type>d:text</type>
+					<mandatory>true</mandatory>
+				</property>
+				<property name="sys:data">
+					<title>文件</title>
+					<type>d:content</type>
+					<mandatory>true</mandatory>
+					<index enabled="true" />
+				</property>
+			</properties>
+			<associations />
+			<mandatory-facets />
+		</type>
+		<type name="sys:container">
+			<title>Container</title>
+			<parent>sys:base</parent>
+			<properties />
+			<associations>
+				<association name="sys:children">
+					<source>
+						<mandatory>false</mandatory>
+						<many>true</many>
+					</source>
+					<target>
+						<class>sys:base</class>
+						<mandatory enforced="false">false</mandatory>
+						<many>true</many>
+					</target>
+				</association>
+			</associations>
+			<mandatory-facets />
+		</type>
+	</types>
+	<facets />
+</model>

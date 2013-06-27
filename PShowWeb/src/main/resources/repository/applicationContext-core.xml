@@ -8,8 +8,8 @@
 	<bean class="org.pshow.repo.ContentScheamBootstrap" init-method="onBootstrap" lazy-init="false">
 		<property name="definitions">
 			<list>
-				<value>classpath:org/pshow/repo/datamodel/content/definition/datatype.xml</value>
-				<value>classpath:org/pshow/repo/datamodel/content/definition/system.xml</value>
+				<value>classpath:datatype.xml</value>
+				<value>classpath:system.xml</value>
 				<value>file:${schema.definition.location}/*.xml</value>
 			</list>
 		</property>
