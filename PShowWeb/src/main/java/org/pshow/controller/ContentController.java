@@ -18,12 +18,10 @@ package org.pshow.controller;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,6 +38,7 @@ import org.pshow.repo.datamodel.namespace.NamespaceService;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.schema.ContentSchemaHolder;
 import org.pshow.repo.service.ContentService;
+import org.pshow.repo.service.DuplicateWorkspaceException;
 import org.pshow.repo.service.TypeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -51,11 +50,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author roy
- * @param <E>
  * 
  */
 @Controller
-public class ContentController<E> {
+public class ContentController {
 
     private static final QName  CONTENT_NAME_Q_NAME = QName.createQName(
                                                             NamespaceService.SYSTEM_NAMESAPCE_URI,
@@ -74,12 +72,11 @@ public class ContentController<E> {
         method = RequestMethod.GET)
     @ResponseBody
     public List<Map<String, Serializable>> findChild(
-            @PathVariable("parentId") String parentId) {
+            @PathVariable("parentId") String parentId) throws DuplicateWorkspaceException {
         List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>();
         if (StringUtils.equalsIgnoreCase("root", parentId)) {
             // TODO 也许可以将所有的workspace的root都缓存起来，不必每次都查询数据库
-            ContentRef root = contentService.getRoot(contentService
-                    .findWorkspace("default"));
+            ContentRef root = contentService.getRoot(getOrCreateWorkSpace());
             parentId = root.getId();
         }
         List<ContentRef> child = contentService.getChild(new ContentRef(
@@ -87,14 +84,27 @@ public class ContentController<E> {
         for (ContentRef contentRef : child) {
             Serializable property = contentService.getProperty(contentRef,
                     CONTENT_NAME_Q_NAME);
+            QName type = contentService.getType(contentRef);
             property = (property == null ? "ad" : property);
             Map<String, Serializable> e = new HashMap<String, Serializable>(1);
             e.put("id", contentRef.getId());
             e.put("text", property);
             e.put("pid", parentId);
+            e.put("type", type.getNamespaceURI() + ":" + type.getLocalName());
             result.add(e);
         }
         return result;
+    }
+
+    private WorkspaceRef getOrCreateWorkSpace() throws DuplicateWorkspaceException {
+
+        String name = "default";
+        WorkspaceRef defaultWS = contentService.findWorkspace(name);
+        if (defaultWS == null) {
+            defaultWS = contentService.createWorkspace(name);
+        }
+        
+        return defaultWS;
     }
 
     @RequestMapping(value = "/content", method = RequestMethod.POST)
@@ -106,8 +116,8 @@ public class ContentController<E> {
             @RequestParam("type") String type, HttpServletRequest request)
             throws InvalidQNameException, TypeException, NamespaceException {
         LOGGER.debug(contentName);
-        String name = (contentName == null ? request.getParameter("sys:name")
-                : contentName);
+        String name = ("undefined".equals(contentName) ? request
+                .getParameter("sys:name") : contentName);
 
         ContentRef parentContent = new ContentRef(parentId);
         if ("root".equalsIgnoreCase(parentId)) {
@@ -123,16 +133,14 @@ public class ContentController<E> {
     }
 
     private Map<QName, Serializable> getProperties(HttpServletRequest request) {
-        Map<String, Serializable> parameterMap = request.getParameterMap();
-        Map<QName, Serializable> map = new HashMap<QName, Serializable>(
-                parameterMap.size());
-        Set<Entry<String, Serializable>> entrySet = parameterMap.entrySet();
-        for (Entry<String, Serializable> entry : entrySet) {
-            String key = entry.getKey();
-            Serializable value = entry.getValue();
-            if (StringUtils.contains(key, ":")
-                    && !StringUtils.equals("sys:name", key)) {
-                map.put(parseQName(key), value);
+        @SuppressWarnings("unchecked")
+        Enumeration<String> parameterNames = request.getParameterNames();
+        Map<QName, Serializable> map = new HashMap<QName, Serializable>();
+        while (parameterNames.hasMoreElements()) {
+            String name = parameterNames.nextElement();
+            if (StringUtils.contains(name, ":")
+                    && !StringUtils.equals("sys:name", name)) {
+                map.put(parseQName(name), request.getParameter(name));
             }
         }
         return map;

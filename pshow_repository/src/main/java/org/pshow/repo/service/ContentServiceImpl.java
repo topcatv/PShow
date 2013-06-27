@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.pshow.repo.dao.ContentDao;
 import org.pshow.repo.dao.NamespaceDao;
 import org.pshow.repo.dao.PropertyDao;
@@ -389,7 +390,7 @@ public class ContentServiceImpl implements ContentService {
         ContentType contentType = schemaHolder.getContentType(QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName()));
         saveProperties(properties, contentType.getProperties(), self.getId());
         List<QNameModel> facetsByContent = contentDao.getFacetsByContent(contentRef.getId());
-        if (facetsByContent != null) {
+        if (CollectionUtils.isNotEmpty(facetsByContent)) {
             for (QNameModel facet_qNameModel : facetsByContent) {
                 QName facetQName = QName.createQName(facet_qNameModel.getNamespaceURI(), facet_qNameModel.getLocalName());
                 ContentFacet facet = schemaHolder.getFacet(facetQName);

@@ -29,8 +29,6 @@ angular.module('pshowApp')
         element.append(widget);
 
         $compile(element.contents())(scope);
-
-        console.log(scope);
     };
 
     return {

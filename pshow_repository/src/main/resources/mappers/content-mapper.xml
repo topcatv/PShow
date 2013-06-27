@@ -54,7 +54,7 @@
 		select a.id, a.type_qname_id, a.acl_id, a.workspace_id, a.uuid, a.creator, a.created, a.modifier, a.modified, a.versions, a.parent_id 
 		from ps_content a left join ps_content b 
 		on a.parent_id=b.id
-		where b.uuid=#{value}
+		where b.uuid=#{value} order by created desc
 	</select>
 	<select id="getFacetsByContent" parameterType="string" resultMap="qnameResultMap">
 		select c.id, c.ns_id, c.local_name, d.uri 
@@ -62,7 +62,7 @@
 			left join ps_content_facet b on a.id=b.content_id
 			left join ps_qname c on b.qname_id=c.id
 			left join ps_namespace d on c.ns_id=d.id
-		where a.uuid=#{value}
+		where a.uuid=#{value} and c.id is not null
 	</select>
 	<delete id="removeFacetByContent" parameterType="java.util.Map">
 		delete from ps_content_facet where content_id=(select id from ps_content where uuid=#{contentId}) and qname_id=#{qnameId}

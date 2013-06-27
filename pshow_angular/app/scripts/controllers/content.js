@@ -13,6 +13,14 @@ angular.module('pshowApp')
 		  content.getChild($scope.content.parentId, function(data){
 			  $scope.contents = data;
 			  common.addBreadcrumb($scope.content.parentId, $scope.content.name);
+			  for (var i = $scope.contents.length - 1; i >= 0; i--) {
+			  	var type = $scope.contents[i].type;
+			  	if (type == 'http://www.pshow.org/model/system/0.1:folder') {
+			  		$scope.contents[i].show_type = 'Folder';
+			  	} else {
+			  		$scope.contents[i].show_type = 'Docs';
+			  	}
+			  }
 			  loading_over();
 		  });
 	  };
@@ -33,6 +41,18 @@ angular.module('pshowApp')
 	  	common.goto("content/"+content_id+"/"+content_name);
 	  };
 
+	  $scope.cdOrOpen = function(content_id, content_name, content_type){
+	  	if("Folder" == content_type){
+			$scope.cd(content_id, content_name);
+		} else {
+			$scope.openContent(content_id);
+		}
+	  };
+
+	  $scope.openContent = function(content_id){
+	  	console.log(content_id);
+	  }
+
 	  $scope.breadcrumb = function(){
 	  	return common.breadcrumb();
 	  };
@@ -42,7 +62,7 @@ angular.module('pshowApp')
 	  	content.createFolder($scope.content, function(data){
 	  		if(data.id){
 	  			noty({
-	  				text: "文件夹建成功！",
+	  				text: "文件夹创建成功！",
 	  				type: 'success',
 	  				closeButton:"true"
 	  			});
@@ -51,14 +71,17 @@ angular.module('pshowApp')
 	  	});
 	  };
 
-	  $scope.contentChange = function(){
-	  	console.log('a');
-	  }
-
 	  $scope.createContent = function(){
-	  	console.log('create content');
+	  	loading();
 	  	content.createContent($scope.contenttype, $scope.content, function(data){
-	  		console.log(data);
+	  		if(data.id){
+	  			noty({
+	  				text: "文档创建成功！",
+					type: 'success',
+					closeButton:"true"
+				});
+	  		}
+	  		loading_over();
 	  	});
 	  };
 

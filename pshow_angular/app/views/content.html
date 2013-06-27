@@ -25,7 +25,7 @@
 	<ul class="thumbnails" ng-init="init()">
 		<li ng-repeat="content in contents">
 			<div class="thumbnail">
-				<a href="javascript:void(0);" ng-click='cd(content.id, content.text)'> <img src="/img/sys/Folder.png"
+				<a href="javascript:void(0);" ng-click='cdOrOpen(content.id, content.text, content.show_type)'> <img ng-src="/img/sys/{{content.show_type}}.png"
 					alt="" />
 					<h3>{{content.text}}</h3></a>
 			</div>
