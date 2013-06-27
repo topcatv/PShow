@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -82,7 +83,7 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
                 checkConstraint(constraintModel);
                 store.put(createKey(constraintModel.getName()), constraintModel);
             }
-            store.put(createKey(ALL_CONSTRAINT), constraints);
+            putStoreSafe(createKey(ALL_CONSTRAINT), constraints);
         }
     }
 
@@ -105,7 +106,7 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
                 checkDataType(dataType);
                 store.put(createKey(dataType.getName()), dataType);
             }
-            store.put(createKey(ALL_DATATYPE), propertyTypes);
+            putStoreSafe(createKey(ALL_DATATYPE), propertyTypes);
         }
     }
 
@@ -140,7 +141,7 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
                 registPropertyQName(facet.getProperties());
                 store.put(createKey(facet.getName()), facet);
             }
-            store.put(createKey(ALL_FACET), facets);
+            putStoreSafe(createKey(ALL_FACET), facets);
         }
     }
 
@@ -186,17 +187,33 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
                 registPropertyQName(type.getProperties());
                 store.put(createKey(type.getName()), type);
             }
-            QName all_type_key = createKey(ALL_TYPE);
-            if (store.contains(all_type_key)) {
-                List<ContentType> old_all_types = getAllContentType();
-                ArrayList<ContentType> new_all_types = new ArrayList<ContentType>(
-                        types.size() + old_all_types.size());
-                new_all_types.addAll(types);
-                new_all_types.addAll(old_all_types);
-                store.put(all_type_key, new_all_types);
-            } else {
-                store.put(all_type_key, types);
-            }
+            putStoreSafe(createKey(ALL_TYPE), types);
+        }
+    }
+
+    private <E> void putStoreSafe(QName key, List<E> value) {
+        if (store.contains(key)) {
+            List<E> old_all = this.getRegisteredObject(key, new ArrayList<E>());
+            List<E> new_all = new ArrayList<E>(value.size() + old_all.size());
+            new_all.addAll(value);
+            new_all.addAll(old_all);
+            store.put(key, new_all);
+        } else {
+            store.put(key, value);
+        }
+    }
+
+    private <K, V> void putStoreSafe(QName key, Map<K, V> value) {
+        if (store.contains(key)) {
+            Map<K, V> old_all = this.getRegisteredObject(key,
+                    Maps.synchronizedBiMap(HashBiMap.<K, V> create()));
+            Map<K, V> new_all = Maps.synchronizedBiMap(HashBiMap
+                    .<K, V> create(value.size() + old_all.size()));
+            new_all.putAll(value);
+            new_all.putAll(old_all);
+            store.put(key, new_all);
+        } else {
+            store.put(key, value);
         }
     }
 
@@ -274,7 +291,7 @@ public class ContentSchemaHolderImpl implements ContentSchemaHolder {
             checkNamespace(namespaces, psNamespace);
             namespaces.put(psNamespace.getUri(), psNamespace.getPrefix());
         }
-        store.put(createKey(ALL_NAMESPACE), namespaces);
+        putStoreSafe(createKey(ALL_NAMESPACE), namespaces);
     }
 
     /**
