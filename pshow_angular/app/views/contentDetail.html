@@ -1,6 +1,7 @@
 <div ng-init="readContent(contentid)" class="container">
-	<p ng-repeat="(title, value) in content">
-		<strong>{{title}}:</strong> {{value}}
-	</p>
+	<dl class="dl-horizontal" ng-repeat="(title, value) in content">
+		<dt>{{title}}:</dt>
+		<dd>{{value}}</dd>
+	</dl>
 	<button type="button" class="btn" onclick="window.history.back()"><i class="icon-reply"></i>返回</button>
 </div>
