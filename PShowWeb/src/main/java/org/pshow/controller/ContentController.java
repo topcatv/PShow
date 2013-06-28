@@ -20,8 +20,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.pshow.repo.dao.NamespaceDao;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
+import org.pshow.repo.datamodel.content.definition.ContentFacet;
 import org.pshow.repo.datamodel.content.definition.ContentType;
 import org.pshow.repo.datamodel.content.definition.Property;
 import org.pshow.repo.datamodel.namespace.InvalidQNameException;
@@ -72,7 +76,8 @@ public class ContentController {
         method = RequestMethod.GET)
     @ResponseBody
     public List<Map<String, Serializable>> findChild(
-            @PathVariable("parentId") String parentId) throws DuplicateWorkspaceException {
+            @PathVariable("parentId") String parentId)
+            throws DuplicateWorkspaceException {
         List<Map<String, Serializable>> result = new ArrayList<Map<String, Serializable>>();
         if (StringUtils.equalsIgnoreCase("root", parentId)) {
             // TODO 也许可以将所有的workspace的root都缓存起来，不必每次都查询数据库
@@ -96,14 +101,15 @@ public class ContentController {
         return result;
     }
 
-    private WorkspaceRef getOrCreateWorkSpace() throws DuplicateWorkspaceException {
+    private WorkspaceRef getOrCreateWorkSpace()
+            throws DuplicateWorkspaceException {
 
         String name = "default";
         WorkspaceRef defaultWS = contentService.findWorkspace(name);
         if (defaultWS == null) {
             defaultWS = contentService.createWorkspace(name);
         }
-        
+
         return defaultWS;
     }
 
@@ -170,6 +176,48 @@ public class ContentController {
             @PathVariable("schemaName") String schemaName) {
         ContentType contentType = csh.getContentType(parseQName(schemaName));
         return contentType.getProperties();
+    }
+
+    @RequestMapping(
+            value = "/content/{contentId}",
+            method = RequestMethod.GET)
+        @ResponseBody
+    public Map<String, Serializable> getContent(@PathVariable("contentId") String contentId) {
+        ContentRef contentRef = new ContentRef(contentId);
+        Map<QName, Serializable> properties = contentService
+                .getProperties(contentRef);
+        HashMap<String, Serializable> reMap = new HashMap<String, Serializable>(
+                properties.size());
+
+        QName type = contentService.getType(contentRef);
+        ContentType contentType = csh.getContentType(type);
+        convertProperties(properties, contentType.getProperties(), reMap);
+        
+        Set<QName> facets = contentService.getFacets(contentRef);
+        for (QName qName : facets) {
+            ContentFacet facet = csh.getFacet(qName);
+            convertProperties(properties, facet.getProperties(), reMap);
+        }
+        
+        return reMap;
+    }
+
+    private void convertProperties(Map<QName, Serializable> properties,
+            List<Property> filter_properties,
+            HashMap<String, Serializable> reMap) {
+        
+        Iterator<Entry<QName, Serializable>> it_property = properties.entrySet().iterator();
+        
+        while (it_property.hasNext()) {
+            Map.Entry<QName, Serializable> property = it_property.next();
+            QName propertyName = property.getKey();
+            for (Property filter_property : filter_properties) {
+                if (parseQName(filter_property.getName()).equals(propertyName)) {
+                    reMap.put(filter_property.getTitle(), properties.get(propertyName));
+                    it_property.remove();
+                }
+            }
+        }
     }
 
     private QName parseQName(String type) {

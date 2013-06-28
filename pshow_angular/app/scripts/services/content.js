@@ -27,6 +27,9 @@ angular.module('pshowApp')
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         })
         .success(function(data){callback(data);});
+      },
+      getContent: function(contentId, callback) {
+        $http.get('/proxy/content/' + contentId).success(function(data){callback(data);});
       }
     };
   }]);

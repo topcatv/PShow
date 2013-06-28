@@ -7,6 +7,7 @@ angular.module('pshowApp')
 	  $scope.content = {parentId : $routeParams.parentId, name: $routeParams.cname};
 	  $scope.contenttype;
 	  $scope.properties;
+	  $scope.contentid = $routeParams.contentId;
 	  
 	  $scope.init = function(){
 	  	  loading();
@@ -51,6 +52,13 @@ angular.module('pshowApp')
 
 	  $scope.openContent = function(content_id){
 	  	console.log(content_id);
+	  	common.goto("content/"+content_id);
+	  };
+
+	  $scope.readContent = function(content_id){
+	  	content.getContent(content_id, function(data){
+	  		$scope.content = data;
+	  	});
 	  }
 
 	  $scope.breadcrumb = function(){
