@@ -7,6 +7,10 @@ angular.module('pshowApp', [])
         templateUrl: '/views/index.html',
         controller: 'IndexCtrl'
       })
+      .when('/content/edit/:contentId', {
+        templateUrl: '/views/contentEdit.html',
+        controller: 'ContentCtrl'
+      })
       .when('/content/:parentId/:cname', {
         templateUrl: '/views/content.html',
         controller: 'ContentCtrl'

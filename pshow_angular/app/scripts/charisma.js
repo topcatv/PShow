@@ -14,7 +14,7 @@ $(document).ready(function(){
 		$('#themes i').removeClass('icon-ok');
 		$(this).find('i').addClass('icon-ok');
 	});
-	
+
 	function switch_theme(theme_name)
 	{
 		$('#bs-css').attr('href','styles/bootstrap-'+theme_name+'.css');

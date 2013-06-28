@@ -24,10 +24,16 @@
 	<div class="span11" style="margin-left: 8px;height: 520px;overflow: auto;position: relative;">
 	<ul class="thumbnails" ng-init="init()">
 		<li ng-repeat="content in contents">
-			<div class="thumbnail">
-				<a href="javascript:void(0);" ng-click='cdOrOpen(content.id, content.text, content.show_type)'> <img ng-src="/img/sys/{{content.show_type}}.png"
-					alt="" />
-					<h3>{{content.text}}</h3></a>
+			<div class="thumbnail" onmouseenter="$(this).find('p').slideDown();" onmouseleave="$(this).find('p').slideUp();">
+				<img ng-src="/img/sys/{{content.show_type}}.png"
+					alt="" ng-click='cdOrOpen(content.id, content.text, content.show_type)'/>
+				<div class="caption">
+					<h3 ng-click='cdOrOpen(content.id, content.text, content.show_type)'>{{content.text}}</h3>
+					<p>
+						<button type="button" class="btn btn-primary" ng-click='edit($index)'><i class="icon-edit"></i></button>
+						<button type="button" class="btn btn-danger" ng-click='del($index)'><i class="icon-trash"></i></button>
+					</p>
+				</div>
 			</div>
 		</li>
 		<li ng-show="contents.length == 0">
@@ -36,3 +42,31 @@
 	</ul>
 	</div>
 </div>
+
+<!-- Modal -->
+<div id="rename_dialog" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="renameModalLabel" aria-hidden="true">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+<h3 id="renameModalLabel">重命名</h3>
+</div>
+<form ng-submit="rename(index)">
+<div class="modal-body">
+	<div class="control-group">
+		<label class="control-label" for="name">文件夹名</label>
+		<div class="controls">
+			<input type="text" placeholder="文件夹名" id="name" ng-model="content.name" required>
+    		<span class="help-block">请输入文件夹名，长度不可小于3个字，只能包含汉字，字母与数字</span>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+<button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+<button class="btn btn-primary" type="submit">保存</button>
+</div>
+</form>
+</div>
+<script type="text/javascript">
+	$('div.thumbnail img').css("cursor","pointer");
+	$('div.thumbnail h3').css("cursor","pointer");
+	$('div.thumbnail p').hide();
+</script>

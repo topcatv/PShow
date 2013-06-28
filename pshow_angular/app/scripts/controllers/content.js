@@ -50,6 +50,48 @@ angular.module('pshowApp')
 		}
 	  };
 
+	  $scope.edit = function(index){
+	  	$scope.index = index;
+	  	var c = $scope.contents[index];
+	  	$scope.content.name = c.text;
+	  	if("Folder" == c.show_type){
+	  		$('#rename_dialog').modal();
+	  	}else{
+	  		common.goto("content/edit/" + content.id);
+	  	}
+	  };
+
+	  $scope.del = function(index){
+	  	$scope.index = index;
+	  	var c = $scope.contents[index];
+	  	content.del(c.id, function(data){
+	  		if(data){
+	  			noty({
+	  				text: "删除成功！",
+	  				type: 'success',
+	  				closeButton:"true"
+	  			});
+	  			$scope.contents.splice(index,1);
+	  		}
+	  	});
+	  };
+
+	  $scope.rename = function(index){
+	  	var c = $scope.contents[index];
+	  	content.rename(c.id, $scope.content.name, function(data){
+	  		console.log(data);
+	  		if(data){
+	  			noty({
+	  				text: "修改成功！",
+	  				type: 'success',
+	  				closeButton:"true"
+	  			});
+	  			$scope.contents[index].text = $scope.content.name;
+	  			$('#rename_dialog').modal('hide');
+	  		}
+	  	});
+	  };
+
 	  $scope.openContent = function(content_id){
 	  	console.log(content_id);
 	  	common.goto("content/"+content_id);

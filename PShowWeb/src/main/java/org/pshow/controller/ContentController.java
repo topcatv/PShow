@@ -35,6 +35,7 @@ import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
 import org.pshow.repo.datamodel.content.definition.ContentFacet;
 import org.pshow.repo.datamodel.content.definition.ContentType;
+import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 import org.pshow.repo.datamodel.content.definition.Property;
 import org.pshow.repo.datamodel.namespace.InvalidQNameException;
 import org.pshow.repo.datamodel.namespace.NamespaceException;
@@ -178,11 +179,10 @@ public class ContentController {
         return contentType.getProperties();
     }
 
-    @RequestMapping(
-            value = "/content/{contentId}",
-            method = RequestMethod.GET)
-        @ResponseBody
-    public Map<String, Serializable> getContent(@PathVariable("contentId") String contentId) {
+    @RequestMapping(value = "/content/{contentId}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Serializable> getContent(
+            @PathVariable("contentId") String contentId) {
         ContentRef contentRef = new ContentRef(contentId);
         Map<QName, Serializable> properties = contentService
                 .getProperties(contentRef);
@@ -192,28 +192,60 @@ public class ContentController {
         QName type = contentService.getType(contentRef);
         ContentType contentType = csh.getContentType(type);
         convertProperties(properties, contentType.getProperties(), reMap);
-        
+
         Set<QName> facets = contentService.getFacets(contentRef);
         for (QName qName : facets) {
             ContentFacet facet = csh.getFacet(qName);
             convertProperties(properties, facet.getProperties(), reMap);
         }
-        
+
         return reMap;
+    }
+
+    @RequestMapping(
+        value = "/content/{contentId}",
+        method = RequestMethod.DELETE)
+    @ResponseBody
+    public boolean delContent(@PathVariable("contentId") String contentId)
+            throws DataTypeUnSupportExeception {
+        QName delete_property = QName.createQName(
+                NamespaceService.SYSTEM_NAMESAPCE_URI, "deleted");
+        try {
+            contentService.setProperty(new ContentRef(contentId),
+                    delete_property, true);
+            return true;
+        } catch (DataTypeUnSupportExeception e) {
+            throw e;
+        }
+    }
+
+    @RequestMapping(value = "/content/{contentId}", method = RequestMethod.PUT)
+    @ResponseBody
+    public boolean rename(@PathVariable("contentId") String contentId,
+            String name) throws DataTypeUnSupportExeception {
+        try {
+            contentService.setProperty(new ContentRef(contentId),
+                    CONTENT_NAME_Q_NAME, name);
+            return true;
+        } catch (DataTypeUnSupportExeception e) {
+            throw e;
+        }
     }
 
     private void convertProperties(Map<QName, Serializable> properties,
             List<Property> filter_properties,
             HashMap<String, Serializable> reMap) {
-        
-        Iterator<Entry<QName, Serializable>> it_property = properties.entrySet().iterator();
-        
+
+        Iterator<Entry<QName, Serializable>> it_property = properties
+                .entrySet().iterator();
+
         while (it_property.hasNext()) {
             Map.Entry<QName, Serializable> property = it_property.next();
             QName propertyName = property.getKey();
             for (Property filter_property : filter_properties) {
                 if (parseQName(filter_property.getName()).equals(propertyName)) {
-                    reMap.put(filter_property.getTitle(), properties.get(propertyName));
+                    reMap.put(filter_property.getTitle(),
+                            properties.get(propertyName));
                     it_property.remove();
                 }
             }

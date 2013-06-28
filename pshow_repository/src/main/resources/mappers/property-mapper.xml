@@ -37,4 +37,12 @@
 			ps_content_properties p left join ps_content c on p.content_id=c.id
 			where c.uuid=#{contentId}
 	</select>
+	<select id="count" parameterType="java.util.Map" resultType="int">
+		select count(1) from ps_content_properties p where p.content_id=#{contentId} and p.qname_id = #{pqnameId}
+	</select>
+	<update id="updateProperty">
+		update ps_content_properties 
+		set boolean_v=#{booleanValue}, long_v=#{longValue}, float_v=#{floatValue}, double_v=#{doubleValue}, string_v=#{stringValue}, serializable_v=#{serializableValue}
+		where content_id = #{contentId} and qname_id = #{propertyQName}
+	</update>
 </mapper>

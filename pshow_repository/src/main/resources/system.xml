@@ -30,7 +30,9 @@
 				</property>
 			</properties>
 			<associations />
-			<mandatory-facets />
+			<mandatory-facets>
+				<facet>sys:deletable</facet>
+			</mandatory-facets>
 		</type>
 		<type name="sys:folder">
 			<title>文件夹</title>
@@ -83,5 +85,19 @@
 			<mandatory-facets />
 		</type>
 	</types>
-	<facets />
+	<facets>
+		<facet name="sys:deletable">
+				<title>可删除</title>
+				<properties>
+					<property name="sys:deleted">
+						<title>已删除</title>
+						<type>d:boolean</type>
+						<default>false</default>
+						<index enabled="true" />
+					</property>
+				</properties>
+				<associations />
+				<mandatory-facets />
+			</facet>
+	</facets>
 </model>
