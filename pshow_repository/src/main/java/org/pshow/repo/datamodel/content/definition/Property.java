@@ -16,6 +16,7 @@
  */
 package org.pshow.repo.datamodel.content.definition;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,9 +25,10 @@ import java.util.List;
  * @author roy
  * 
  */
-public class Property {
+public class Property implements Serializable {
 
-	private Boolean	              isOverride	         = false;
+    private static final long serialVersionUID = -959437091887060306L;
+    private Boolean	              isOverride	         = false;
 	private String	              name	             = null;
 	private String	              title	             = null;
 	private String	              description	     = null;

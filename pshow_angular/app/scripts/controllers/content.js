@@ -57,7 +57,7 @@ angular.module('pshowApp')
 	  	if("Folder" == c.show_type){
 	  		$('#rename_dialog').modal();
 	  	}else{
-	  		common.goto("content/edit/" + content.id);
+	  		common.goto("content/edit/" + c.id);
 	  	}
 	  };
 
@@ -79,7 +79,6 @@ angular.module('pshowApp')
 	  $scope.rename = function(index){
 	  	var c = $scope.contents[index];
 	  	content.rename(c.id, $scope.content.name, function(data){
-	  		console.log(data);
 	  		if(data){
 	  			noty({
 	  				text: "修改成功！",
@@ -101,6 +100,22 @@ angular.module('pshowApp')
 	  	content.getContent(content_id, function(data){
 	  		$scope.content = data;
 	  	});
+	  };
+
+	  $scope.updateContent = function(){
+	  	var c = {id : $scope.contentid, isFolder: false};
+	  	$('#content_update :input:not(button)').each(function(index){
+	  		c[$(this).attr('name')] = $(this).val();
+	  	});
+	  	content.update(c, function(data){
+  			if(data){
+	  			noty({
+	  				text: "修改成功！",
+	  				type: 'success',
+	  				closeButton:"true"
+	  			});
+	  		}
+  		});
 	  }
 
 	  $scope.breadcrumb = function(){

@@ -135,7 +135,9 @@ public class ContentController {
         ContentRef content = contentService.createContent(parentContent,
                 parseQName(type));
         contentService.setProperty(content, CONTENT_NAME_Q_NAME, name);
-        contentService.setProperties(content, getProperties(request));
+        Map<QName, Serializable> properties = getProperties(request);
+        properties.remove("sys:name");
+        contentService.setProperties(content, properties);
         return content;
     }
 
@@ -145,8 +147,7 @@ public class ContentController {
         Map<QName, Serializable> map = new HashMap<QName, Serializable>();
         while (parameterNames.hasMoreElements()) {
             String name = parameterNames.nextElement();
-            if (StringUtils.contains(name, ":")
-                    && !StringUtils.equals("sys:name", name)) {
+            if (StringUtils.contains(name, ":")) {
                 map.put(parseQName(name), request.getParameter(name));
             }
         }
@@ -219,17 +220,33 @@ public class ContentController {
         }
     }
 
-    @RequestMapping(value = "/content/{contentId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/content", method = RequestMethod.PUT)
     @ResponseBody
-    public boolean rename(@PathVariable("contentId") String contentId,
-            String name) throws DataTypeUnSupportExeception {
-        try {
+    public boolean updateContent(
+            String id,
+            String name,
+            @RequestParam(required = false, defaultValue = "true") boolean isFolder,
+            HttpServletRequest request)
+            throws TypeException {
+        if (isFolder) {
+            return rename(id, name);
+        } else {
+            return update(id, request);
+        }
+    }
+
+    private boolean update(String id, HttpServletRequest request)
+            throws TypeException {
+        Map<QName, Serializable> properties = getProperties(request);
+        contentService.setProperties(new ContentRef(id), properties);
+        return true;
+    }
+
+    private boolean rename(String contentId, String name)
+            throws DataTypeUnSupportExeception {
             contentService.setProperty(new ContentRef(contentId),
                     CONTENT_NAME_Q_NAME, name);
             return true;
-        } catch (DataTypeUnSupportExeception e) {
-            throw e;
-        }
     }
 
     private void convertProperties(Map<QName, Serializable> properties,
@@ -244,8 +261,12 @@ public class ContentController {
             QName propertyName = property.getKey();
             for (Property filter_property : filter_properties) {
                 if (parseQName(filter_property.getName()).equals(propertyName)) {
-                    reMap.put(filter_property.getTitle(),
-                            properties.get(propertyName));
+                    HashMap<String, Serializable> hashMap = new HashMap<String, Serializable>(
+                            3);
+                    hashMap.put("title", filter_property.getTitle());
+                    hashMap.put("value", properties.get(propertyName));
+                    hashMap.put("definition", filter_property);
+                    reMap.put(filter_property.getName(), hashMap);
                     it_property.remove();
                 }
             }

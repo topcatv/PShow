@@ -16,12 +16,16 @@
  */
 package org.pshow.repo.datamodel.content.definition;
 
+import java.io.Serializable;
+
 /**
  * @author roy
  * 
  */
-public class ConstraintModel {
-	private String	name;
+public class ConstraintModel implements Serializable {
+
+    private static final long serialVersionUID = -1395430127614691369L;
+    private String	name;
 	private String	ref;
 	private String	type;
 	private String	title;

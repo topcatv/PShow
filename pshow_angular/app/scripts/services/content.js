@@ -28,11 +28,17 @@ angular.module('pshowApp')
         })
         .success(function(data){callback(data);});
       },
+      update: function(content, callback){
+        $http.put('/proxy/content', $.param(content), {
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        })
+        .success(function(data){callback(data);});
+      },
       getContent: function(contentId, callback) {
         $http.get('/proxy/content/' + contentId).success(function(data){callback(data);});
       },
       rename: function(contentId, name, callback) {
-        $http.put('/proxy/content/' + contentId, $.param({'name':name}), {
+        $http.put('/proxy/content', $.param({'id':contentId,'name':name}), {
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         })
         .success(function(data){callback(data);});
