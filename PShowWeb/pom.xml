@@ -283,6 +283,17 @@
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-engine</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+		</dependency>
+
+		<!-- Apache Commons Upload -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>dataplayer</finalName>

@@ -138,16 +138,25 @@ angular.module('pshowApp')
 
 	  $scope.createContent = function(){
 	  	loading();
-	  	content.createContent($scope.contenttype, $scope.content, function(data){
-	  		if(data.id){
-	  			noty({
-	  				text: "文档创建成功！",
-					type: 'success',
-					closeButton:"true"
-				});
-	  		}
-	  		loading_over();
-	  	});
+	  	var options = {
+			//target: '#result',
+			url: '/proxy/content',
+			type: 'post',
+			data: {parentId:$scope.content.parentId,type:$scope.contenttype.name},
+			success: function(data) {
+				// var data = $.parseJSON($('#result').text());
+				console.log(data);
+				if(data.id){
+		  			noty({
+		  				text: "文档创建成功！",
+						type: 'success',
+						closeButton:"true"
+					});
+		  		}
+		  		loading_over();
+			}
+		};
+	  	$('#content_form').ajaxSubmit(options);
 	  };
 
 	  $scope.openCreateFolder = function(){

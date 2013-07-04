@@ -2,20 +2,23 @@
 
 angular.module('pshowApp')
   .directive('dyform', ['$http', '$compile', 'content', function ($http, $compile, content) {
-    var textTemplate = '<div class="control-group">'+
-    '<label class="control-label" for="input{{property.name}}">{{property.title}}</label>'+
-    '<div class="controls"><input type="text" id="input{{property.name}}" ng-required="property.mandatory" model="{{model.name}}"></div></div>';
+    var textTemplate = '<input type="text" name="{{property.name}}" id="input{{property.name}}" ng-required="property.mandatory" model="{{model.name}}">';
+    var fileTemplate = '<input type="file" name="{{property.name}}" id="input{{property.name}}" ng-required="property.mandatory" model="{{model.name}}">';
 
     var getTemplate = function(property) {
-        var template = '';
+        var template = '<div class="control-group">' + 
+        '<label class="control-label" for="input{{property.name}}">{{property.title}}</label><div class="controls">';
 
         switch(property.propertyType) {
             case 'd:text':
-                template = textTemplate.replace(/\{\{model\.name\}\}/, property.name);
+                template += textTemplate.replace(/\{\{model\.name\}\}/, property.name);
+                break;
+            case 'd:content':
+                template += fileTemplate.replace(/\{\{model\.name\}\}/, property.name);
                 break;
         }
 
-        return template;
+        return template + '</div></div>';
     };
 
     var postLink = function(scope, element, attrs) {
@@ -26,6 +29,7 @@ angular.module('pshowApp')
 
           scope.$parent.content[input.attr('model')] = input.val();
         });
+
         element.append(widget);
 
         $compile(element.contents())(scope);

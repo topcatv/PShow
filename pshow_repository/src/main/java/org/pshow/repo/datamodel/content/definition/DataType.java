@@ -16,11 +16,10 @@
  */
 package org.pshow.repo.datamodel.content.definition;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
-
-import org.pshow.repo.datamodel.content.ContentData;
 
 /**
  * @author roy
@@ -51,7 +50,7 @@ public class DataType {
                 return BOOLEAN;
             } else if (o instanceof String) {
                 return TEXT;
-            } else if (o instanceof ContentData) {
+            } else if (o instanceof InputStream) {
                 return CONTENT;
             } else if (o instanceof Integer) {
                 return INT;
@@ -139,7 +138,7 @@ public class DataType {
                 return Type.BOOLEAN;
             } else if (typeClass.equals(String.class)) {
                 return Type.TEXT;
-            } else if (typeClass.equals(ContentData.class)) {
+            } else if (typeClass.equals(InputStream.class)) {
                 return Type.CONTENT;
             } else if (typeClass.equals(Integer.class)) {
                 return Type.INT;

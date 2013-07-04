@@ -16,6 +16,7 @@
  */
 package org.pshow.controller;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -52,6 +53,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 /**
  * @author roy
@@ -60,6 +63,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class ContentController {
 
+    private static final QName  DELETE_Q_NAME       = QName.createQName(
+                                                            NamespaceService.SYSTEM_NAMESAPCE_URI,
+                                                            "deleted");
     private static final QName  CONTENT_NAME_Q_NAME = QName.createQName(
                                                             NamespaceService.SYSTEM_NAMESAPCE_URI,
                                                             "name");
@@ -88,13 +94,18 @@ public class ContentController {
         List<ContentRef> child = contentService.getChild(new ContentRef(
                 parentId));
         for (ContentRef contentRef : child) {
-            Serializable property = contentService.getProperty(contentRef,
+            Serializable name = contentService.getProperty(contentRef,
                     CONTENT_NAME_Q_NAME);
+            Serializable deleted = contentService.getProperty(contentRef,
+                    DELETE_Q_NAME);
+            if(deleted != null && ((Boolean) deleted)){
+                continue;
+            }
             QName type = contentService.getType(contentRef);
-            property = (property == null ? "ad" : property);
+            name = (name == null ? "" : name);
             Map<String, Serializable> e = new HashMap<String, Serializable>(1);
             e.put("id", contentRef.getId());
-            e.put("text", property);
+            e.put("text", name);
             e.put("pid", parentId);
             e.put("type", type.getNamespaceURI() + ":" + type.getLocalName());
             result.add(e);
@@ -116,14 +127,17 @@ public class ContentController {
 
     @RequestMapping(value = "/content", method = RequestMethod.POST)
     @ResponseBody
-    public ContentRef createContent(
-            @RequestParam("name") String contentName,
-            @RequestParam(value = "workspace", required = false) String workspace,
+    public ContentRef createContent(@RequestParam(
+        value = "name",
+        required = false) String contentName, @RequestParam(
+        value = "workspace",
+        required = false) String workspace,
             @RequestParam("parentId") String parentId,
             @RequestParam("type") String type, HttpServletRequest request)
-            throws InvalidQNameException, TypeException, NamespaceException {
+            throws InvalidQNameException, TypeException, NamespaceException,
+            IOException {
         LOGGER.debug(contentName);
-        String name = ("undefined".equals(contentName) ? request
+        String name = (StringUtils.isBlank(contentName) ? request
                 .getParameter("sys:name") : contentName);
 
         ContentRef parentContent = new ContentRef(parentId);
@@ -138,6 +152,15 @@ public class ContentController {
         Map<QName, Serializable> properties = getProperties(request);
         properties.remove("sys:name");
         contentService.setProperties(content, properties);
+        if (request instanceof MultipartHttpServletRequest) {
+            MultipartHttpServletRequest mRequest = (MultipartHttpServletRequest) request;
+            Map<String, MultipartFile> fileMap = mRequest.getFileMap();
+            Set<Entry<String, MultipartFile>> entrySet = fileMap.entrySet();
+            for (Entry<String, MultipartFile> entry : entrySet) {
+                contentService.setProperty(content, parseQName(entry.getKey()),
+                        entry.getValue().getOriginalFilename());
+            }
+        }
         return content;
     }
 
@@ -209,11 +232,9 @@ public class ContentController {
     @ResponseBody
     public boolean delContent(@PathVariable("contentId") String contentId)
             throws DataTypeUnSupportExeception {
-        QName delete_property = QName.createQName(
-                NamespaceService.SYSTEM_NAMESAPCE_URI, "deleted");
         try {
             contentService.setProperty(new ContentRef(contentId),
-                    delete_property, true);
+                    DELETE_Q_NAME, true);
             return true;
         } catch (DataTypeUnSupportExeception e) {
             throw e;
@@ -222,11 +243,9 @@ public class ContentController {
 
     @RequestMapping(value = "/content", method = RequestMethod.PUT)
     @ResponseBody
-    public boolean updateContent(
-            String id,
-            String name,
-            @RequestParam(required = false, defaultValue = "true") boolean isFolder,
-            HttpServletRequest request)
+    public boolean updateContent(String id, String name, @RequestParam(
+        required = false,
+        defaultValue = "true") boolean isFolder, HttpServletRequest request)
             throws TypeException {
         if (isFolder) {
             return rename(id, name);
@@ -244,9 +263,9 @@ public class ContentController {
 
     private boolean rename(String contentId, String name)
             throws DataTypeUnSupportExeception {
-            contentService.setProperty(new ContentRef(contentId),
-                    CONTENT_NAME_Q_NAME, name);
-            return true;
+        contentService.setProperty(new ContentRef(contentId),
+                CONTENT_NAME_Q_NAME, name);
+        return true;
     }
 
     private void convertProperties(Map<QName, Serializable> properties,
@@ -255,6 +274,15 @@ public class ContentController {
 
         Iterator<Entry<QName, Serializable>> it_property = properties
                 .entrySet().iterator();
+
+        for (Property filter_property : filter_properties) {
+            HashMap<String, Serializable> hashMap = new HashMap<String, Serializable>(
+                    3);
+            hashMap.put("title", filter_property.getTitle());
+            hashMap.put("value", null);
+            hashMap.put("definition", filter_property);
+            reMap.put(filter_property.getName(), hashMap);
+        }
 
         while (it_property.hasNext()) {
             Map.Entry<QName, Serializable> property = it_property.next();

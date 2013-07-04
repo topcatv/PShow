@@ -26,7 +26,7 @@
       </data-type>
 
       <data-type name="d:content">
-         <java-class>org.pshow.repo.datamodel.content.ContentData</java-class>
+         <java-class>java.io.InputStream</java-class>
       </data-type>
 
       <data-type name="d:int">

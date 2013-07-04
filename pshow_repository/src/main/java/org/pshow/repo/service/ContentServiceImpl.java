@@ -190,8 +190,10 @@ public class ContentServiceImpl implements ContentService {
             case CONTENT:
             case DATE:
             case DATETIME:
-            case BOOLEAN:
                 propertyModel.setSerializableValue(propertyValue.getValue());
+                break;
+            case BOOLEAN:
+                propertyModel.setBooleanValue(propertyValue.getBooleanValue());
                 break;
             case TEXT:
                 propertyModel.setStringValue(propertyValue.getTextValue());
