@@ -36,10 +36,12 @@ public class PropertyValue {
         this.type = Type.valueOf(pm.getActualType());
         switch (type) {
             case ANY:
-            case CONTENT:
             case DATE:
             case DATETIME:
                 this.value = pm.getSerializableValue();
+                break;
+            case CONTENT:
+                this.value = pm.getStringValue();
                 break;
             case TEXT:
                 this.value = pm.getStringValue();

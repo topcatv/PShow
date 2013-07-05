@@ -23,11 +23,15 @@
 	</bean>
 
 	<bean id="memoryStore" class="org.pshow.repo.cache.MemoryStore" />
-
+	
+	<bean id="fileDataStore" class="org.pshow.repo.service.FileDataStore" />
+	
 	<bean id="contentService" class="org.pshow.repo.service.ContentServiceImpl">
 		<property name="namespaceDao" ref="namespaceDao" />
 		<property name="workspaceDao" ref="workspaceDao" />
 		<property name="contentDao" ref="contentDao" />
+		<property name="contentDataDao" ref="contentDataDao" />
+		<property name="dataStore" ref="fileDataStore" />
 		<property name="qnameDao" ref="qnameDao" />
 		<property name="propertyDao" ref="propertyDao" />
 		<property name="schemaHolder" ref="contentSchemaHolder" />

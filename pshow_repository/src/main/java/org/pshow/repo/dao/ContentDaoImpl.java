@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.pshow.repo.dao.model.QNameModel;
-import org.pshow.repo.datamodel.content.ContentData;
+import org.pshow.repo.datamodel.content.Content;
 
 
 /**
@@ -37,36 +37,36 @@ public class ContentDaoImpl extends SqlSessionDaoSupport implements ContentDao {
      */
     @Override
     public String getUuidById(long id) {
-        return getSqlSession().selectOne("org.pshow.repo.datamodel.content.ContentData.getUuidById", id);
+        return getSqlSession().selectOne("org.pshow.repo.datamodel.content.Content.getUuidById", id);
     }
 
     /* (non-Javadoc)
-     * @see org.pshow.repo.dao.ContentDao#insertContent(org.pshow.repo.datamodel.content.ContentData)
+     * @see org.pshow.repo.dao.ContentDao#insertContent(org.pshow.repo.datamodel.content.Content)
      */
     @Override
-    public void insertContent(ContentData cdata) {
+    public void insertContent(Content cdata) {
         cdata.setUuid(UUID.randomUUID().toString());
-        getSqlSession().insert("org.pshow.repo.datamodel.content.ContentData.insertContent",cdata);
+        getSqlSession().insert("org.pshow.repo.datamodel.content.Content.insertContent",cdata);
     }
 
     @Override
-    public void updateContent(ContentData cdata) {
-        getSqlSession().update("org.pshow.repo.datamodel.content.ContentData.updateContent", cdata);
+    public void updateContent(Content cdata) {
+        getSqlSession().update("org.pshow.repo.datamodel.content.Content.updateContent", cdata);
     }
 
     @Override
-    public ContentData getContentByUUID(String uuid) {
-        return getSqlSession().selectOne("org.pshow.repo.datamodel.content.ContentData.getContentByUUID", uuid);
+    public Content getContentByUUID(String uuid) {
+        return getSqlSession().selectOne("org.pshow.repo.datamodel.content.Content.getContentByUUID", uuid);
     }
 
     @Override
-    public List<ContentData> getContentByParentUUID(String uuid) {
-        return getSqlSession().selectList("org.pshow.repo.datamodel.content.ContentData.getContentByParentUUID", uuid);
+    public List<Content> getContentByParentUUID(String uuid) {
+        return getSqlSession().selectList("org.pshow.repo.datamodel.content.Content.getContentByParentUUID", uuid);
     }
 
     @Override
     public List<QNameModel> getFacetsByContent(String uuid) {
-        return getSqlSession().selectList("org.pshow.repo.datamodel.content.ContentData.getFacetsByContent", uuid);
+        return getSqlSession().selectList("org.pshow.repo.datamodel.content.Content.getFacetsByContent", uuid);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class ContentDaoImpl extends SqlSessionDaoSupport implements ContentDao {
         Map<String, Object> parameter = new HashMap<String, Object>();
         parameter.put("contentId", uuid);
         parameter.put("qnameId", qname_id);
-        getSqlSession().delete("org.pshow.repo.datamodel.content.ContentData.removeFacetByContent", parameter);
+        getSqlSession().delete("org.pshow.repo.datamodel.content.Content.removeFacetByContent", parameter);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class ContentDaoImpl extends SqlSessionDaoSupport implements ContentDao {
         Map<String, Long> parameter = new HashMap<String, Long>();
         parameter.put("contentId", contentId);
         parameter.put("qnameId", qnameId);
-        getSqlSession().insert("org.pshow.repo.datamodel.content.ContentData.insertContentFacet", parameter); 
+        getSqlSession().insert("org.pshow.repo.datamodel.content.Content.insertContentFacet", parameter); 
     }
 
 }

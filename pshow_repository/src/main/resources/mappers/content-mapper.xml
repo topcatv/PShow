@@ -2,8 +2,8 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.pshow.repo.datamodel.content.ContentData">
-	<resultMap id="contentResultMap" type="org.pshow.repo.datamodel.content.ContentData">
+<mapper namespace="org.pshow.repo.datamodel.content.Content">
+	<resultMap id="contentResultMap" type="org.pshow.repo.datamodel.content.Content">
 		<result property="id" column="id" />
 		<result property="uuid" column="uuid" />
 		<result property="typeId" column="type_qname_id" />

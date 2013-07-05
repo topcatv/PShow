@@ -14,34 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.dao;
+package org.pshow.repo.service;
 
-import java.util.List;
-
-import org.pshow.repo.dao.model.QNameModel;
-import org.pshow.repo.datamodel.content.Content;
+import java.io.InputStream;
 
 
 /**
  * @author roy
  *
  */
-public interface ContentDao {
+public class FileDataStore implements DataStore {
 
-    String getUuidById(long id);
-
-    void insertContent(Content cdata);
-
-    void updateContent(Content cdata);
-
-    Content getContentByUUID(String uuid);
-
-    List<Content> getContentByParentUUID(String uuid);
-
-    List<QNameModel> getFacetsByContent(String uuid);
-
-    void removeFacetByContent(String id, long id2);
-
-    void insertContentFacet(long contentId, long qnameId);
+    /* (non-Javadoc)
+     * @see org.pshow.repo.service.DataStore#store(java.io.InputStream)
+     */
+    @Override
+    public String store(InputStream data) {
+        //TODO 使用Datastore
+        return "mock";
+    }
 
 }

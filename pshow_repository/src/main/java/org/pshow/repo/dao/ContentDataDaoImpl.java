@@ -16,32 +16,29 @@
  */
 package org.pshow.repo.dao;
 
-import java.util.List;
-
-import org.pshow.repo.dao.model.QNameModel;
-import org.pshow.repo.datamodel.content.Content;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.pshow.repo.datamodel.content.ContentData;
 
 
 /**
  * @author roy
  *
  */
-public interface ContentDao {
+public class ContentDataDaoImpl extends SqlSessionDaoSupport implements ContentDataDao {
 
-    String getUuidById(long id);
+    @Override
+    public int count(String contentUrl) {
+        return getSqlSession().selectOne("org.pshow.repo.datamodel.content.ContentData.count", contentUrl);
+    }
 
-    void insertContent(Content cdata);
+    @Override
+    public void insert(ContentData cd) {
+        getSqlSession().insert("org.pshow.repo.datamodel.content.ContentData.insert", cd);
+    }
 
-    void updateContent(Content cdata);
-
-    Content getContentByUUID(String uuid);
-
-    List<Content> getContentByParentUUID(String uuid);
-
-    List<QNameModel> getFacetsByContent(String uuid);
-
-    void removeFacetByContent(String id, long id2);
-
-    void insertContentFacet(long contentId, long qnameId);
+    @Override
+    public ContentData findByContentUrl(String contentUrl) {
+        return getSqlSession().selectOne("org.pshow.repo.datamodel.content.ContentData.findByContentUrl", contentUrl);
+    }
 
 }

@@ -21,5 +21,7 @@
 	<bean id="propertyDao" class="org.pshow.repo.dao.PropertyDaoImpl">
 		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
 	</bean>
-
+	<bean id="contentDataDao" class="org.pshow.repo.dao.ContentDataDaoImpl">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
 </beans>

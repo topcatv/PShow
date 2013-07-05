@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.pshow.repo.dao.NamespaceDao;
+import org.pshow.repo.datamodel.content.ContentData;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
 import org.pshow.repo.datamodel.content.definition.ContentFacet;
@@ -158,10 +159,14 @@ public class ContentController {
             Set<Entry<String, MultipartFile>> entrySet = fileMap.entrySet();
             for (Entry<String, MultipartFile> entry : entrySet) {
                 contentService.setProperty(content, parseQName(entry.getKey()),
-                        entry.getValue().getOriginalFilename());
+                        convertContentData(entry.getValue()));
             }
         }
         return content;
+    }
+
+    private Serializable convertContentData(MultipartFile value) throws IOException {
+        return new ContentData(null, value.getContentType(), value.getSize(), value.getOriginalFilename(), value.getInputStream());
     }
 
     private Map<QName, Serializable> getProperties(HttpServletRequest request) {

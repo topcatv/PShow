@@ -26,12 +26,14 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.pshow.repo.dao.ContentDao;
+import org.pshow.repo.dao.ContentDataDao;
 import org.pshow.repo.dao.NamespaceDao;
 import org.pshow.repo.dao.PropertyDao;
 import org.pshow.repo.dao.QNameDao;
 import org.pshow.repo.dao.WorkspaceDao;
 import org.pshow.repo.dao.model.PropertyModel;
 import org.pshow.repo.dao.model.QNameModel;
+import org.pshow.repo.datamodel.content.Content;
 import org.pshow.repo.datamodel.content.ContentData;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.PropertyValue;
@@ -62,6 +64,8 @@ public class ContentServiceImpl implements ContentService {
     private PropertyDao         propertyDao;
     private ContentSchemaHolder schemaHolder;
     private QNameDao            qnameDao;
+    private DataStore dataStore;
+    private ContentDataDao contentDataDao;
 
     /*
      * (non-Javadoc)
@@ -136,16 +140,16 @@ public class ContentServiceImpl implements ContentService {
         if (!schemaHolder.hasContentType(typeQName)) {
             throw new TypeNotExistException(String.format("Create content error: type[%s] not exist.", typeQName.toString()));
         }
-        ContentData cdata = newContent(parentRef, typeQName);
+        Content cdata = newContent(parentRef, typeQName);
         if (properties != null) {
             saveProperties(cdata.getId(), typeQName, properties);
         }
         return new ContentRef(cdata.getUuid());
     }
 
-    private ContentData newContent(ContentRef parentRef, QName typeQName) {
-        ContentData parentContent = contentDao.getContentByUUID(parentRef.getId());
-        ContentData cdata = new ContentData();
+    private Content newContent(ContentRef parentRef, QName typeQName) {
+        Content parentContent = contentDao.getContentByUUID(parentRef.getId());
+        Content cdata = new Content();
         cdata.setTypeId(findTypeId(typeQName));
         cdata.setAclId(getDefaultAcl());
         cdata.setModifier(currentUser());
@@ -187,10 +191,12 @@ public class ContentServiceImpl implements ContentService {
         Type type = propertyValue.getType();
         switch (type) {
             case ANY:
-            case CONTENT:
             case DATE:
             case DATETIME:
                 propertyModel.setSerializableValue(propertyValue.getValue());
+                break;
+            case CONTENT:
+                handlerContentData(propertyValue, propertyModel);
                 break;
             case BOOLEAN:
                 propertyModel.setBooleanValue(propertyValue.getBooleanValue());
@@ -223,6 +229,18 @@ public class ContentServiceImpl implements ContentService {
         }
     }
 
+    private void handlerContentData(PropertyValue propertyValue,
+            PropertyModel propertyModel) {
+        ContentData cd = (ContentData) propertyValue.getValue();
+        String contentUrl = dataStore.store(cd.getData());
+        int count = contentDataDao.count(contentUrl);
+        cd.setContentUrl(contentUrl);
+        if (count == 0) {
+            contentDataDao.insert(cd);
+        }
+        propertyModel.setStringValue(contentUrl);
+    }
+
     private void checkValueType(DataType dataType, Serializable value) throws TypeException {
         Type valueType = Type.getObjectType(value);
         if (!valueType.equals(dataType.getType())) {
@@ -242,8 +260,8 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public void moveContent(ContentRef moveToContentRef, ContentRef newParentRef) {
-        ContentData moveToContent = contentDao.getContentByUUID(moveToContentRef.getId());
-        ContentData newParent = contentDao.getContentByUUID(newParentRef.getId());
+        Content moveToContent = contentDao.getContentByUUID(moveToContentRef.getId());
+        Content newParent = contentDao.getContentByUUID(newParentRef.getId());
         moveToContent.setParentId(newParent.getId());
         contentDao.updateContent(moveToContent);
     }
@@ -256,7 +274,7 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public QName getType(ContentRef contentRef) {
-        ContentData self = contentDao.getContentByUUID(contentRef.getId());
+        Content self = contentDao.getContentByUUID(contentRef.getId());
         long typeId = self.getTypeId();
         QNameModel qNameModel = qnameDao.findQNameById(typeId);
         return QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName());
@@ -322,7 +340,7 @@ public class ContentServiceImpl implements ContentService {
     @Override
     public void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) throws TypeException {
         QNameModel qNameModel = qnameDao.findQName(facetQName);
-        ContentData contentData = contentDao.getContentByUUID(contentRef.getId());
+        Content contentData = contentDao.getContentByUUID(contentRef.getId());
         contentDao.insertContentFacet(contentData.getId(), qNameModel.getId());
 
         saveProperties(properties, schemaHolder.getFacet(facetQName).getProperties(), contentData.getId());
@@ -357,6 +375,9 @@ public class ContentServiceImpl implements ContentService {
             PropertyValue propertyValue = new PropertyValue(propertyModel);
             long qnameId = propertyModel.getPropertyQName();
             QNameModel qNameModel = qnameDao.findQNameById(qnameId);
+            if (propertyValue.getType() == Type.CONTENT) {
+                propertyValue = halderContentData(propertyValue);
+            }
             result.put(QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName()), propertyValue.getValue());
         }
         return result;
@@ -375,7 +396,24 @@ public class ContentServiceImpl implements ContentService {
             return null;
         }
         PropertyValue propertyValue = new PropertyValue(propertyModel);
+        if (propertyValue.getType() == Type.CONTENT) {
+            propertyValue = halderContentData(propertyValue);
+        }
         return propertyValue.getValue();
+    }
+    
+    
+
+    private PropertyValue halderContentData(PropertyValue propertyValue) {
+        String contentUrl = (String) propertyValue.getValue();
+        ContentData cd = contentDataDao.findByContentUrl(contentUrl);
+        try {
+            return new PropertyValue(cd);
+        } catch (DataTypeUnSupportExeception e) {
+            //TODO need log here and throw a runtime exception
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /*
@@ -386,7 +424,7 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public void setProperties(ContentRef contentRef, Map<QName, Serializable> properties) throws TypeException {
-        ContentData self = contentDao.getContentByUUID(contentRef.getId());
+        Content self = contentDao.getContentByUUID(contentRef.getId());
         long typeId = self.getTypeId();
         QNameModel qNameModel = qnameDao.findQNameById(typeId);
         ContentType contentType = schemaHolder.getContentType(QName.createQName(qNameModel.getNamespaceURI(), qNameModel.getLocalName()));
@@ -436,7 +474,7 @@ public class ContentServiceImpl implements ContentService {
     @Override
     @Transactional(readOnly = true)
     public ContentRef getParent(ContentRef contentRef) {
-        ContentData self = contentDao.getContentByUUID(contentRef.getId());
+        Content self = contentDao.getContentByUUID(contentRef.getId());
         String parentUuid = contentDao.getUuidById(self.getParentId());
         return new ContentRef(parentUuid);
     }
@@ -449,9 +487,9 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public List<ContentRef> getChild(ContentRef contentRef) {
-        List<ContentData> result = contentDao.getContentByParentUUID(contentRef.getId());
+        List<Content> result = contentDao.getContentByParentUUID(contentRef.getId());
         List<ContentRef> child = new ArrayList<ContentRef>();
-        for (ContentData contentData : result) {
+        for (Content contentData : result) {
             child.add(new ContentRef(contentData.getUuid()));
         }
         return child;
@@ -465,9 +503,9 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public List<ContentRef> getChild(ContentRef contentRef, QNamePattern typeQNamePattern) {
-        List<ContentData> result = contentDao.getContentByParentUUID(contentRef.getId());
+        List<Content> result = contentDao.getContentByParentUUID(contentRef.getId());
         List<ContentRef> child = new ArrayList<ContentRef>();
-        for (ContentData contentData : result) {
+        for (Content contentData : result) {
             QNameModel typeQNameModel = qnameDao.findQNameById(contentData.getTypeId());
             QName typeQName = QName.createQName(typeQNameModel.getNamespaceURI(), typeQNameModel.getLocalName());
             if (typeQNamePattern.isMatch(typeQName)) {
@@ -485,9 +523,9 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     public List<ContentRef> getChild(ContentRef contentRef, Set<QName> typeQNames) {
-        List<ContentData> result = contentDao.getContentByParentUUID(contentRef.getId());
+        List<Content> result = contentDao.getContentByParentUUID(contentRef.getId());
         List<ContentRef> child = new ArrayList<ContentRef>();
-        for (ContentData contentData : result) {
+        for (Content contentData : result) {
             QNameModel typeQNameModel = qnameDao.findQNameById(contentData.getTypeId());
             QName typeQName = QName.createQName(typeQNameModel.getNamespaceURI(), typeQNameModel.getLocalName());
             if (typeQNames.contains(typeQName)) {
@@ -511,7 +549,7 @@ public class ContentServiceImpl implements ContentService {
         if (workspaceDao.findWorkspaceByName(name) != null) {
             throw new DuplicateWorkspaceException(String.format("workspace[%s] already exist.", name));
         }
-        ContentData cdata = createRoot();
+        Content cdata = createRoot();
         Workspace workspace = createWorksapce(name, cdata);
         cdata.setWorkspaceId(workspace.getId());
         contentDao.updateContent(cdata);
@@ -519,7 +557,7 @@ public class ContentServiceImpl implements ContentService {
         return new WorkspaceRef(result.getUuid());
     }
 
-    private Workspace createWorksapce(String name, ContentData cdata) {
+    private Workspace createWorksapce(String name, Content cdata) {
         Workspace workspace = new Workspace();
         workspace.setName(name);
         workspace.setRootId(cdata.getId());
@@ -527,8 +565,8 @@ public class ContentServiceImpl implements ContentService {
         return workspace;
     }
 
-    private ContentData createRoot() {
-        ContentData cdata = new ContentData();
+    private Content createRoot() {
+        Content cdata = new Content();
         cdata.setCreator("admin");
         cdata.setModifier("admin");
         cdata.setVersions(getDefaultVersion());
@@ -567,6 +605,11 @@ public class ContentServiceImpl implements ContentService {
 
     public void setQnameDao(QNameDao qnameDao) {
         this.qnameDao = qnameDao;
+    }
+
+    
+    public void setContentDataDao(ContentDataDao contentDataDao) {
+        this.contentDataDao = contentDataDao;
     }
 
 }
