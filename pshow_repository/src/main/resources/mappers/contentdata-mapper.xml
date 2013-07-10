@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pshow.repo.datamodel.content.ContentData">
+	<resultMap id="contentDataResultMap" type="org.pshow.repo.datamodel.content.ContentData">
+		<result property="contentUrl" column="content_url" />
+		<result property="mimetype" column="mimetype" />
+		<result property="size" column="size" />
+		<result property="name" column="name" />
+	</resultMap>
+	<insert id="insert" parameterType="org.pshow.repo.datamodel.content.ContentData">
+		insert into ps_content_data
+		(content_url, mimetype, size, name)
+		values
+		(#{contentUrl}, #{mimetype}, #{size}, #{name})
+	</insert>
+	<select id="findByContentUrl" parameterType="long" resultMap="contentDataResultMap">
+		select content_url, mimetype, size, name from ps_content_data where content_url=#{value}
+	</select>
+	<select id="count" parameterType="string" resultType="int">
+		select count(1) from ps_content_data
+		where content_url=#{value}
+	</select>
+</mapper>

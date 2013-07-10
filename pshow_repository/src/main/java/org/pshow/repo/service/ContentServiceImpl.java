@@ -48,6 +48,12 @@ import org.pshow.repo.datamodel.content.definition.Property;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.datamodel.namespace.QNamePattern;
 import org.pshow.repo.schema.ContentSchemaHolder;
+import org.pshow.repo.service.data.DataIdentifier;
+import org.pshow.repo.service.data.DataRecord;
+import org.pshow.repo.service.data.DataStore;
+import org.pshow.repo.service.data.DataStoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +63,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Transactional
 public class ContentServiceImpl implements ContentService {
+    
+    private Logger log = LoggerFactory.getLogger(ContentServiceImpl.class);
 
     private NamespaceDao        namespaceDao;
     private ContentDao          contentDao;
@@ -101,7 +109,11 @@ public class ContentServiceImpl implements ContentService {
     @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
     public ContentRef createContent(ContentRef parentRef, QName typeQName) throws TypeException {
         ContentRef createContent = null;
-        createContent = createContent(parentRef, typeQName, null);
+        try {
+            createContent = createContent(parentRef, typeQName, null);
+        } catch (DataStoreException e) {
+            log.error("not to here", e);
+        }
         return createContent;
     }
 
@@ -136,7 +148,7 @@ public class ContentServiceImpl implements ContentService {
      */
     @Override
     @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-    public ContentRef createContent(ContentRef parentRef, QName typeQName, Map<QName, Serializable> properties) throws TypeException {
+    public ContentRef createContent(ContentRef parentRef, QName typeQName, Map<QName, Serializable> properties) throws TypeException, DataStoreException {
         if (!schemaHolder.hasContentType(typeQName)) {
             throw new TypeNotExistException(String.format("Create content error: type[%s] not exist.", typeQName.toString()));
         }
@@ -161,7 +173,7 @@ public class ContentServiceImpl implements ContentService {
         return cdata;
     }
 
-    private void saveProperties(long id, QName typeQName, Map<QName, Serializable> properties) throws TypeException {
+    private void saveProperties(long id, QName typeQName, Map<QName, Serializable> properties) throws TypeException, DataStoreException {
         ContentType contentType = schemaHolder.getContentType(typeQName);
         saveProperties(properties, contentType.getProperties(), id);
         List<String> mandatoryFacets = contentType.getMandatoryFacets();
@@ -171,7 +183,7 @@ public class ContentServiceImpl implements ContentService {
         }
     }
 
-    private void saveProperties(Map<QName, Serializable> properties, List<Property> properties_definition, long contentId) throws TypeException {
+    private void saveProperties(Map<QName, Serializable> properties, List<Property> properties_definition, long contentId) throws TypeException, DataStoreException {
         for (Property property : properties_definition) {
             Serializable value = properties.get(createKey(property.getName()));
             if (value == null) {
@@ -186,7 +198,7 @@ public class ContentServiceImpl implements ContentService {
         }
     }
 
-    private void savePropertyValue(PropertyValue propertyValue, long contentId, long propertyQnameId) {
+    private void savePropertyValue(PropertyValue propertyValue, long contentId, long propertyQnameId) throws DataStoreException {
         PropertyModel propertyModel = new PropertyModel();
         Type type = propertyValue.getType();
         switch (type) {
@@ -230,9 +242,9 @@ public class ContentServiceImpl implements ContentService {
     }
 
     private void handlerContentData(PropertyValue propertyValue,
-            PropertyModel propertyModel) {
+            PropertyModel propertyModel) throws DataStoreException {
         ContentData cd = (ContentData) propertyValue.getValue();
-        String contentUrl = dataStore.store(cd.getData());
+        String contentUrl = dataStore.addRecord(cd.getData()).getIdentifier().toString();
         int count = contentDataDao.count(contentUrl);
         cd.setContentUrl(contentUrl);
         if (count == 0) {
@@ -338,7 +350,7 @@ public class ContentServiceImpl implements ContentService {
      * java.util.Map)
      */
     @Override
-    public void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) throws TypeException {
+    public void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) throws TypeException, DataStoreException {
         QNameModel qNameModel = qnameDao.findQName(facetQName);
         Content contentData = contentDao.getContentByUUID(contentRef.getId());
         contentDao.insertContentFacet(contentData.getId(), qNameModel.getId());
@@ -353,9 +365,12 @@ public class ContentServiceImpl implements ContentService {
      * .content.ContentRef)
      */
     @Override
-    public void deleteContent(ContentRef contentRef) {
-        // TODO Auto-generated method stub
-
+    public void deleteContent(ContentRef contentRef) throws DataTypeUnSupportExeception {
+        try {
+            this.setProperty(contentRef, DELETE_Q_NAME, true);
+        } catch (DataStoreException e) {
+            log.error("not to here", e);
+        }
     }
 
     /*
@@ -365,7 +380,7 @@ public class ContentServiceImpl implements ContentService {
      * .content.ContentRef)
      */
     @Override
-    public Map<QName, Serializable> getProperties(ContentRef contentRef) {
+    public Map<QName, Serializable> getProperties(ContentRef contentRef) throws DataStoreException {
         List<PropertyModel> propertyModels = propertyDao.findProperties(contentRef.getId());
         if (propertyModels == null) {
             return null;
@@ -390,7 +405,7 @@ public class ContentServiceImpl implements ContentService {
      * .content.ContentRef, org.pshow.repo.datamodel.namespace.QName)
      */
     @Override
-    public Serializable getProperty(ContentRef contentRef, QName qname) {
+    public Serializable getProperty(ContentRef contentRef, QName qname) throws DataStoreException {
         PropertyModel propertyModel = propertyDao.findProperty(contentRef.getId(), qname);
         if (propertyModel == null) {
             return null;
@@ -404,14 +419,20 @@ public class ContentServiceImpl implements ContentService {
     
     
 
-    private PropertyValue halderContentData(PropertyValue propertyValue) {
+    private PropertyValue halderContentData(PropertyValue propertyValue) throws DataStoreException {
         String contentUrl = (String) propertyValue.getValue();
         ContentData cd = contentDataDao.findByContentUrl(contentUrl);
+        if (cd == null) {
+            return null;
+        }
         try {
+            DataRecord recordIfStored = dataStore.getRecordIfStored(new DataIdentifier(cd.getContentUrl()));
+            if (recordIfStored != null) {
+                cd.setData(recordIfStored.getStream());
+            }
             return new PropertyValue(cd);
         } catch (DataTypeUnSupportExeception e) {
-            //TODO need log here and throw a runtime exception
-            e.printStackTrace();
+            log.warn("not to here", e);
         }
         return null;
     }
@@ -423,7 +444,7 @@ public class ContentServiceImpl implements ContentService {
      * .content.ContentRef, java.util.Map)
      */
     @Override
-    public void setProperties(ContentRef contentRef, Map<QName, Serializable> properties) throws TypeException {
+    public void setProperties(ContentRef contentRef, Map<QName, Serializable> properties) throws TypeException, DataStoreException {
         Content self = contentDao.getContentByUUID(contentRef.getId());
         long typeId = self.getTypeId();
         QNameModel qNameModel = qnameDao.findQNameById(typeId);
@@ -447,7 +468,7 @@ public class ContentServiceImpl implements ContentService {
      * java.io.Serializable)
      */
     @Override
-    public void setProperty(ContentRef contentRef, QName qname, Serializable value) throws DataTypeUnSupportExeception {
+    public void setProperty(ContentRef contentRef, QName qname, Serializable value) throws DataTypeUnSupportExeception, DataStoreException {
         PropertyValue propertyValue = new PropertyValue(value);
         long contentId = contentDao.getContentByUUID(contentRef.getId()).getId();
         long propertyQnameId = qnameDao.findQName(qname).getId();
@@ -610,6 +631,11 @@ public class ContentServiceImpl implements ContentService {
     
     public void setContentDataDao(ContentDataDao contentDataDao) {
         this.contentDataDao = contentDataDao;
+    }
+
+    
+    public void setDataStore(DataStore dataStore) {
+        this.dataStore = dataStore;
     }
 
 }

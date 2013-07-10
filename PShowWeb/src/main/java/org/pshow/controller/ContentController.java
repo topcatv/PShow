@@ -30,7 +30,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.pshow.repo.dao.NamespaceDao;
 import org.pshow.repo.datamodel.content.ContentData;
 import org.pshow.repo.datamodel.content.ContentRef;
@@ -41,12 +40,14 @@ import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
 import org.pshow.repo.datamodel.content.definition.Property;
 import org.pshow.repo.datamodel.namespace.InvalidQNameException;
 import org.pshow.repo.datamodel.namespace.NamespaceException;
-import org.pshow.repo.datamodel.namespace.NamespaceService;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.schema.ContentSchemaHolder;
 import org.pshow.repo.service.ContentService;
 import org.pshow.repo.service.DuplicateWorkspaceException;
 import org.pshow.repo.service.TypeException;
+import org.pshow.repo.service.data.DataStoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,21 +64,15 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
  */
 @Controller
 public class ContentController {
+    
+    private static Logger log = LoggerFactory.getLogger(ContentController.class);
 
-    private static final QName  DELETE_Q_NAME       = QName.createQName(
-                                                            NamespaceService.SYSTEM_NAMESAPCE_URI,
-                                                            "deleted");
-    private static final QName  CONTENT_NAME_Q_NAME = QName.createQName(
-                                                            NamespaceService.SYSTEM_NAMESAPCE_URI,
-                                                            "name");
     @Autowired
     private ContentService      contentService;
     @Autowired
     private ContentSchemaHolder csh;
     @Autowired
     private NamespaceDao        namespaceDao;
-
-    private static Logger       LOGGER              = Logger.getLogger(ContentController.class);
 
     @RequestMapping(
         value = "/content/child/{parentId}",
@@ -94,22 +89,26 @@ public class ContentController {
         }
         List<ContentRef> child = contentService.getChild(new ContentRef(
                 parentId));
-        for (ContentRef contentRef : child) {
-            Serializable name = contentService.getProperty(contentRef,
-                    CONTENT_NAME_Q_NAME);
-            Serializable deleted = contentService.getProperty(contentRef,
-                    DELETE_Q_NAME);
-            if(deleted != null && ((Boolean) deleted)){
-                continue;
+        try {
+            for (ContentRef contentRef : child) {
+                Serializable name = contentService.getProperty(contentRef,
+                        ContentService.CONTENT_NAME_Q_NAME);
+                Serializable deleted = contentService.getProperty(contentRef,
+                        ContentService.DELETE_Q_NAME);
+                if(deleted != null && ((Boolean) deleted)){
+                    continue;
+                }
+                QName type = contentService.getType(contentRef);
+                name = (name == null ? "" : name);
+                Map<String, Serializable> e = new HashMap<String, Serializable>(1);
+                e.put("id", contentRef.getId());
+                e.put("text", name);
+                e.put("pid", parentId);
+                e.put("type", type.getNamespaceURI() + ":" + type.getLocalName());
+                result.add(e);
             }
-            QName type = contentService.getType(contentRef);
-            name = (name == null ? "" : name);
-            Map<String, Serializable> e = new HashMap<String, Serializable>(1);
-            e.put("id", contentRef.getId());
-            e.put("text", name);
-            e.put("pid", parentId);
-            e.put("type", type.getNamespaceURI() + ":" + type.getLocalName());
-            result.add(e);
+        } catch (DataStoreException e) {
+            log.error("not to here", e);
         }
         return result;
     }
@@ -136,8 +135,8 @@ public class ContentController {
             @RequestParam("parentId") String parentId,
             @RequestParam("type") String type, HttpServletRequest request)
             throws InvalidQNameException, TypeException, NamespaceException,
-            IOException {
-        LOGGER.debug(contentName);
+            IOException, DataStoreException {
+        log.debug(contentName);
         String name = (StringUtils.isBlank(contentName) ? request
                 .getParameter("sys:name") : contentName);
 
@@ -149,19 +148,18 @@ public class ContentController {
         }
         ContentRef content = contentService.createContent(parentContent,
                 parseQName(type));
-        contentService.setProperty(content, CONTENT_NAME_Q_NAME, name);
+        contentService.setProperty(content, ContentService.CONTENT_NAME_Q_NAME, name);
         Map<QName, Serializable> properties = getProperties(request);
         properties.remove("sys:name");
-        contentService.setProperties(content, properties);
         if (request instanceof MultipartHttpServletRequest) {
             MultipartHttpServletRequest mRequest = (MultipartHttpServletRequest) request;
             Map<String, MultipartFile> fileMap = mRequest.getFileMap();
             Set<Entry<String, MultipartFile>> entrySet = fileMap.entrySet();
             for (Entry<String, MultipartFile> entry : entrySet) {
-                contentService.setProperty(content, parseQName(entry.getKey()),
-                        convertContentData(entry.getValue()));
+                properties.put(parseQName(entry.getKey()), convertContentData(entry.getValue()));
             }
         }
+        contentService.setProperties(content, properties);
         return content;
     }
 
@@ -211,7 +209,7 @@ public class ContentController {
     @RequestMapping(value = "/content/{contentId}", method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Serializable> getContent(
-            @PathVariable("contentId") String contentId) {
+            @PathVariable("contentId") String contentId) throws DataStoreException {
         ContentRef contentRef = new ContentRef(contentId);
         Map<QName, Serializable> properties = contentService
                 .getProperties(contentRef);
@@ -238,8 +236,7 @@ public class ContentController {
     public boolean delContent(@PathVariable("contentId") String contentId)
             throws DataTypeUnSupportExeception {
         try {
-            contentService.setProperty(new ContentRef(contentId),
-                    DELETE_Q_NAME, true);
+            contentService.deleteContent(new ContentRef(contentId));
             return true;
         } catch (DataTypeUnSupportExeception e) {
             throw e;
@@ -251,7 +248,7 @@ public class ContentController {
     public boolean updateContent(String id, String name, @RequestParam(
         required = false,
         defaultValue = "true") boolean isFolder, HttpServletRequest request)
-            throws TypeException {
+            throws TypeException, DataStoreException {
         if (isFolder) {
             return rename(id, name);
         } else {
@@ -260,7 +257,7 @@ public class ContentController {
     }
 
     private boolean update(String id, HttpServletRequest request)
-            throws TypeException {
+            throws TypeException, DataStoreException {
         Map<QName, Serializable> properties = getProperties(request);
         contentService.setProperties(new ContentRef(id), properties);
         return true;
@@ -268,8 +265,12 @@ public class ContentController {
 
     private boolean rename(String contentId, String name)
             throws DataTypeUnSupportExeception {
-        contentService.setProperty(new ContentRef(contentId),
-                CONTENT_NAME_Q_NAME, name);
+        try {
+            contentService.setProperty(new ContentRef(contentId),
+                    ContentService.CONTENT_NAME_Q_NAME, name);
+        } catch (DataStoreException e) {
+            log.error("not to here", e);
+        }
         return true;
     }
 

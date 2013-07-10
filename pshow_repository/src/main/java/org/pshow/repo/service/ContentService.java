@@ -27,8 +27,10 @@ import org.pshow.repo.audit.Auditable;
 import org.pshow.repo.datamodel.content.ContentRef;
 import org.pshow.repo.datamodel.content.WorkspaceRef;
 import org.pshow.repo.datamodel.content.definition.DataTypeUnSupportExeception;
+import org.pshow.repo.datamodel.namespace.NamespaceService;
 import org.pshow.repo.datamodel.namespace.QName;
 import org.pshow.repo.datamodel.namespace.QNamePattern;
+import org.pshow.repo.service.data.DataStoreException;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -39,7 +41,15 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public interface ContentService {
 
-    WorkspaceRef createWorkspace(String name) throws DuplicateWorkspaceException;
+    public static final QName DELETE_Q_NAME       = QName.createQName(
+                                                          NamespaceService.SYSTEM_NAMESAPCE_URI,
+                                                          "deleted");
+    public static final QName CONTENT_NAME_Q_NAME = QName.createQName(
+                                                          NamespaceService.SYSTEM_NAMESAPCE_URI,
+                                                          "name");
+
+    WorkspaceRef createWorkspace(String name)
+            throws DuplicateWorkspaceException;
 
     WorkspaceRef findWorkspace(String name);
 
@@ -48,29 +58,34 @@ public interface ContentService {
     @Auditable(parameters = { "id" }, recordable = { true })
     ContentRef getContent(@NotNull Long id);
 
-    ContentRef createContent(ContentRef parentRef, QName typeQName) throws TypeException;
+    ContentRef createContent(ContentRef parentRef, QName typeQName)
+            throws TypeException;
 
-    ContentRef createContent(ContentRef parentRef, QName typeQName, Map<QName, Serializable> properties) throws TypeException;
+    ContentRef createContent(ContentRef parentRef, QName typeQName,
+            Map<QName, Serializable> properties) throws TypeException, DataStoreException;
 
     void moveContent(ContentRef moveToContentRef, ContentRef newParentRef);
 
     QName getType(ContentRef contentRef);
-    
-    void addFacet(ContentRef contentRef, QName facetQName, Map<QName, Serializable> properties) throws TypeException;
+
+    void addFacet(ContentRef contentRef, QName facetQName,
+            Map<QName, Serializable> properties) throws TypeException, DataStoreException;
 
     Set<QName> getFacets(ContentRef contentRef);
 
     boolean hasFacet(ContentRef contentRef, QName facetQName);
 
-    void deleteContent(ContentRef contentRef);
+    void deleteContent(ContentRef contentRef) throws DataTypeUnSupportExeception;
 
-    Map<QName, Serializable> getProperties(ContentRef contentRef);
+    Map<QName, Serializable> getProperties(ContentRef contentRef) throws DataStoreException;
 
-    Serializable getProperty(ContentRef contentRef, QName qname);
+    Serializable getProperty(ContentRef contentRef, QName qname) throws DataStoreException;
 
-    void setProperties(ContentRef contentRef, Map<QName, Serializable> properties) throws TypeException;
+    void setProperties(ContentRef contentRef,
+            Map<QName, Serializable> properties) throws TypeException, DataStoreException;
 
-    void setProperty(ContentRef contentRef, QName qname, Serializable value) throws DataTypeUnSupportExeception;
+    void setProperty(ContentRef contentRef, QName qname, Serializable value)
+            throws DataTypeUnSupportExeception, DataStoreException;
 
     void removeProperty(ContentRef contentRef, QName qname);
 
@@ -78,7 +93,8 @@ public interface ContentService {
 
     List<ContentRef> getChild(ContentRef contentRef);
 
-    List<ContentRef> getChild(ContentRef contentRef, QNamePattern typeQNamePattern);
+    List<ContentRef> getChild(ContentRef contentRef,
+            QNamePattern typeQNamePattern);
 
     List<ContentRef> getChild(ContentRef contentRef, Set<QName> typeQNames);
 

@@ -38,6 +38,7 @@ import org.pshow.repo.datamodel.namespace.QNamePattern;
 import org.pshow.repo.service.ContentService;
 import org.pshow.repo.service.DuplicateWorkspaceException;
 import org.pshow.repo.service.TypeException;
+import org.pshow.repo.service.data.DataStoreException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -126,8 +127,17 @@ public class AllTest extends BaseIntegrationTest {
 		} catch (TypeException e) {
 			e.printStackTrace();
 			fail("not to here");
-		}
-		Serializable property = cs.getProperty(first, clientVisibilityMask);
+		} catch (DataStoreException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
+		Serializable property = null;
+        try {
+            property = cs.getProperty(first, clientVisibilityMask);
+        } catch (DataStoreException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
 		assertEquals(1, property);
 		Set<QName> facets = cs.getFacets(first);
 		assertEquals(facets.size(), 1);
@@ -137,17 +147,36 @@ public class AllTest extends BaseIntegrationTest {
 	}
 
 	private void testRemoveProperty(ContentRef second) {
-		Serializable property = cs.getProperty(second, NAME_Q_NAME);
+		Serializable property = null;
+        try {
+            property = cs.getProperty(second, NAME_Q_NAME);
+        } catch (DataStoreException e1) {
+            e1.printStackTrace();
+            fail("not to here");
+        }
 		assertNotNull(property);
 		cs.removeProperty(second, NAME_Q_NAME);
-		assertNull(cs.getProperty(second, NAME_Q_NAME));
+		try {
+            assertNull(cs.getProperty(second, NAME_Q_NAME));
+        } catch (DataStoreException e1) {
+            e1.printStackTrace();
+            fail("not to here");
+        }
 		try {
 			cs.setProperty(second, NAME_Q_NAME, property);
 		} catch (DataTypeUnSupportExeception e) {
 			e.printStackTrace();
 			fail("not to here");
-		}
-		assertNotNull(cs.getProperty(second, NAME_Q_NAME));
+		} catch (DataStoreException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
+		try {
+            assertNotNull(cs.getProperty(second, NAME_Q_NAME));
+        } catch (DataStoreException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
 	}
 
 	private void testGetChildByFilter(ContentRef first) {
@@ -199,7 +228,10 @@ public class AllTest extends BaseIntegrationTest {
 		} catch (TypeException e) {
 			e.printStackTrace();
 			fail("not to here");
-		}
+		} catch (DataStoreException e) {
+            e.printStackTrace();
+            fail("not to here");
+        }
 		return createContent;
 	}
 

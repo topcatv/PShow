@@ -24,7 +24,9 @@
 
 	<bean id="memoryStore" class="org.pshow.repo.cache.MemoryStore" />
 	
-	<bean id="fileDataStore" class="org.pshow.repo.service.FileDataStore" />
+	<bean id="fileDataStore" class="org.pshow.repo.service.data.FileDataStore" init-method="init">
+		<property name="path" value="${datastore.path}" />
+	</bean>
 	
 	<bean id="contentService" class="org.pshow.repo.service.ContentServiceImpl">
 		<property name="namespaceDao" ref="namespaceDao" />

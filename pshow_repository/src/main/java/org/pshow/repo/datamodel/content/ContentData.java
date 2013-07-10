@@ -51,6 +51,9 @@ public class ContentData implements Serializable {
         }
         return contentData.contentUrl != null;
     }
+    
+    public ContentData() {
+    }
 
     /**
      * Create a compound set of data representing a single instance of
@@ -248,5 +251,20 @@ public class ContentData implements Serializable {
     
     public void setEncoding(String encoding) {
         this.name = encoding;
+    }
+
+    
+    public String getName() {
+        return name;
+    }
+
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    
+    public void setData(InputStream data) {
+        this.data = data;
     }
 }
