@@ -87,17 +87,35 @@
 	</types>
 	<facets>
 		<facet name="sys:deletable">
-				<title>可删除</title>
-				<properties>
-					<property name="sys:deleted">
-						<title>已删除</title>
-						<type>d:boolean</type>
-						<default>false</default>
-						<index enabled="true" />
-					</property>
-				</properties>
-				<associations />
-				<mandatory-facets />
-			</facet>
+			<title>可删除</title>
+			<properties>
+				<property name="sys:deleted">
+					<title>已删除</title>
+					<type>d:boolean</type>
+					<default>false</default>
+					<index enabled="true" />
+				</property>
+			</properties>
+			<associations />
+			<mandatory-facets />
+		</facet>
+		<facet name="sys:versionable">
+			<title>版本</title>
+			<properties>
+				<property name="sys:versionlabel">
+					<title>版本标签</title>
+					<type>d:text</type>
+					<mandatory>true</mandatory>
+					<index enabled="true" />
+				</property>
+				<property name="sys:versiondescription">
+					<title>版本描述</title>
+					<type>d:text</type>
+					<index enabled="true" />
+				</property>
+			</properties>
+			<associations />
+			<mandatory-facets />
+		</facet>
 	</facets>
 </model>

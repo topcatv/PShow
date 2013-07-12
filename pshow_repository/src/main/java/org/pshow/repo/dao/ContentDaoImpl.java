@@ -85,4 +85,10 @@ public class ContentDaoImpl extends SqlSessionDaoSupport implements ContentDao {
         getSqlSession().insert("org.pshow.repo.datamodel.content.Content.insertContentFacet", parameter); 
     }
 
+    @Override
+    public Content getContentByID(long versionContentId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

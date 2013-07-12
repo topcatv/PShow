@@ -16,10 +16,42 @@
  */
 package org.pshow.repo.service;
 
+import org.pshow.repo.datamodel.content.ContentRef;
+import org.pshow.repo.datamodel.namespace.NamespaceService;
+import org.pshow.repo.datamodel.namespace.QName;
+import org.pshow.repo.datamodel.version.Version;
+import org.pshow.repo.datamodel.version.VersionHistory;
+
 /**
  * @author roy
- *
+ * 
  */
 public interface VersionService {
+
+    public static final QName VERSIONABLE_Q_NAME = QName.createQName(
+                                                         NamespaceService.SYSTEM_NAMESAPCE_URI,
+                                                         "versionable");
+
+    boolean isAVersion(ContentRef contentRef);
+
+    boolean isVersioned(ContentRef contentRef);
+
+    void checkOut(ContentRef contentRef);
+    
+    boolean isCheckOut(ContentRef contentRef);
+    
+    boolean cancelCheckOut(ContentRef contentRef);
+    
+    Version checkIn(ContentRef contentRef);
+
+    VersionHistory getVersionHistory(ContentRef contentRef);
+
+    Version getCurrentVersion(ContentRef contentRef);
+
+    void revert(ContentRef contentRef, Version version);
+
+    void deleteVersionHistory(ContentRef contentRef);
+
+    void deleteVersion(ContentRef contentRef, Version version);
 
 }

@@ -24,7 +24,7 @@
 	<div class="span11" style="margin-left: 8px;height: 520px;overflow: auto;position: relative;">
 	<ul class="thumbnails" ng-init="init()">
 		<li ng-repeat="content in contents">
-			<div class="thumbnail" onmouseenter="$(this).find('p').slideDown();" onmouseleave="$(this).find('p').slideUp();">
+			<div class="thumbnail">
 				<img ng-src="/img/sys/{{content.show_type}}.png"
 					alt="" ng-click='cdOrOpen(content.id, content.text, content.show_type)'/>
 				<div class="caption">
@@ -68,5 +68,5 @@
 <script type="text/javascript">
 	$('div.thumbnail img').css("cursor","pointer");
 	$('div.thumbnail h3').css("cursor","pointer");
-	$('div.thumbnail p').hide();
+	//$('div.thumbnail p').hide();
 </script>

@@ -14,36 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.dao;
-
-import java.util.List;
-
-import org.pshow.repo.dao.model.QNameModel;
-import org.pshow.repo.datamodel.content.Content;
-
+package org.pshow.repo.datamodel.version;
 
 /**
  * @author roy
- *
+ * 
  */
-public interface ContentDao {
+public enum VersionType {
+    MAJOR(1), MINOR(2);
 
-    String getUuidById(long id);
+    private int type;
 
-    void insertContent(Content cdata);
+    private VersionType(int type) {
+        this.type = type;
+    }
 
-    void updateContent(Content cdata);
+    public int getType() {
+        return this.type;
+    }
 
-    Content getContentByUUID(String uuid);
-
-    List<Content> getContentByParentUUID(String uuid);
-
-    List<QNameModel> getFacetsByContent(String uuid);
-
-    void removeFacetByContent(String id, long id2);
-
-    void insertContentFacet(long contentId, long qnameId);
-
-    Content getContentByID(long versionContentId);
-
+    public static VersionType valueOf(int type) {
+        if (type == 1) {
+            return MAJOR;
+        } else if (type == 2) {
+            return MINOR;
+        } else {
+            return null;
+        }
+    }
 }

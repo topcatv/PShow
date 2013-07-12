@@ -14,36 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pshow.repo.dao;
+package org.pshow.repo.datamodel.version;
 
-import java.util.List;
+import java.io.Serializable;
+import java.util.Date;
 
-import org.pshow.repo.dao.model.QNameModel;
-import org.pshow.repo.datamodel.content.Content;
+import org.pshow.repo.datamodel.content.ContentRef;
 
 
 /**
  * @author roy
  *
  */
-public interface ContentDao {
-
-    String getUuidById(long id);
-
-    void insertContent(Content cdata);
-
-    void updateContent(Content cdata);
-
-    Content getContentByUUID(String uuid);
-
-    List<Content> getContentByParentUUID(String uuid);
-
-    List<QNameModel> getFacetsByContent(String uuid);
-
-    void removeFacetByContent(String id, long id2);
-
-    void insertContentFacet(long contentId, long qnameId);
-
-    Content getContentByID(long versionContentId);
+public interface Version extends Serializable {
+    
+    ContentRef getContentRef();
+    
+    String getVersionLabel();
+    
+    String getCreator();
+    
+    Date getCreated();
+    
+    VersionType getVersionType();
+    
+    String getDescription();
 
 }
